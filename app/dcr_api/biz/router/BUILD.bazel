@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "router",
+    srcs = ["register.go"],
+    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/router",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//app/dcr_api/biz/router/job",
+        "@com_github_cloudwego_hertz//pkg/app/server",
+    ],
+)

@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "dal",
+    srcs = ["init.go"],
+    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/dal",
+    visibility = ["//visibility:public"],
+    deps = ["//app/dcr_api/biz/dal/db"],
+)

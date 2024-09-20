@@ -1,0 +1,30 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "service",
+    srcs = [
+        "build_service.go",
+        "job_service.go",
+        "kaniko_service.go",
+    ],
+    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/service",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//app/dcr_api/biz/dal/db",
+        "//app/dcr_api/biz/model/job",
+        "//pkg/cloud",
+        "//pkg/config",
+        "//pkg/errno",
+        "//pkg/utils",
+        "@com_github_cloudwego_hertz//pkg/common/hlog",
+        "@com_github_docker_docker//pkg/archive",
+        "@com_github_google_uuid//:uuid",
+        "@com_github_pkg_errors//:errors",
+        "@io_k8s_api//batch/v1:batch",
+        "@io_k8s_api//core/v1:core",
+        "@io_k8s_apimachinery//pkg/api/resource",
+        "@io_k8s_apimachinery//pkg/apis/meta/v1:meta",
+        "@io_k8s_client_go//kubernetes",
+        "@io_k8s_client_go//rest",
+    ],
+)

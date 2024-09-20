@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "cloud",
+    srcs = [
+        "gcp.go",
+        "provider.go",
+    ],
+    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/cloud",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/config",
+        "@com_github_cloudwego_hertz//pkg/common/hlog",
+        "@com_github_pkg_errors//:errors",
+        "@com_google_cloud_go_compute//apiv1",
+        "@com_google_cloud_go_compute//apiv1/computepb",
+        "@com_google_cloud_go_compute_metadata//:metadata",
+        "@com_google_cloud_go_iam//apiv1/iampb",
+        "@com_google_cloud_go_kms//apiv1",
+        "@com_google_cloud_go_kms//apiv1/kmspb",
+        "@com_google_cloud_go_storage//:storage",
+        "@org_golang_google_api//iterator",
+        "@org_golang_google_grpc//codes",
+        "@org_golang_google_grpc//status",
+        "@org_golang_google_protobuf//proto",
+        "@org_golang_x_oauth2//google",
+    ],
+)

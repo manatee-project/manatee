@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_binary(
+    name = "api",
+    embed = [":dcr_api_lib"],
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "dcr_api_lib",
+    srcs = [
+        "main.go",
+        "router.go",
+        "router_gen.go",
+    ],
+    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//app/dcr_api/biz/dal",
+        "//app/dcr_api/biz/handler",
+        "//app/dcr_api/biz/router",
+        "//pkg/config",
+        "@com_github_cloudwego_hertz//pkg/app/server",
+        "@com_github_cloudwego_hertz//pkg/common/hlog",
+    ],
+)

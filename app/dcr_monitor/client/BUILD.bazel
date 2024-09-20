@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "client",
+    srcs = [
+        "hertz.go",
+        "k8s.go",
+    ],
+    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_monitor/client",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_cloudwego_hertz//pkg/app/client",
+        "@io_k8s_client_go//kubernetes",
+        "@io_k8s_client_go//rest",
+    ],
+)

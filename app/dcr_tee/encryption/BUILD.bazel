@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "encryption_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_tee/encryption",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//pkg/config",
+        "@com_google_cloud_go_kms//apiv1",
+        "@com_google_cloud_go_kms//apiv1/kmspb",
+        "@org_golang_google_api//option",
+    ],
+)
+
+go_binary(
+    name = "encryption",
+    embed = [":encryption_lib"],
+    visibility = ["//visibility:public"],
+)

@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "config",
+    srcs = ["config.go"],
+    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/config",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/utils",
+        "@com_github_cloudwego_hertz//pkg/common/hlog",
+        "@com_github_pkg_errors//:errors",
+        "@com_github_spf13_viper//:viper",
+    ],
+)

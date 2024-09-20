@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "job",
+    srcs = ["job.go"],
+    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/model/job",
+    visibility = ["//visibility:public"],
+    deps = ["@com_github_apache_thrift//lib/go/thrift"],
+)

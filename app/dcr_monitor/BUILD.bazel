@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "dcr_monitor_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_monitor",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//app/dcr_monitor/client",
+        "//app/dcr_monitor/monitor",
+        "//pkg/config",
+        "@com_github_cloudwego_hertz//pkg/common/hlog",
+    ],
+)
+
+go_binary(
+    name = "dcr_monitor",
+    embed = [":dcr_monitor_lib"],
+    visibility = ["//visibility:public"],
+)

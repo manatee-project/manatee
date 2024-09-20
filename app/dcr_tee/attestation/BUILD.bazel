@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "attestation_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_tee/attestation",
+    visibility = ["//visibility:private"],
+    deps = ["@com_github_pkg_errors//:errors"],
+)
+
+go_binary(
+    name = "attestation",
+    embed = [":attestation_lib"],
+    visibility = ["//visibility:public"],
+)

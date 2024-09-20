@@ -1,0 +1,25 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "monitor",
+    srcs = [
+        "instance.go",
+        "kaniko.go",
+    ],
+    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_monitor/monitor",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//app/dcr_api/biz/model/job",
+        "//app/dcr_monitor/client",
+        "//pkg/cloud",
+        "//pkg/config",
+        "@com_github_cloudwego_hertz//pkg/common/hlog",
+        "@com_github_cloudwego_hertz//pkg/protocol",
+        "@com_github_cloudwego_hertz//pkg/protocol/consts",
+        "@com_github_pkg_errors//:errors",
+        "@io_k8s_api//batch/v1:batch",
+        "@io_k8s_api//core/v1:core",
+        "@io_k8s_apimachinery//pkg/apis/meta/v1:meta",
+        "@io_k8s_client_go//kubernetes",
+    ],
+)

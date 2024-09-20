@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "handler",
+    srcs = ["health.go"],
+    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/handler",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_cloudwego_hertz//pkg/app",
+        "@com_github_cloudwego_hertz//pkg/common/utils",
+        "@com_github_cloudwego_hertz//pkg/protocol/consts",
+    ],
+)
