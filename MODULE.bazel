@@ -4,4 +4,10 @@
 #
 # For more details, please check https://github.com/bazelbuild/bazel/issues/18958
 ###############################################################################
+
 bazel_dep(name = "rules_proto", version = "6.0.2")
+
+bazel_dep(name = "rules_oci", version = "2.0.0")
+oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
+
+bazel_dep(name = "rules_pkg", version = "1.0.1")
