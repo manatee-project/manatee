@@ -10,7 +10,7 @@ import (
 	"cloud.google.com/go/kms/apiv1/kmspb"
 	"google.golang.org/api/option"
 
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/config"
+	"github.com/manatee-project/manatee/pkg/config"
 )
 
 const credentialConfig = `{

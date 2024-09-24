@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_monitor/client"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_monitor/monitor"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/config"
+	"github.com/manatee-project/manatee/app/dcr_monitor/client"
+	"github.com/manatee-project/manatee/app/dcr_monitor/monitor"
+	"github.com/manatee-project/manatee/pkg/config"
 )
 
 func main() {

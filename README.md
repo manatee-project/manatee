@@ -1,24 +1,24 @@
-# PrivacyGo Data Clean Room
+# ManaTEE Project
 
 > Note: we are releasing an alpha version, which may miss some necessary features. 
 
-PrivacyGo Data Clean Room (PGDCR) is an open-source project for easily building and deploying data collaboration framework to the cloud using trusted execution environments (TEEs).
+ManaTEE is an open-source project for easily building and deploying data collaboration framework to the cloud using trusted execution environments (TEEs).
 It allows users to easily collaborate on private datasets without leaking privacy of individual data.
-PGDCR achieves this by combining different privacy-enhancing technologies (PETs) in different programming stages.
+ManaTEE achieves this by combining different privacy-enhancing technologies (PETs) in different programming stages.
 
-In summary, PGDCR is great tool for data collaboration with the following features.
+In summary, ManaTEE is great tool for data collaboration with the following features.
 
-* **Interactive Programming**: PGDCR integrates with an existing Jupyter Notebook interface such that the data analysts can program interactively with popular languages like Python
-* **Multiparty**: PGDCR allows multi-party data collaboration without needing to send the private data to each other
-* **Cloud-Ready**: PGDCR can be easily deployed in TEEs in the cloud, including Google Confidential Space
-* **Accurate Results**: PGDCR does not sacrifice accuracy for data privacy. This is achieved by a two-stage approach with different PETs applied to each stage.
+* **Interactive Programming**: ManaTEE integrates with an existing Jupyter Notebook interface such that the data analysts can program interactively with popular languages like Python
+* **Multiparty**: ManaTEE allows multi-party data collaboration without needing to send the private data to each other
+* **Cloud-Ready**: ManaTEE can be easily deployed in TEEs in the cloud, including Google Confidential Space
+* **Accurate Results**: ManaTEE does not sacrifice accuracy for data privacy. This is achieved by a two-stage approach with different PETs applied to each stage.
 
 ### What is Different from Other Data Collaboration Frameworks?
 
 Data collaboration is not a new concept, and numerous data collaboration frameworks already exist.
 However, different frameworks try to apply different privacy-enhancing technologies (PETs), which have different strengths and weaknesses.
-PGDCR tries to utilize different PETs in different programming stages to maximize the usability while protecting individual data privacy.
-Specifically, PGDCR divides data analytics in two stages: *Programming Stage* and *Secure Execution Stage*.
+ManaTEE tries to utilize different PETs in different programming stages to maximize the usability while protecting individual data privacy.
+Specifically, ManaTEE divides data analytics in two stages: *Programming Stage* and *Secure Execution Stage*.
 
 ![Alt text](two-stage.png)
 
@@ -35,15 +35,15 @@ TEE also assures the data scientists that the integrity of their program and the
 
 ### Use Cases
 
-There are many potential use cases of the PGDCR:
+There are many potential use cases of the ManaTEE:
 
 * **Trusted Research Environments (TREs)**: Some data may be valuable to various research on public health, economic impact, and many other fields.
-TREs are a secure environment where authorized/vetted researchers and organizations can access the data. The data provider can choose to use PGDCR to build their TRE.
-Currently, [TikTok's Research Tools Virtual Compute Environment (VCE)](https://developers.tiktok.com/doc/vce-getting-started) is built on top of PGDCR.
+TREs are a secure environment where authorized/vetted researchers and organizations can access the data. The data provider can choose to use ManaTEE to build their TRE.
+Currently, [TikTok's Research Tools Virtual Compute Environment (VCE)](https://developers.tiktok.com/doc/vce-getting-started) is built on top of ManaTEE.
 
-* **Advertisement and Marketing**: Ads is a popular use case of data collaboration frameworks. PGDCR can be used for [lookalike segment analysis](https://en.wikipedia.org/wiki/Lookalike_audience) for advertisers, or [Ad Tracking](https://en.wikipedia.org/wiki/Ad_tracking) with private user data.
+* **Advertisement and Marketing**: Ads is a popular use case of data collaboration frameworks. ManaTEE can be used for [lookalike segment analysis](https://en.wikipedia.org/wiki/Lookalike_audience) for advertisers, or [Ad Tracking](https://en.wikipedia.org/wiki/Ad_tracking) with private user data.
 
-* **Machine Learning**: PGDCR can be useful for machine learning involving private data or models. For example, a private model provider can provide their model for fine-tuning, but do not reveal the actual model in the Programming Stage.
+* **Machine Learning**: ManaTEE can be useful for machine learning involving private data or models. For example, a private model provider can provide their model for fine-tuning, but do not reveal the actual model in the Programming Stage.
 
 ### Project Status
 

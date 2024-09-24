@@ -23,10 +23,10 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/model/job"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/service"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/errno"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/utils"
+	"github.com/manatee-project/manatee/app/dcr_api/biz/model/job"
+	"github.com/manatee-project/manatee/app/dcr_api/biz/service"
+	"github.com/manatee-project/manatee/pkg/errno"
+	"github.com/manatee-project/manatee/pkg/utils"
 )
 
 type FileParas struct {

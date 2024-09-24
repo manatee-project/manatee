@@ -21,7 +21,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/utils"
+	"github.com/manatee-project/manatee/pkg/utils"
 )
 
 type Config struct {

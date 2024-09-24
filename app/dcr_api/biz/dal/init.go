@@ -14,7 +14,7 @@
 
 package dal
 
-import "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/dal/db"
+import "github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
 
 func Init() {
 	db.Init()

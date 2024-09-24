@@ -1,6 +1,6 @@
 # jupyterlab_manatee
 
-This is an open-source JupyterLab extension for data clean room
+This is an open-source JupyterLab extension for ManaTEE framework
 
 ## Building
 

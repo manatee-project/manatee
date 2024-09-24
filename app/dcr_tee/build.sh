@@ -31,8 +31,8 @@ if [ ! -d "$PKG_SOURCE_CODE" ]; then
 fi
 
 rm -rf github.com
-mkdir -p github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/
-cp -r $PKG_SOURCE_CODE github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg@v0.0.1
+mkdir -p github.com/manatee-project/manatee/
+cp -r $PKG_SOURCE_CODE github.com/manatee-project/manatee/pkg@v0.0.1
 
 cp -r ../conf ./
 if [[ "$OSTYPE" == "darwin"* ]]; then

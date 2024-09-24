@@ -4,7 +4,7 @@ package job
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
-	job "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/handler/job"
+	job "github.com/manatee-project/manatee/app/dcr_api/biz/handler/job"
 )
 
 /*

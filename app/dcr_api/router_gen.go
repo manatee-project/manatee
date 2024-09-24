@@ -4,7 +4,7 @@ package main
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
-	router "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/router"
+	router "github.com/manatee-project/manatee/app/dcr_api/biz/router"
 )
 
 // register registers all routers.

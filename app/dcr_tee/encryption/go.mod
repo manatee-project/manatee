@@ -1,14 +1,14 @@
-module github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_tee/encryption
+module github.com/manatee-project/manatee/app/dcr_tee/encryption
 
 go 1.22.0
 
 require (
 	cloud.google.com/go/kms v1.17.1
-	github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg v0.0.1
+	github.com/manatee-project/manatee/pkg v0.0.1
 	google.golang.org/api v0.180.0
 )
 
-replace github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg => /go/pkg/mod/github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg@v0.0.1
+replace github.com/manatee-project/manatee/pkg => /go/pkg/mod/github.com/manatee-project/manatee/pkg@v0.0.1
 
 require (
 	cloud.google.com/go v0.113.0 // indirect

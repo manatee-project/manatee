@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/dal/db"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/utils"
+	"github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
+	"github.com/manatee-project/manatee/pkg/utils"
 )
 
 func BuildImage(c context.Context, j db.Job, token string) error {

@@ -4,7 +4,7 @@ package main
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
-	handler "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/handler"
+	handler "github.com/manatee-project/manatee/app/dcr_api/biz/handler"
 )
 
 // customizeRegister registers customize routers.

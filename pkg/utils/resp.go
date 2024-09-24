@@ -21,7 +21,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/gin-gonic/gin"
 
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/errno"
+	"github.com/manatee-project/manatee/pkg/errno"
 )
 
 type BaseResp struct {

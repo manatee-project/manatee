@@ -28,7 +28,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/config"
+	"github.com/manatee-project/manatee/pkg/config"
 )
 
 type WorkloadIdentityPoolProvider struct {

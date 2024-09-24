@@ -6,8 +6,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/dal"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/config"
+	"github.com/manatee-project/manatee/app/dcr_api/biz/dal"
+	"github.com/manatee-project/manatee/pkg/config"
 )
 
 func Init() {

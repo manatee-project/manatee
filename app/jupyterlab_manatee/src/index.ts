@@ -41,7 +41,7 @@ async function activate(app: JupyterFrontEnd, docManager: IDocumentManager, tran
  */
 const plugin: JupyterFrontEndPlugin<void> = {
   id: 'jupyterlab_manatee:plugin',
-  description: 'This is an open-source JupyterLab extension for data clean room',
+  description: 'This is an open-source JupyterLab extension for ManaTEE framework',
   autoStart: true,
   requires: [IDocumentManager, ITranslator],
   optional: [ILayoutRestorer],

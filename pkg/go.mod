@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-module github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg
+module github.com/manatee-project/manatee/pkg
 
 go 1.22.0
 

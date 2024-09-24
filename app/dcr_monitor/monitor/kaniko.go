@@ -33,10 +33,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/model/job"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_monitor/client"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/cloud"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/config"
+	"github.com/manatee-project/manatee/app/dcr_api/biz/model/job"
+	"github.com/manatee-project/manatee/app/dcr_monitor/client"
+	"github.com/manatee-project/manatee/pkg/cloud"
+	"github.com/manatee-project/manatee/pkg/config"
 )
 
 func CheckKanikoJobs(ctx context.Context, clientSet *kubernetes.Clientset) error {

@@ -21,13 +21,13 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/google/uuid"
+	"github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
+	"github.com/manatee-project/manatee/app/dcr_api/biz/model/job"
+	"github.com/manatee-project/manatee/pkg/cloud"
+	"github.com/manatee-project/manatee/pkg/config"
+	"github.com/manatee-project/manatee/pkg/errno"
+	"github.com/manatee-project/manatee/pkg/utils"
 	"github.com/pkg/errors"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/dal/db"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/model/job"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/cloud"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/config"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/errno"
-	"github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/utils"
 )
 
 type JobService struct {

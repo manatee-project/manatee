@@ -1,6 +1,6 @@
-# Contributing to PrivacyGo Data Clean Room
+# Contributing to ManaTEE
 
-We happily welcome contributions to the PGDCR. We use [GitHub Issues](https://github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/issues) to track community reported issues and [GitHub Pull Requests](https://github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pulls) for accepting changes.
+We happily welcome contributions to the ManaTEE. We use [GitHub Issues](https://github.com/manatee-project/manatee/issues) to track community reported issues and [GitHub Pull Requests](https://github.com/manatee-project/manatee/pulls) for accepting changes.
 
 
 Read our [Code of Coduct](./CODE_OF_CONDUCT.md) to keep our community approachable and respectable.
@@ -19,7 +19,7 @@ Pull Requests should follow the "Title: Description" format, where the Descripti
 
 ### Design Docs
 
-A contributor proposes a design with a PR on the repository to allow for revisions and discussions. If a design needs to be discussed before formulating a document for it, make use of Google doc and [GitHub issue](https://github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/issues) to involve the community on the discussion.
+A contributor proposes a design with a PR on the repository to allow for revisions and discussions. If a design needs to be discussed before formulating a document for it, make use of Google doc and [GitHub issue](https://github.com/manatee-project/manatee/issues) to involve the community on the discussion.
 
 ### GitHub Issues
 
@@ -40,12 +40,12 @@ When filing an issue, please check existing open, or recently closed, issues to 
 
 ### Find interesting issue
 
-If you spot a problem, [search if an issue already exists](https://github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/issues). If a related issue doesn't exist, you can open a new issue by clicking the [New issue](https://github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/issues/new).
+If you spot a problem, [search if an issue already exists](https://github.com/manatee-project/manatee/issues). If a related issue doesn't exist, you can open a new issue by clicking the [New issue](https://github.com/manatee-project/manatee/issues/new).
 
 
 ### Open a Pull request.
 
-When you're done making the changes, open a [Pull Requests](https://github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pulls) and fill PR template so we can better review your PR. The [template](https://github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/issues/new) helps reviewers understand your changes and the purpose of your pull request.
+When you're done making the changes, open a [Pull Requests](https://github.com/manatee-project/manatee/pulls) and fill PR template so we can better review your PR. The [template](https://github.com/manatee-project/manatee/issues/new) helps reviewers understand your changes and the purpose of your pull request.
 
 Don't forget to link PR to issue if you are solving one.
 

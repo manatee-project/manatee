@@ -1,4 +1,4 @@
-module github.com/tiktok-privacy-innovation/PrivacyGoDataCleanRoom/app/dcr_tee/attestation
+module github.com/manatee-project/manatee/app/dcr_tee/attestation
 
 go 1.22.0
 
