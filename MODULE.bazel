@@ -5,9 +5,28 @@
 # For more details, please check https://github.com/bazelbuild/bazel/issues/18958
 ###############################################################################
 
+# rules_proto
 bazel_dep(name = "rules_proto", version = "6.0.2")
 
+# rules_oci
 bazel_dep(name = "rules_oci", version = "2.0.0")
+
 oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
 
+# pull base image for scipy-notebook
+oci.pull(
+    name = "scipy-notebook",
+    digest = "sha256:dc0f8efb6f288d5fc67a94715963282f8066cb3b93324131585edaa0a7a46780",
+    image = "quay.io/jupyter/scipy-notebook",
+    platforms = [
+        "linux/amd64",
+    ],
+)
+use_repo(
+    oci,
+    "scipy-notebook",
+    "scipy-notebook_linux_amd64",
+)
+
+# rules_pkg
 bazel_dep(name = "rules_pkg", version = "1.0.1")

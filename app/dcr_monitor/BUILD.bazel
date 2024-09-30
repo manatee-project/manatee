@@ -1,4 +1,6 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load("@rules_oci//oci:defs.bzl", "oci_image")
 
 go_library(
     name = "dcr_monitor_lib",
@@ -17,4 +19,21 @@ go_binary(
     name = "dcr_monitor",
     embed = [":dcr_monitor_lib"],
     visibility = ["//visibility:public"],
+)
+
+pkg_tar(
+    name = "tar",
+    srcs = [":dcr_monitor"],
+)
+
+oci_image(
+    name = "image",
+    architecture = "amd64",
+    workdir = "/app",
+    os = "linux",
+    tars = [":tar"],
+    visibility = ["//visibility:public"],
+    cmd = [
+        "/app/dcr_monitor"
+    ]
 )
