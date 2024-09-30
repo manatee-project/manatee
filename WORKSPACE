@@ -1,4 +1,4 @@
-workspace(name = "com_github_tiktok-privacy-innovation_manatee")
+workspace(name = "com_github_manatee-project_manatee")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 

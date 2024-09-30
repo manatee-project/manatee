@@ -6,7 +6,7 @@ go_library(
         "job.go",
         "middleware.go",
     ],
-    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/router/job",
+    importpath = "github.com/manatee-project/manatee/app/dcr_api/biz/router/job",
     visibility = ["//visibility:public"],
     deps = [
         "//app/dcr_api/biz/handler/job",

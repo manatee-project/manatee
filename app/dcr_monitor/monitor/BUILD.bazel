@@ -6,7 +6,7 @@ go_library(
         "instance.go",
         "kaniko.go",
     ],
-    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_monitor/monitor",
+    importpath = "github.com/manatee-project/manatee/app/dcr_monitor/monitor",
     visibility = ["//visibility:public"],
     deps = [
         "//app/dcr_api/biz/model/job",

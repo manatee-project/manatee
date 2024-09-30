@@ -8,7 +8,7 @@ go_library(
         "k8s.go",
         "resp.go",
     ],
-    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/utils",
+    importpath = "github.com/manatee-project/manatee/pkg/utils",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/errno",

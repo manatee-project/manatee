@@ -15,7 +15,7 @@ go_library(
         "router.go",
         "router_gen.go",
     ],
-    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api",
+    importpath = "github.com/manatee-project/manatee/app/dcr_api",
     visibility = ["//visibility:private"],
     deps = [
         "//app/dcr_api/biz/dal",

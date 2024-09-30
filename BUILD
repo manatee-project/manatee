@@ -2,7 +2,7 @@ load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@rules_oci//oci:defs.bzl", "oci_push")
 load("//:config.bzl", "registry_api_image", "registry_monitor_image", "registry_user_base_image")
 
-# gazelle:prefix github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom
+# gazelle:prefix github.com/manatee-project/manatee
 gazelle(name = "gazelle")
 
 # push images

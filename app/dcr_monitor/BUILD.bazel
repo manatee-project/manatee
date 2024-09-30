@@ -5,7 +5,7 @@ load("@rules_oci//oci:defs.bzl", "oci_image")
 go_library(
     name = "dcr_monitor_lib",
     srcs = ["main.go"],
-    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_monitor",
+    importpath = "github.com/manatee-project/manatee/app/dcr_monitor",
     visibility = ["//visibility:private"],
     deps = [
         "//app/dcr_monitor/client",

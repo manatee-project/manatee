@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "job",
     srcs = ["job_handler.go"],
-    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/handler/job",
+    importpath = "github.com/manatee-project/manatee/app/dcr_api/biz/handler/job",
     visibility = ["//visibility:public"],
     deps = [
         "//app/dcr_api/biz/model/job",

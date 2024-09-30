@@ -6,7 +6,7 @@ go_library(
         "init.go",
         "job.go",
     ],
-    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/dal/db",
+    importpath = "github.com/manatee-project/manatee/app/dcr_api/biz/dal/db",
     visibility = ["//visibility:public"],
     deps = [
         "@com_github_pkg_errors//:errors",

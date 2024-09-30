@@ -7,7 +7,7 @@ go_library(
         "job_service.go",
         "kaniko_service.go",
     ],
-    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/app/dcr_api/biz/service",
+    importpath = "github.com/manatee-project/manatee/app/dcr_api/biz/service",
     visibility = ["//visibility:public"],
     deps = [
         "//app/dcr_api/biz/dal/db",

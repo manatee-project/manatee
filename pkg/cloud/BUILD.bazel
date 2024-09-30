@@ -6,7 +6,7 @@ go_library(
         "gcp.go",
         "provider.go",
     ],
-    importpath = "github.com/tiktok-privacy-innovation/PrivacyGo-DataCleanRoom/pkg/cloud",
+    importpath = "github.com/manatee-project/manatee/pkg/cloud",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/config",
