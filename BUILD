@@ -1,6 +1,6 @@
 load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@rules_oci//oci:defs.bzl", "oci_push")
-load("//:config.bzl", "registry_api_image", "registry_monitor_image", "registry_user_base_image")
+load("//:config.bzl", "registry_api_image", "registry_monitor_image", "registry_user_base_image","environment")
 
 # gazelle:prefix github.com/manatee-project/manatee
 gazelle(name = "gazelle")
@@ -14,7 +14,7 @@ oci_push(
 )
 oci_push(
     name = "push_dcr_monitor_image",
-    image = "//app/dcr_api:image",
+    image = "//app/dcr_monitor:image",
     repository = registry_monitor_image,
     remote_tags = ["latest"],
 )

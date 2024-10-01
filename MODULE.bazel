@@ -22,11 +22,25 @@ oci.pull(
         "linux/amd64",
     ],
 )
+oci.pull(
+    name = "distroless_base",
+    digest = "sha256:ccaef5ee2f1850270d453fdf700a5392534f8d1a8ca2acda391fbb6a06b81c86",
+    image = "gcr.io/distroless/base",
+    platforms = [
+        "linux/amd64",
+        "linux/arm64",
+    ],
+)
 use_repo(
     oci,
+    "distroless_base",
+    "distroless_base_linux_amd64",
+    "distroless_base_linux_arm64",
     "scipy-notebook",
     "scipy-notebook_linux_amd64",
 )
+
+# A multi-arch base image with variants, note that it won't work with just "linux/arm64"
 
 # rules_pkg
 bazel_dep(name = "rules_pkg", version = "1.0.1")

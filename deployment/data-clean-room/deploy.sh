@@ -22,14 +22,13 @@ fi
 VAR_FILE=$(realpath $VAR_FILE)
 source $VAR_FILE
 
+tag="latest"
 if [ -z "$username" ]; then
     helm_name="data-clean-room-helm-$env"
     k8s_namespace="data-clean-room-$env"
-    tag=$env
 else
     helm_name="data-clean-room-helm-$username"
     k8s_namespace="data-clean-room-$username"
-    tag=$username
 fi
 
 connection_name="${project_id}:${region}:dcr-${env}-db-instance"

@@ -22,15 +22,14 @@ fi
 VAR_FILE=$(realpath $VAR_FILE)
 source $VAR_FILE
 
+tag="latest"
 if [ -z "$username" ]; then
     helm_name="jupyterhub-helm-$env"
     k8s_namespace="jupyterhub-$env"
-    tag=$env
     api="http://data-clean-room.data-clean-room-$env.svc.cluster.local"
 else
     helm_name="jupyterhub-helm-$username"
     k8s_namespace="jupyterhub-$username"
-    tag=$username
     api="http://data-clean-room.data-clean-room-$username.svc.cluster.local"
 fi
 

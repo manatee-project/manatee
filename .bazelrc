@@ -1,1 +1,5 @@
 common --enable_bzlmod
+
+build --platforms=//platforms:linux_amd64
+test --platforms=//platforms:linux_amd64
+run --platforms=//platforms:linux_amd64

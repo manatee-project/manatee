@@ -1,5 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-load("@rules_oci//oci:defs.bzl", "oci_image")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 go_binary(
@@ -34,10 +34,14 @@ pkg_tar(
 
 oci_image(
     name = "image",
-    architecture = "amd64",
-    cmd = ["/app/api"],
-    os = "linux",
+    # distroless debian12
+    base = "@distroless_base",
+    entrypoint = ["/api"],
     tars = [":tar"],
     visibility = ["//visibility:public"],
-    workdir = "/app",
+)
+oci_load(
+    name = "load_image",
+    image = ":image",
+    repo_tags = ["dcr_api:latest"],
 )
