@@ -8,6 +8,28 @@
 # rules_proto
 bazel_dep(name = "rules_proto", version = "6.0.2")
 
+# rules_python
+bazel_dep(name = "rules_python", version = "0.36.0")
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "pydeps",
+    python_version = "3.11",
+    requirements_lock = "//app/jupyterlab_manatee:requirements.txt",
+)
+use_repo(pip, "pydeps")
+
+# rules nodejs
+bazel_dep(name = "aspect_rules_js", version = "2.0.2")
+bazel_dep(name = "rules_nodejs", version = "6.2.0")
+
+node = use_extension("@rules_nodejs//nodejs:extensions.bzl", "node", dev_dependency = True)
+node.toolchain(
+    name = "nodejs",
+    node_version = "18.17.1",
+)
+use_repo(node, "nodejs", "nodejs_toolchains")
+
 # rules_oci
 bazel_dep(name = "rules_oci", version = "2.0.0")
 

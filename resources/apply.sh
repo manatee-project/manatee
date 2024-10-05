@@ -26,7 +26,7 @@ if ! gcloud auth list | grep -q 'ACTIVE'; then
 fi
 
 # check whether variables has been set
-VAR_FILE="../.env"
+VAR_FILE="../env.bzl"
 if [ ! -f "$VAR_FILE" ]; then
     echo "Error: Variables file does not exist."
     exit 1

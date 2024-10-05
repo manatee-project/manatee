@@ -79,13 +79,13 @@ We are releasing an alpha version, which may miss some necessary features.
 First, determine whether there are multiple developers deploying simultaneously in your environment. If yes, use the multiple users template, otherwise use the single user template. 
 ```
 # multiple users
-cp .env.multiusers .env
+cp .env.multiusers env.bzl
 ```
 ```
 # single user
-cp .env.singleuser .env
+cp .env.singleuser env.bzl
 ```
-Edit the variables in `.env`. The `.env` file is the one that really takes effect, the other files are just templates. The double quotes around a variable name are needed. For example:
+Edit the variables in `env.bzl`. The `env.bzl` file is the one that really takes effect, the other files are just templates. The double quotes around a variable name are needed. For example:
 ```
 env="dev"                        # the deployment environment
 username="mock developer name"   # the developer name
@@ -97,7 +97,7 @@ region=""                        # the region that the resources created in
 ```
 
 ### Preparing resources
-Create resources for the data clean room by terraform. Make sure you have correctly defined environment variables in the `.env`.
+Create resources for the data clean room by terraform. Make sure you have correctly defined environment variables in the `env.bzl`.
 
 `resources/gcp` directory contains the resources releated to the gcp including: clusters, cloud sql instance, database, docker repositories, and service accounts. These resource are global and only created once for all the developers in one project.
 
@@ -110,7 +110,7 @@ pushd resources
 popd
 ```
 
-### Building docker images
+### Building and Pushing Images
 `app` directory contains the source codes of the data clean room which has three components:
 
 * `dcr_tee` contains tools that are used in the base image of stage2 such as a tool generates custom attestation report within GCP confidential space.
@@ -118,27 +118,23 @@ popd
 * `dcr_monitor` is a cron job that monitors the execution of each job. The monitor is deployed to Kubernetes cluster and scheduled to run every minute.
 * `jupyterlab_manatee` is an JupyterLab extension for data clean room that submits a job on the fronted and queries the status of the jobs.
 
-Pass parameters to build.sh to determine which component to compile. If no parameters are provided, all of them will be built.
+[Bazel](https://bazel.build/install) is required to build all of the binaries and push them to the artifact registry.
+
+
 ```shell 
-pushd app
-./build.sh # build all
-# only build dcr_tee
-./build.sh dcr_tee
-# only build dcr_api
-./build.sh dcr_api
-# only build dcr_monitor
-./build.sh dcr_monitor
-# only build jupyterlab_manatee
-./build.sh jupyterlab_manatee
-popd
+bazel query 'kind("oci_push", "//...")' | xargs -n1 bazel run
 ```
-If everything goes well, four docker images will be built. They are:
-* data-clean-room-base, built by `dcr_tee` directory.
-* data-clean-room-api.
-* data-clean-room-monitor.
-* scipy-notebook-with-dcr, built by `jupyterlab_manatee` directory.
+
+If you'd like to load the images in your local container runtime (e.g., Docker), you can use `oci_load` rules.
+
+```shell
+bazel query 'kind("oci_load", "//app/...")' | xargs -n1 bazel run
+```
+
+Find individual rules from corresponding `BUILD.bazel` files.
 
 ### Deploying 
+
 Deploy data clean room and jupyterhub by helm chart.
 ```shell 
 pushd deployment

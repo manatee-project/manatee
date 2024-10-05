@@ -12,4 +12,5 @@ gcp_zone = zone
 # artifact registries
 registry_api_image = "us-docker.pkg.dev/{}/dcr-{}-images/data-clean-room-api".format(gcp_project_id, deploy_env)
 registry_monitor_image = "us-docker.pkg.dev/{}/dcr-{}-images/data-clean-room-monitor".format(gcp_project_id, deploy_env)
+registry_jupyter_image = "us-docker.pkg.dev/{}/dcr-{}-images/scipy-notebook-with-dcr".format(gcp_project_id, deploy_env)
 registry_user_base_image = "us-docker.pkg.dev/{}/dcr-{}-user-images/data-clean-room-base".format(gcp_project_id, deploy_env)

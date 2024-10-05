@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_cross_binary")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_cross_binary", "go_library")
 load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
@@ -38,16 +38,20 @@ pkg_tar(
 pkg_tar(
     name = "app_config",
     srcs = ["//:config.yaml"],
-    package_dir = "/usr/local/dcr_conf/"
+    package_dir = "/usr/local/dcr_conf/",
 )
 
 oci_image(
     name = "image",
     base = "@distroless_base_linux_amd64",
     entrypoint = ["/api"],
-    tars = [":tar", ":app_config"],
+    tars = [
+        ":tar",
+        ":app_config",
+    ],
     visibility = ["//visibility:public"],
 )
+
 oci_load(
     name = "load_image",
     image = ":image",

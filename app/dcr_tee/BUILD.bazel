@@ -1,18 +1,33 @@
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
-load("@rules_oci//oci:defs.bzl", "oci_image")
 
 pkg_tar(
     name = "tar",
     srcs = [
-        "//app/dcr_tee/encryption:encryption",
-        "//app/dcr_tee/attestation:attestation",
+        "//app/dcr_tee/attestation",
+        "//app/dcr_tee/encryption",
     ],
+)
+
+# TODO: config needs to be provisioned at deployment, not at build time
+pkg_tar(
+    name = "app_config",
+    srcs = ["//:config.yaml"],
+    package_dir = "/usr/local/dcr_conf/",
 )
 
 oci_image(
     name = "image",
     base = "@scipy-notebook_linux_amd64",
-    workdir = "/app",
-    tars = [":tar"],
+    tars = [
+        ":tar",
+        ":app_config",
+    ],
     visibility = ["//visibility:public"],
+)
+
+oci_load(
+    name = "load_image",
+    image = ":image",
+    repo_tags = ["dcr_tee:latest"],
 )

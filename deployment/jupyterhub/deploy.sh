@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VAR_FILE="../../.env"
+VAR_FILE="../../env.bzl"
 if [ ! -f "$VAR_FILE" ]; then
     echo "Error: Variables file does not exist."
     exit 1
