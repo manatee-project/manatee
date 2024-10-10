@@ -11,13 +11,6 @@ py_console_script_binary(
 )
 
 py_console_script_binary(
-    name = "jupyter-labextension",
-    pkg = "@pydeps//jupyterlab",
-    script = "jupyter-labextension",
-    deps = all_requirements,
-)
-
-py_console_script_binary(
     name = "pyproject-build",
     pkg = "@pydeps//build",
     script = "pyproject-build",
@@ -57,10 +50,9 @@ genrule(
     outs = [dev_wheel_name],
     cmd = "\n".join([
         "export NODE=$$(realpath $(location @nodejs//:node_bin))",
-        "export PATH=$$(dirname $$NODE):$$PATH",
-        "export TEMP=$$(mktemp -d)",
         "export JLPM=$$(realpath $(location :jlpm))",
-        "export JLEXT=$$(realpath $(location :jupyter-labextension))",
+        "export PATH=$$(dirname $$NODE):$$(dirname $$JLPM):$$PATH",
+        "export TEMP=$$(mktemp -d)",
         "export PYBUILD=$$(realpath $(location :pyproject-build))",
         "export NPM_CONFIG_USERCONFIG=$$TEMP/npmrc",
 
@@ -70,15 +62,15 @@ genrule(
         "cd build",
 
         # yarn config
-        "$$JLPM config set globalFolder $$TEMP/npm",
-        "$$JLPM config set nodeLinker node-modules",
-        "$$JLPM config set npmRegistryServer \"https://registry.yarnpkg.com/\"",
+        "jlpm config set globalFolder $$TEMP/npm",
+        "jlpm config set nodeLinker node-modules",
+        "jlpm config set npmRegistryServer \"https://registry.yarnpkg.com/\"",
 
-        # jlpm install
-        "$$JLPM install >/dev/null 2>/dev/null",
-        # `jlpm build` doesn't work because it confuses the path for some reason.
-        # call jupyter-labextension directly so that Bazel can run it in the execroot.
-        "$$JLEXT build",
+        # yarn install
+        "jlpm install",
+
+        # build jupyter labextension
+        "jlpm run build",
 
         # build python package using pyproject.toml
         "$$PYBUILD",
@@ -89,7 +81,6 @@ genrule(
     ]),
     tools = [
         ":jlpm",
-        ":jupyter-labextension",
         ":pyproject-build",
         "@nodejs//:node_bin",
     ],
