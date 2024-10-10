@@ -94,6 +94,7 @@ mysql_password="mockpwd"         # mysql database password
 project_id="you project id"      # gcp project id
 project_number="1310xxxx092"     # gcp project number
 region=""                        # the region that the resources created in
+zone=""                          # the zone that the resources created in
 ```
 
 ### Preparing resources
