@@ -23,11 +23,6 @@ dev_wheel_name = "jupyterlab_manatee-0.0.0-py3-none-any.whl"
 genrule(
     name = "build_wheel",
     srcs = glob([
-        # pyproject-build
-        "pyproject.toml",
-        "LICENSE",
-        "README.md",
-        "VERSION",
         # python server
         "jupyterlab_manatee/*.py",
         "jupyter-config/**/*.json",
@@ -38,6 +33,12 @@ genrule(
         "style/*.js",
         "lib/**/*.js",
         "lib/**/*.ts",
+    ]) + [
+        # pyproject-build
+        "pyproject.toml",
+        "LICENSE",
+        "README.md",
+        "VERSION",
         # tsc project files
         "tsconfig.json",
         # npm dependencies
@@ -45,7 +46,7 @@ genrule(
         "yarn.lock",
         # yarnrc to use obsolete `node-modules` directory
         ".yarnrc.yml",
-    ]),
+    ],
     # always use 0.0.0 for dev version
     outs = [dev_wheel_name],
     cmd = "\n".join([

@@ -10,7 +10,7 @@ go_library(
 
 go_binary(
     name = "gscp",
-    embed = [":gscp_lib"],\
+    embed = [":gscp_lib"],
     goarch = "amd64",
     goos = "linux",
     visibility = ["//visibility:public"],

@@ -8,8 +8,8 @@ load(
     "gcp_region",
     "gcp_zone",
     "registry_api_image",
-    "registry_monitor_image",
     "registry_jupyter_image",
+    "registry_monitor_image",
     "registry_user_base_image",
 )
 
@@ -63,8 +63,8 @@ oci_push(
 oci_push(
     name = "push_jupyterlab_image",
     image = "//app/jupyterlab_manatee:image",
-    repository = registry_jupyter_image,
     remote_tags = ["latest"],
+    repository = registry_jupyter_image,
 )
 
 # push user images
