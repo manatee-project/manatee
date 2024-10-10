@@ -1,0 +1,68 @@
+###############################################################################
+# Bazel now uses Bzlmod by default to manage external dependencies.
+# Please consider migrating your external dependencies from WORKSPACE to MODULE.bazel.
+#
+# For more details, please check https://github.com/bazelbuild/bazel/issues/18958
+###############################################################################
+
+# rules_proto
+bazel_dep(name = "rules_proto", version = "6.0.2")
+
+# rules_python
+bazel_dep(name = "rules_python", version = "0.36.0")
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "pydeps",
+    python_version = "3.11",
+    requirements_lock = "//app/jupyterlab_manatee:requirements.txt",
+)
+use_repo(pip, "pydeps")
+
+# rules nodejs
+bazel_dep(name = "aspect_rules_js", version = "2.0.2")
+bazel_dep(name = "rules_nodejs", version = "6.2.0")
+
+node = use_extension("@rules_nodejs//nodejs:extensions.bzl", "node", dev_dependency = True)
+node.toolchain(
+    name = "nodejs",
+    node_version = "18.17.1",
+)
+use_repo(node, "nodejs", "nodejs_toolchains")
+
+# rules_oci
+bazel_dep(name = "rules_oci", version = "2.0.0")
+
+oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
+
+# pull base image for scipy-notebook
+oci.pull(
+    name = "scipy-notebook",
+    digest = "sha256:dc0f8efb6f288d5fc67a94715963282f8066cb3b93324131585edaa0a7a46780",
+    image = "quay.io/jupyter/scipy-notebook",
+    platforms = [
+        "linux/amd64",
+    ],
+)
+oci.pull(
+    name = "distroless_base",
+    digest = "sha256:ccaef5ee2f1850270d453fdf700a5392534f8d1a8ca2acda391fbb6a06b81c86",
+    image = "gcr.io/distroless/base",
+    platforms = [
+        "linux/amd64",
+        "linux/arm64",
+    ],
+)
+use_repo(
+    oci,
+    "distroless_base",
+    "distroless_base_linux_amd64",
+    "distroless_base_linux_arm64",
+    "scipy-notebook",
+    "scipy-notebook_linux_amd64",
+)
+
+# A multi-arch base image with variants, note that it won't work with just "linux/arm64"
+
+# rules_pkg
+bazel_dep(name = "rules_pkg", version = "1.0.1")

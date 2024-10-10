@@ -1,25 +1,29 @@
-FROM golang:1.22 as builder
-WORKDIR /app
-COPY ./biz ./biz
-COPY ./main.go ./main.go
-COPY ./router_gen.go ./router_gen.go
-COPY ./router.go ./router.go
-# TODO DELETE
-COPY ./github.com /go/pkg/mod/github.com
-COPY ./go.mod ./go.mod
-COPY ./go.sum ./go.sum
-RUN go build -o /app/dcr_api && chmod +x /app/dcr_api
+ARG BASE_IMAGE
+FROM $BASE_IMAGE
+ARG OUTPUTPATH
+ARG ENCRYPTED_FILENAME
+ARG ENCRYPTED_CLOUDSTORAGE_PATH
+ARG CREATOR
+ARG IMPERSONATION_SERVICE_ACCOUNT
+ARG JUPYTER_FILENAME
+ARG USER_WORKSPACE
+ARG CUSTOMTOKEN_CLOUDSTORAGE_PATH 
 
+ENV OUTPUTPATH=$OUTPUTPATH
+ENV ENCRYPTED_FILENAME=$ENCRYPTED_FILENAME
+ENV ENCRYPTED_CLOUDSTORAGE_PATH=$ENCRYPTED_CLOUDSTORAGE_PATH
+ENV IMPERSONATION_SERVICE_ACCOUNT=$IMPERSONATION_SERVICE_ACCOUNT
+ENV CREATOR=$CREATOR
+ENV JUPYTER_FILENAME=$JUPYTER_FILENAME
+ENV CUSTOMTOKEN_CLOUDSTORAGE_PATH=$CUSTOMTOKEN_CLOUDSTORAGE_PATH
 
-FROM debian:12.4
-RUN useradd dcrapi
-RUN apt-get update && apt-get install -y ca-certificates
-COPY ./conf /usr/local/dcr_conf
+WORKDIR /home/jovyan
+COPY $USER_WORKSAPCE/* ./
 
-WORKDIR /app
+LABEL "tee.launch_policy.allow_env_override"="USER_TOKEN,EXECUTION_STAGE,DEPLOYMENT_ENV,PROJECT_ID,KEY_LOCATION"
 
-RUN mkdir /app/data
-RUN chown -R dcrapi:dcrapi /app/data
-COPY --from=builder --chown=dcrapi:dcrapi /app/dcr_api /usr/local/bin/dcr_api
-USER dcrapi
-ENTRYPOINT dcr_api
+ENTRYPOINT jupyter nbconvert --execute --to notebook --inplace $JUPYTER_FILENAME --ExecutePreprocessor.timeout=-1 --allow-errors \
+    && hash=$(md5sum $JUPYTER_FILENAME | awk '{ print $1 }') \
+    && ./gscp $JUPYTER_FILENAME $OUTPUTPATH \
+    && ./gen_custom_token --nonce $hash \
+    && ./gscp custom_token $CUSTOMTOKEN_CLOUDSTORAGE_PATH

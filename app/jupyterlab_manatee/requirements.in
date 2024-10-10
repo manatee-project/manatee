@@ -1,0 +1,5 @@
+jupyterhub==4.0.2
+jupyterlab
+twine
+hatch
+build
