@@ -24,8 +24,6 @@ LABEL "tee.launch_policy.allow_env_override"="USER_TOKEN,EXECUTION_STAGE,DEPLOYM
 
 ENTRYPOINT jupyter nbconvert --execute --to notebook --inplace $JUPYTER_FILENAME --ExecutePreprocessor.timeout=-1 --allow-errors \
     && hash=$(md5sum $JUPYTER_FILENAME | awk '{ print $1 }') \
-    && gsutil cp $JUPYTER_FILENAME $OUTPUTPATH \
-    && encrypt_tool --user=$CREATOR --input=$JUPYTER_FILENAME --output=$ENCRYPTED_FILENAME --impersonation $IMPERSONATION_SERVICE_ACCOUNT \
-    && gsutil cp $ENCRYPTED_FILENAME $ENCRYPTED_CLOUDSTORAGE_PATH \
-    && gen_custom_token --nonce $hash \
-    && gsutil cp custom_token $CUSTOMTOKEN_CLOUDSTORAGE_PATH
+    && ./gscp $JUPYTER_FILENAME $OUTPUTPATH \
+    && ./gen_custom_token --nonce $hash \
+    && ./gscp custom_token $CUSTOMTOKEN_CLOUDSTORAGE_PATH

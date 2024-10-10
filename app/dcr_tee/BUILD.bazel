@@ -2,27 +2,32 @@ load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 pkg_tar(
-    name = "tar",
+    name = "gen_custom_token_tar",
     srcs = [
-        "//app/dcr_tee/attestation",
-        "//app/dcr_tee/encryption",
+        "//app/dcr_tee/attestation:gen_custom_token",
     ],
+    package_dir = "/home/jovyan",
 )
 
-# TODO: config needs to be provisioned at deployment, not at build time
 pkg_tar(
-    name = "app_config",
-    srcs = ["//:config.yaml"],
-    package_dir = "/usr/local/dcr_conf/",
+    name = "gscp_tar",
+    srcs = [
+        "//app/dcr_tee/util/gscp:gscp",
+    ],
+    package_dir = "/home/jovyan",
 )
 
 oci_image(
     name = "image",
     base = "@scipy-notebook_linux_amd64",
     tars = [
-        ":tar",
-        ":app_config",
+        ":gen_custom_token_tar",
+        ":gscp_tar"
     ],
+    # FIXME: for some reason, pkg_tar changes the owner of /home/jovyan.
+    # run it as root for now, but it will go away once we fully switch to distroless image
+    # https://github.com/manatee-project/manatee/issues/6
+    user = "root:root",
     visibility = ["//visibility:public"],
 )
 
