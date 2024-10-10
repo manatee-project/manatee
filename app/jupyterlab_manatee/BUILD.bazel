@@ -38,7 +38,6 @@ genrule(
         "pyproject.toml",
         "LICENSE",
         "README.md",
-        "VERSION",
         # tsc project files
         "tsconfig.json",
         # npm dependencies
