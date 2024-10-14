@@ -1,1 +1,4 @@
-.env
+*.bazel.lock
+.gitconfig
+bazel-*
+env.bzl

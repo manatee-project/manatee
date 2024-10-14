@@ -1,0 +1,120 @@
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("@pydeps//:requirements.bzl", "all_requirements")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
+load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
+
+py_console_script_binary(
+    name = "jlpm",
+    pkg = "@pydeps//jupyterlab",
+    script = "jlpm",
+    deps = all_requirements,
+)
+
+py_console_script_binary(
+    name = "pyproject-build",
+    pkg = "@pydeps//build",
+    script = "pyproject-build",
+    deps = all_requirements,
+)
+
+# always use 0.0.0 for dev wheel
+dev_wheel_name = "jupyterlab_manatee-0.0.0-py3-none-any.whl"
+
+genrule(
+    name = "build_wheel",
+    srcs = glob([
+        # python server
+        "jupyterlab_manatee/*.py",
+        "jupyter-config/**/*.json",
+        # frontend
+        "src/*.ts",
+        "src/*.tsx",
+        "style/*.css",
+        "style/*.js",
+        "lib/**/*.js",
+        "lib/**/*.ts",
+    ]) + [
+        # pyproject-build
+        "pyproject.toml",
+        "LICENSE",
+        "README.md",
+        # tsc project files
+        "tsconfig.json",
+        # npm dependencies
+        "package.json",
+        "yarn.lock",
+        # yarnrc to use obsolete `node-modules` directory
+        ".yarnrc.yml",
+    ],
+    # always use 0.0.0 for dev version
+    outs = [dev_wheel_name],
+    cmd = "\n".join([
+        "export NODE=$$(realpath $(location @nodejs//:node_bin))",
+        "export JLPM=$$(realpath $(location :jlpm))",
+        "export PATH=$$(dirname $$NODE):$$(dirname $$JLPM):$$PATH",
+        "export TEMP=$$(mktemp -d)",
+        "export PYBUILD=$$(realpath $(location :pyproject-build))",
+        "export NPM_CONFIG_USERCONFIG=$$TEMP/npmrc",
+
+        # copy all source code into build directory under execroot
+        "mkdir -p build",
+        "cp -L -R $$(dirname $(execpath package.json))/* build",
+        "cd build",
+
+        # yarn config
+        "jlpm config set globalFolder $$TEMP/npm",
+        "jlpm config set nodeLinker node-modules",
+        "jlpm config set npmRegistryServer \"https://registry.yarnpkg.com/\"",
+
+        # yarn install
+        "jlpm install",
+
+        # build jupyter labextension
+        "jlpm run build",
+
+        # build python package using pyproject.toml
+        "$$PYBUILD",
+        "cd ..",
+
+        # copy output
+        "cp build/dist/jupyterlab_manatee-*.whl $(location {})".format(dev_wheel_name),
+    ]),
+    tools = [
+        ":jlpm",
+        ":pyproject-build",
+        "@nodejs//:node_bin",
+    ],
+    # toolchains=["@rules_python//python:current_py_toolchain"],
+)
+
+pkg_tar(
+    name = "dev_wheel_tar",
+    srcs = [
+        dev_wheel_name,
+    ],
+    package_dir = "/manatee/",
+)
+
+pkg_tar(
+    name = "hooks_tar",
+    srcs = [
+        "20custom-hook.sh",
+    ],
+    package_dir = "/usr/local/bin/before-notebook.d/",
+)
+
+oci_image(
+    name = "image",
+    base = "@scipy-notebook_linux_amd64",
+    tars = [
+        ":dev_wheel_tar",
+        ":hooks_tar",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+oci_load(
+    name = "load_image",
+    image = ":image",
+    repo_tags = ["jupyterlab_manatee:latest"],
+)

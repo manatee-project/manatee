@@ -2,10 +2,6 @@
 
 This is an open-source JupyterLab extension for ManaTEE framework
 
-## Building
-
-Run the `./build.sh` script to build the jupyterhub single user docker image. When the script finished, the docker image `scipy-notebook-with-dcr` will be pushed to the gcp docker repository. Then you can turn to deploy the jupyterhub in the `deployment` directory.
-
 ## Requirements
 
 - JupyterLab >= 4.0.0

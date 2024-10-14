@@ -1,0 +1,53 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+
+go_library(
+    name = "dcr_monitor_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/manatee-project/manatee/app/dcr_monitor",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//app/dcr_monitor/client",
+        "//app/dcr_monitor/monitor",
+        "//pkg/config",
+        "@com_github_cloudwego_hertz//pkg/common/hlog",
+    ],
+)
+
+go_binary(
+    name = "dcr_monitor",
+    embed = [":dcr_monitor_lib"],
+    goarch = "amd64",
+    goos = "linux",
+    visibility = ["//visibility:public"],
+)
+
+pkg_tar(
+    name = "tar",
+    srcs = [":dcr_monitor"],
+)
+
+# TODO: config needs to be provisioned at deployment, not at build time
+pkg_tar(
+    name = "app_config",
+    srcs = ["//:config.yaml"],
+    package_dir = "/usr/local/dcr_conf/",
+)
+
+oci_image(
+    name = "image",
+    base = "@distroless_base_linux_amd64",
+    entrypoint = ["/dcr_monitor"],
+    tars = [
+        ":tar",
+        ":app_config",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+oci_load(
+    name = "load_image",
+    image = ":image",
+    repo_tags = ["dcr_monitor:latest"],
+)

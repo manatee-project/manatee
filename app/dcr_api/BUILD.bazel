@@ -1,0 +1,75 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+
+go_binary(
+    name = "api",
+    embed = [":dcr_api_lib"],
+    goarch = "amd64",
+    goos = "linux",
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "dcr_api_lib",
+    srcs = [
+        "main.go",
+        "router.go",
+        "router_gen.go",
+    ],
+    importpath = "github.com/manatee-project/manatee/app/dcr_api",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//app/dcr_api/biz/dal",
+        "//app/dcr_api/biz/handler",
+        "//app/dcr_api/biz/router",
+        "//pkg/config",
+        "@com_github_cloudwego_hertz//pkg/app/server",
+        "@com_github_cloudwego_hertz//pkg/common/hlog",
+    ],
+)
+
+pkg_tar(
+    name = "tar",
+    srcs = [":api"],
+)
+
+# TODO: config needs to be provisioned at deployment, not at build time
+pkg_tar(
+    name = "app_config",
+    srcs = ["//:config.yaml"],
+    package_dir = "/usr/local/dcr_conf/",
+)
+
+# TODO: remove app_data and dockerfile when we stop using file system for building kaniko context
+# See https://github.com/manatee-project/manatee/issues/3
+pkg_tar(
+    name = "app_data",
+    empty_dirs = ["data"],
+    package_dir = "/app",
+)
+
+pkg_tar(
+    name = "dockerfile",
+    srcs = ["Dockerfile"],
+    package_dir = "/usr/local/dcr_conf/",
+)
+
+oci_image(
+    name = "image",
+    base = "@distroless_base_linux_amd64",
+    entrypoint = ["/api"],
+    tars = [
+        ":tar",
+        ":app_config",
+        ":app_data",
+        ":dockerfile",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+oci_load(
+    name = "load_image",
+    image = ":image",
+    repo_tags = ["dcr_api:latest"],
+)
