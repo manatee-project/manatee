@@ -19,6 +19,12 @@ py_console_script_binary(
     script = "jlpm",
     deps = all_requirements,
 )
+py_console_script_binary(
+    name = "jupyter",
+    pkg = "@pydeps//jupyterlab",
+    script = "jupyter",
+    deps = all_requirements,
+)
 
 py_console_script_binary(
     name = "pyproject-build",
@@ -61,7 +67,8 @@ genrule(
     cmd = "\n".join([
         "export NODE=$$(realpath $(location @nodejs//:node_bin))",
         "export JLPM=$$(realpath $(location :jlpm))",
-        "export PATH=$$(dirname $$NODE):$$(dirname $$JLPM):$$PATH",
+        "export JUPYTER=$$(realpath $(location :jupyter))",
+        "export PATH=$$(dirname $$NODE):$$(dirname $$JLPM):$$(dirname $$JUPYTER):$$PATH",
         "export TEMP=$$(mktemp -d)",
         "export PYBUILD=$$(realpath $(location :pyproject-build))",
         "export NPM_CONFIG_USERCONFIG=$$TEMP/npmrc",
@@ -91,6 +98,7 @@ genrule(
     ]),
     tools = [
         ":jlpm",
+        ":jupyter",
         ":pyproject-build",
         "@nodejs//:node_bin",
     ],
