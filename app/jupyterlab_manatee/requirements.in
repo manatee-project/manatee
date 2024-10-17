@@ -3,3 +3,4 @@ jupyterlab
 twine
 hatch
 build
+setuptools

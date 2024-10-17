@@ -16,6 +16,7 @@ pip.parse(
     hub_name = "pydeps",
     python_version = "3.11",
     requirements_lock = "//app/jupyterlab_manatee:requirements.txt",
+    requirements_linux = "//app/jupyterlab_manatee:requirements_linux.txt"
 )
 use_repo(pip, "pydeps")
 
