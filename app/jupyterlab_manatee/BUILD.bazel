@@ -21,8 +21,8 @@ py_console_script_binary(
 )
 py_console_script_binary(
     name = "jupyter",
-    pkg = "@pydeps//jupyterlab",
-    script = "jupyter-lab",
+    pkg = "@pydeps//jupyter_core",
+    script = "jupyter",
     deps = all_requirements,
 )
 
