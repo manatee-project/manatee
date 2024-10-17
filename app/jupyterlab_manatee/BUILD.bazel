@@ -19,6 +19,14 @@ py_console_script_binary(
     script = "jlpm",
     deps = all_requirements,
 )
+# needed for "jupyter labextension" command invoked by jlpm
+py_console_script_binary(
+    name = "jupyter-labextension",
+    pkg = "@pydeps//jupyterlab",
+    script = "jupyter-labextension",
+    deps = all_requirements,
+)
+# needed for "jupyter" command invoked by jlpm
 py_console_script_binary(
     name = "jupyter",
     pkg = "@pydeps//jupyter_core",
@@ -83,8 +91,8 @@ genrule(
         "jlpm config set nodeLinker node-modules",
         "jlpm config set npmRegistryServer \"https://registry.yarnpkg.com/\"",
 
-        # yarn install
-        "jlpm install",
+        # yarn install (print log only on error)
+        "output=$$(jlpm install 2>&1) || echo $$output",
 
         # build jupyter labextension
         "jlpm run build",
@@ -99,6 +107,7 @@ genrule(
     tools = [
         ":jlpm",
         ":jupyter",
+        ":jupyter-labextension",
         ":pyproject-build",
         "@nodejs//:node_bin",
     ],
