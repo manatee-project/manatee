@@ -17,28 +17,24 @@ py_console_script_binary(
     name = "jlpm",
     pkg = "@pydeps//jupyterlab",
     script = "jlpm",
-    deps = all_requirements,
 )
 # needed for "jupyter labextension" command invoked by jlpm
 py_console_script_binary(
     name = "jupyter-labextension",
     pkg = "@pydeps//jupyterlab",
     script = "jupyter-labextension",
-    deps = all_requirements,
 )
 # needed for "jupyter" command invoked by jlpm
 py_console_script_binary(
     name = "jupyter",
     pkg = "@pydeps//jupyter_core",
     script = "jupyter",
-    deps = all_requirements,
 )
 
 py_console_script_binary(
     name = "pyproject-build",
     pkg = "@pydeps//build",
     script = "pyproject-build",
-    deps = all_requirements,
 )
 
 # always use 0.0.0 for dev wheel
