@@ -38,25 +38,23 @@ type Cluster struct {
 }
 
 type GCPConfig struct {
-	Project                    string   `yaml:"Project"`
-	ProjectNumber              uint64   `yaml:"ProjectNumber"`
-	Repository                 string   `yaml:"Repository"`
-	HubBucket                  string   `yaml:"HubBucket"`
-	CvmServiceAccount          string   `yaml:"CvmServiceAccount"`
-	Zone                       string   `yaml:"Zone"`
-	Region                     string   `yaml:"Region"`
-	Cpus                       int      `yaml:"CPUs"`
-	DiskSize                   int      `yaml:"DiskSize"`
-	DebugInstanceImageSource   string   `yaml:"DebugInstanceImageSource"`
-	ReleaseInstanceImageSource string   `yaml:"ReleaseInstanceImageSource"`
-	Debug                      bool     `yaml:"Debug"`
-	KeyRing                    string   `yaml:"KeyRing"`
-	WorkloadIdentityPool       string   `yaml:"WorkloadIdentityPool"`
-	IssuerUri                  string   `yaml:"IssuerUri"`
-	AllowedAudiences           []string `yaml:"AllowedAudiences"`
-	Network                    string   `yaml:"Network"`
-	Subnetwork                 string   `yaml:"Subnetwork"`
-	Env                        string   `yaml:"Env"`
+	Project              string   `yaml:"Project"`
+	ProjectNumber        uint64   `yaml:"ProjectNumber"`
+	Repository           string   `yaml:"Repository"`
+	HubBucket            string   `yaml:"HubBucket"`
+	CvmServiceAccount    string   `yaml:"CvmServiceAccount"`
+	Zone                 string   `yaml:"Zone"`
+	Region               string   `yaml:"Region"`
+	Cpus                 int      `yaml:"CPUs"`
+	DiskSize             int      `yaml:"DiskSize"`
+	Debug                bool     `yaml:"Debug"`
+	KeyRing              string   `yaml:"KeyRing"`
+	WorkloadIdentityPool string   `yaml:"WorkloadIdentityPool"`
+	IssuerUri            string   `yaml:"IssuerUri"`
+	AllowedAudiences     []string `yaml:"AllowedAudiences"`
+	Network              string   `yaml:"Network"`
+	Subnetwork           string   `yaml:"Subnetwork"`
+	Env                  string   `yaml:"Env"`
 }
 
 type APIConfig struct {
@@ -158,9 +156,9 @@ func GetEnv() string {
 
 func GetTEEImageSource() string {
 	if Conf.CloudProvider.GCP.Debug {
-		return Conf.CloudProvider.GCP.DebugInstanceImageSource
+		return "projects/confidential-space-images/global/images/confidential-space-debug-240200"
 	}
-	return Conf.CloudProvider.GCP.ReleaseInstanceImageSource
+	return "projects/confidential-space-images/global/images/confidential-space-240200"
 }
 
 func GetCvmDiskSize() int64 {

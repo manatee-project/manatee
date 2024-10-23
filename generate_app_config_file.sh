@@ -23,8 +23,6 @@ CloudProvider:
     Region: "${GCP_REGION}"
     CPUs: 2
     DiskSize: 50
-    DebugInstanceImageSource: "projects/confidential-space-images/global/images/confidential-space-debug-240200"
-    ReleaseInstanceImageSource: "projects/confidential-space-images/global/images/confidential-space-240200"
     Debug: false
     KeyRing: "dcr-${DEPLOY_ENV}-keyring"
     WorkloadIdentityPool: "dcr-${DEPLOY_ENV}-pool"
