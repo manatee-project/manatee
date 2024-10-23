@@ -25,8 +25,6 @@ CloudProvider:
     Debug: false
     KeyRing: "dcr-${DEPLOY_ENV}-keyring"
     WorkloadIdentityPool: "dcr-${DEPLOY_ENV}-pool"
-    IssuerUri: "https://confidentialcomputing.googleapis.com/"
-    AllowedAudiences: ["https://sts.googleapis.com"]
     Network: "dcr-${DEPLOY_ENV}-network"
     Subnetwork: "dcr-${DEPLOY_ENV}-subnetwork"
     Env: ${DEPLOY_ENV}

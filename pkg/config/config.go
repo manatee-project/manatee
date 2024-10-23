@@ -38,23 +38,21 @@ type Cluster struct {
 }
 
 type GCPConfig struct {
-	Project              string   `yaml:"Project"`
-	ProjectNumber        uint64   `yaml:"ProjectNumber"`
-	Repository           string   `yaml:"Repository"`
-	HubBucket            string   `yaml:"HubBucket"`
-	CvmServiceAccount    string   `yaml:"CvmServiceAccount"`
-	Zone                 string   `yaml:"Zone"`
-	Region               string   `yaml:"Region"`
-	Cpus                 int      `yaml:"CPUs"`
-	DiskSize             int      `yaml:"DiskSize"`
-	Debug                bool     `yaml:"Debug"`
-	KeyRing              string   `yaml:"KeyRing"`
-	WorkloadIdentityPool string   `yaml:"WorkloadIdentityPool"`
-	IssuerUri            string   `yaml:"IssuerUri"`
-	AllowedAudiences     []string `yaml:"AllowedAudiences"`
-	Network              string   `yaml:"Network"`
-	Subnetwork           string   `yaml:"Subnetwork"`
-	Env                  string   `yaml:"Env"`
+	Project              string `yaml:"Project"`
+	ProjectNumber        uint64 `yaml:"ProjectNumber"`
+	Repository           string `yaml:"Repository"`
+	HubBucket            string `yaml:"HubBucket"`
+	CvmServiceAccount    string `yaml:"CvmServiceAccount"`
+	Zone                 string `yaml:"Zone"`
+	Region               string `yaml:"Region"`
+	Cpus                 int    `yaml:"CPUs"`
+	DiskSize             int    `yaml:"DiskSize"`
+	Debug                bool   `yaml:"Debug"`
+	KeyRing              string `yaml:"KeyRing"`
+	WorkloadIdentityPool string `yaml:"WorkloadIdentityPool"`
+	Network              string `yaml:"Network"`
+	Subnetwork           string `yaml:"Subnetwork"`
+	Env                  string `yaml:"Env"`
 }
 
 type APIConfig struct {
@@ -100,14 +98,6 @@ func GetCvmServiceAccountEmail() string {
 
 func IsDebug() bool {
 	return Conf.CloudProvider.GCP.Debug
-}
-
-func GetIssuerUri() string {
-	return Conf.CloudProvider.GCP.IssuerUri
-}
-
-func GetAllowedAudiences() []string {
-	return Conf.CloudProvider.GCP.AllowedAudiences
 }
 
 func GetCreateWipProviderUrl(provider string) string {

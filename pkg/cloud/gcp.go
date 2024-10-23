@@ -318,8 +318,8 @@ func workloadIdentityRequestBody(name string, imageDigest string) ([]byte, error
 	provider := WorkloadIdentityPoolProvider{
 		DisplayName: name,
 		OIDC: OIDC{
-			IssuerUri:        config.GetIssuerUri(),
-			AllowedAudiences: config.GetAllowedAudiences(),
+			IssuerUri:        "https://confidentialcomputing.googleapis.com/",
+			AllowedAudiences: []string{"https://sts.googleapis.com"},
 		},
 		AttributeMapping: map[string]string{
 			"google.subject": "assertion.sub",
