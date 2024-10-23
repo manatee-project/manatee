@@ -17,19 +17,14 @@ CloudProvider:
     ProjectNumber: "${GCP_PROJECT_NUMBER}"
     Repository: "dcr-${DEPLOY_ENV}-user-images"
     HubBucket: "dcr-${DEPLOY_ENV}-hub"
-    InputBucket: "dcr-${DEPLOY_ENV}-input"
     CvmServiceAccount: "dcr-${DEPLOY_ENV}-cvm-sa"
     Zone: "${GCP_ZONE}"
     Region: "${GCP_REGION}"
     CPUs: 2
     DiskSize: 50
-    DebugInstanceImageSource: "projects/confidential-space-images/global/images/confidential-space-debug-240200"
-    ReleaseInstanceImageSource: "projects/confidential-space-images/global/images/confidential-space-240200"
     Debug: false
     KeyRing: "dcr-${DEPLOY_ENV}-keyring"
     WorkloadIdentityPool: "dcr-${DEPLOY_ENV}-pool"
-    IssuerUri: "https://confidentialcomputing.googleapis.com/"
-    AllowedAudiences: ["https://sts.googleapis.com"]
     Network: "dcr-${DEPLOY_ENV}-network"
     Subnetwork: "dcr-${DEPLOY_ENV}-subnetwork"
     Env: ${DEPLOY_ENV}
