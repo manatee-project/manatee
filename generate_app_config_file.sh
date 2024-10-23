@@ -17,7 +17,6 @@ CloudProvider:
     ProjectNumber: "${GCP_PROJECT_NUMBER}"
     Repository: "dcr-${DEPLOY_ENV}-user-images"
     HubBucket: "dcr-${DEPLOY_ENV}-hub"
-    InputBucket: "dcr-${DEPLOY_ENV}-input"
     CvmServiceAccount: "dcr-${DEPLOY_ENV}-cvm-sa"
     Zone: "${GCP_ZONE}"
     Region: "${GCP_REGION}"
