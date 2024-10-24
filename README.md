@@ -1,4 +1,4 @@
-<img width=80% src="logo.png">
+<img width=100% src="logo.png">
 
 # ManaTEE Project
 
