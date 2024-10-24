@@ -1,3 +1,5 @@
+<img width=100% src="logo.png">
+
 # ManaTEE Project
 
 > Note: we are releasing an alpha version, which may miss some necessary features. 
