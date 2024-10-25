@@ -78,19 +78,13 @@ We are releasing an alpha version, which may miss some necessary features.
 
 ## Deploying in Google Cloud Platform (GCP)
 ### Defining environment variables
-First, determine whether there are multiple developers deploying simultaneously in your environment. If yes, use the multiple users template, otherwise use the single user template. 
+First, copy the example environment variables template to the existing directory.
 ```
-# multiple users
-cp .env.multiusers env.bzl
-```
-```
-# single user
-cp .env.singleuser env.bzl
+cp .env.example env.bzl
 ```
 Edit the variables in `env.bzl`. The `env.bzl` file is the one that really takes effect, the other files are just templates. The double quotes around a variable name are needed. For example:
 ```
 env="dev"                        # the deployment environment
-username="mock developer name"   # the developer name
 mysql_username="mockname"        # mysql database username 
 mysql_password="mockpwd"         # mysql database password
 project_id="you project id"      # gcp project id

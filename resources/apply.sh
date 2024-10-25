@@ -38,6 +38,10 @@ if ! gsutil ls gs://dcr-tf-state-$env > /dev/null 2>&1; then
   gsutil mb -l us gs://dcr-tf-state-$env
 fi
 
+account=$(gcloud config get-value account)
+username=${account%%@*}
+username=${username%%.*} # remove . in the username
+
 pushd gcp
 
 cat << EOF > backend.tf
@@ -50,6 +54,7 @@ terraform {
 EOF
 
 cp $VAR_FILE terraform.tfvars
+echo -e "\nusername=\"$username\"\n" >> terraform.tfvars
 terraform init -reconfigure
 terraform apply
 popd 
@@ -60,6 +65,7 @@ gcloud container clusters get-credentials dcr-$env-cluster --zone $zone --projec
 
 pushd kubernetes
 cp $VAR_FILE terraform.tfvars
+echo -e "\nusername=\"$username\"\n" >> terraform.tfvars
 terraform init -reconfigure
 terraform apply
 popd 

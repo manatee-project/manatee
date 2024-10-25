@@ -22,6 +22,10 @@ fi
 VAR_FILE=$(realpath $VAR_FILE)
 source $VAR_FILE
 
+account=$(gcloud config get-value account)
+username=${account%%@*}
+username=${username%%.*} # remove . in the username
+
 tag="latest"
 if [ -z "$username" ]; then
     helm_name="jupyterhub-helm-$env"
