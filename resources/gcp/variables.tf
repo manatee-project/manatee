@@ -30,6 +30,11 @@ variable "region" {
   description = "Region to create the gcp resources"
 }
 
+variable "zone" {
+  type        = string
+  description = "Zone to create the gcp resources"
+}
+
 variable "project_id" {
   type        = string
   description = "The GCP project ID"
@@ -60,12 +65,4 @@ variable "num_nodes" {
   type        = number
   description = "Number of nodes to create in the GKE cluster"
   default     = 2
-}
-
-locals {
-  zone = "${var.region}-a"
-}
-
-locals {
-
 }
