@@ -50,6 +50,11 @@ variable "region" {
   description = "Region to create the gcp resources"
 }
 
+variable "zone" {
+  type        = string
+  description = "Zone to create the gcp resources"
+}
+
 locals {
   gcp_dcr_pod_sa = "dcr-${var.env}-pod-sa"
   gcp_jupyter_pod_sa = "jupyter-${var.env}-pod-sa"

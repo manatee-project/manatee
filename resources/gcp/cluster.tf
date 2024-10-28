@@ -24,7 +24,7 @@ resource "google_container_cluster" "dcr_cluster" {
   project = var.project_id
   name    = local.cluster_name
   # if use region, each zone will create a node
-  location = local.zone
+  location = var.zone
   # We can't create a cluster with no node pool defined, but we want to only use
   # separately managed node pools. So we create the smallest possible default
   # node pool and immediately delete it.
@@ -48,7 +48,7 @@ resource "google_container_cluster" "dcr_cluster" {
 resource "google_container_node_pool" "dcr_node_pool" {
   project    = var.project_id
   name       = local.node_pool_name
-  location   = local.zone
+  location   = var.zone
   cluster    = google_container_cluster.dcr_cluster.name
   node_count = var.num_nodes
 
