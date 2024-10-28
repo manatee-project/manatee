@@ -22,20 +22,11 @@ fi
 VAR_FILE=$(realpath $VAR_FILE)
 source $VAR_FILE
 
-account=$(gcloud config get-value account)
-username=${account%%@*}
-username=${username%%.*} # remove . in the username
+namespace=$1
 
 tag="latest"
-if [ -z "$username" ]; then
-    helm_name="jupyterhub-helm-$env"
-    k8s_namespace="jupyterhub-$env"
-    api="http://data-clean-room.data-clean-room-$env.svc.cluster.local"
-else
-    helm_name="jupyterhub-helm-$username"
-    k8s_namespace="jupyterhub-$username"
-    api="http://data-clean-room.data-clean-room-$username.svc.cluster.local"
-fi
+helm_name="jupyterhub-helm"
+api="http://data-clean-room.$namespace.svc.cluster.local"
 
 service_account="jupyter-k8s-pod-sa"
 docker_repo="dcr-${env}-images"
@@ -54,9 +45,9 @@ helm upgrade --cleanup-on-fail \
     --set singleuser.extraEnv.KEY_LOCALTION=${region} \
     --set singleuser.networkPolicy.enabled=false \
     --install $helm_name jupyterhub/jupyterhub \
-    --namespace ${k8s_namespace} \
+    --namespace ${namespace} \
     --version=3.0.3 \
     --values config.yaml
 
 echo "Deployment Completed."
-echo "Try 'kubectl --namespace=$k8s_namespace get service proxy-public' to obtain external IP"
+echo "Try 'kubectl --namespace=$namespace get service proxy-public' to obtain external IP"

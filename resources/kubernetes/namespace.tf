@@ -14,21 +14,10 @@
  * limitations under the License.
  */
 
-locals {
-    dcr_k8s_namespace = var.username != "" ? "data-clean-room-${var.username}" : "data-clean-room-${var.env}"
-    jupyter_k8s_namespace = var.username != "" ? "jupyterhub-${var.username}" : "jupyterhub-${var.env}"
-}
-
 resource "kubernetes_namespace" "data_clean_room_k8s_namespace" {
   metadata {
-    name = local.dcr_k8s_namespace
+    name = var.namespace
   }
 
   depends_on = [ kubernetes_cluster_role_binding.cluster_admin_binding ]
-}
-
-resource "kubernetes_namespace" "jupyterhub_k8s_namespace" {
-  metadata {
-    name = local.jupyter_k8s_namespace
-  }
 }

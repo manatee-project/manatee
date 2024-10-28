@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-variable "username" {
+variable "namespace" {
   type        = string
-  description = "Username to postfix resources with"
+  description = "Kubernetes namespaces"
   default = ""
 }
 

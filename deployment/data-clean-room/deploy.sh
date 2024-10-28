@@ -22,18 +22,10 @@ fi
 VAR_FILE=$(realpath $VAR_FILE)
 source $VAR_FILE
 
-account=$(gcloud config get-value account)
-username=${account%%@*}
-username=${username%%.*} # remove . in the username
+namespace=$1
 
 tag="latest"
-if [ -z "$username" ]; then
-    helm_name="data-clean-room-helm-$env"
-    k8s_namespace="data-clean-room-$env"
-else
-    helm_name="data-clean-room-helm-$username"
-    k8s_namespace="data-clean-room-$username"
-fi
+helm_name="data-clean-room-helm"
 
 connection_name="${project_id}:${region}:dcr-${env}-db-instance"
 service_account="dcr-k8s-pod-sa"
@@ -48,7 +40,7 @@ helm upgrade --cleanup-on-fail \
     --set monitorImage.tag=${tag} \
     --set serviceAccount.name=${service_account} \
     --set cloudSql.connection_name=${connection_name} \
-    --set namespace=${k8s_namespace} \
+    --set namespace=${namespace} \
     --install $helm_name ./ \
-    --namespace $k8s_namespace \
+    --namespace $namespace \
     --values config.yaml
