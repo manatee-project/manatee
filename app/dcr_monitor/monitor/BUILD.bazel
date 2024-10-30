@@ -2,10 +2,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "monitor",
-    srcs = [
-        "instance.go",
-        "kaniko.go",
-    ],
+    srcs = ["kaniko.go"],
     importpath = "github.com/manatee-project/manatee/app/dcr_monitor/monitor",
     visibility = ["//visibility:public"],
     deps = [

@@ -1,16 +1,15 @@
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 load("@pydeps//:requirements.bzl", "all_requirements")
 load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
-load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 
 compile_pip_requirements(
     # base name for generated targets, typically "requirements".
     name = "requirements",
     requirements_in = "requirements.in",
+    requirements_linux = "requirements_linux.txt",
     requirements_txt = "requirements.txt",
-    requirements_linux = "requirements_linux.txt"
-
 )
 
 py_console_script_binary(
@@ -18,12 +17,14 @@ py_console_script_binary(
     pkg = "@pydeps//jupyterlab",
     script = "jlpm",
 )
+
 # needed for "jupyter labextension" command invoked by jlpm
 py_console_script_binary(
     name = "jupyter-labextension",
     pkg = "@pydeps//jupyterlab",
     script = "jupyter-labextension",
 )
+
 # needed for "jupyter" command invoked by jlpm
 py_console_script_binary(
     name = "jupyter",

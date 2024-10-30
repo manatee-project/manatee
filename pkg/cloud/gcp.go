@@ -459,67 +459,6 @@ func covertInstanceStatus(s *string) int {
 	}
 }
 
-func (g *GcpService) ListAllInstances() ([]*Instance, error) {
-	ctx := g.ctx
-	c, err := compute.NewInstancesRESTClient(ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create instance rest client")
-	}
-	defer c.Close()
-
-	req := &computepb.ListInstancesRequest{
-		Zone:    config.GetZone(),
-		Project: config.GetProject(),
-	}
-	it := c.List(ctx, req)
-	instances := make([]*Instance, 0)
-	for {
-		resp, err := it.Next()
-		if errors.Is(err, iterator.Done) {
-			break
-		}
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to list instances")
-		}
-		metadataInfo := resp.GetMetadata()
-		labelMap := convertLabelToMap(metadataInfo.Items)
-		instance := &Instance{
-			Name:         *resp.Name,
-			Status:       covertInstanceStatus(resp.Status),
-			UUID:         labelMap["JOB-UUID"],
-			Token:        labelMap["tee-env-USER_TOKEN"],
-			CreationTime: *resp.CreationTimestamp,
-		}
-		instances = append(instances, instance)
-	}
-	return instances, nil
-}
-
-func (g *GcpService) DeleteInstance(instanceName string) error {
-	projectId := config.GetProject()
-	zone := config.GetZone()
-
-	ctx := g.ctx
-	c, err := compute.NewInstancesRESTClient(ctx)
-	if err != nil {
-		return errors.Wrap(err, "failed to create gcp instance rest client")
-	}
-	defer c.Close()
-	req := &computepb.DeleteInstanceRequest{
-		Project:  projectId,
-		Zone:     zone,
-		Instance: instanceName,
-	}
-	op, err := c.Delete(ctx, req)
-	if err != nil {
-		return errors.Wrap(err, "failed to delete instance")
-	}
-	if err = op.Wait(ctx); err != nil {
-		return errors.Wrap(err, "failed to wait for delete operation to complete")
-	}
-	return nil
-}
-
 func (g *GcpService) getTokenForStage2(string) (string, error) {
 	// TODO: add authentication for statge 2
 	return "", nil
