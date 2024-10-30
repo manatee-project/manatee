@@ -41,7 +41,7 @@ resource "kubernetes_service_account" "k8s_jupyter_pod_service_account" {
     }
   }
   automount_service_account_token = true
-  depends_on                      = [kubernetes_namespace.jupyterhub_k8s_namespace]
+  depends_on                      = [kubernetes_namespace.data_clean_room_k8s_namespace]
 }
 
 
