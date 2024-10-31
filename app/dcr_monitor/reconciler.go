@@ -47,16 +47,21 @@ func (r *ReconcilerImpl) Reconcile(ctx context.Context) {
 	for _, j := range jobs {
 		// debug log
 		hlog.Infof("[Reconciler] job %s in status %d", j.UUID, j.JobStatus)
-		err := r.reconcileJob(j)
+		err := r.updateJobStatus(j)
 		if err != nil {
 			hlog.Errorf("[Reconciler] failed to reconcile job %s: %v", j.UUID, err)
 			continue
 		}
 		db.UpdateJob(j)
+
+		// clean up instance if necessary
+		if j.JobStatus == int(job.JobStatus_VMFinished) || j.JobStatus == int(job.JobStatus_VMFailed) {
+			r.tee.CleanUpInstance(j.InstanceName)
+		}
 	}
 }
 
-func (r *ReconcilerImpl) reconcileJob(j *db.Job) error {
+func (r *ReconcilerImpl) updateJobStatus(j *db.Job) error {
 
 	// if job was not finished for more than the timeout, mark it as error
 	if time.Since(j.CreatedAt) > 6*time.Hour {
@@ -86,9 +91,5 @@ func (r *ReconcilerImpl) reconcileJob(j *db.Job) error {
 		}
 	}
 
-	// clean up instance if necessary
-	if j.JobStatus == int(job.JobStatus_VMFinished) || j.JobStatus == int(job.JobStatus_VMFailed) {
-		r.tee.CleanUpInstance(j.InstanceName)
-	}
 	return nil
 }

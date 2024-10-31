@@ -35,7 +35,7 @@ type testCase struct {
 	cleanUpInstance   bool
 }
 
-func TestReconcileJob(t *testing.T) {
+func TestUpdateJobStatus(t *testing.T) {
 	tee := &FakeTEEProvider{
 		instances: map[string]string{
 			"instance1": "RUNNING",
@@ -57,7 +57,6 @@ func TestReconcileJob(t *testing.T) {
 				},
 			},
 			expectedJobStatus: int(job.JobStatus_VMRunning),
-			cleanUpInstance:   false,
 		},
 		{
 			job: &db.Job{
@@ -70,7 +69,6 @@ func TestReconcileJob(t *testing.T) {
 				},
 			},
 			expectedJobStatus: int(job.JobStatus_VMRunning),
-			cleanUpInstance:   false,
 		},
 		{
 			job: &db.Job{
@@ -83,7 +81,6 @@ func TestReconcileJob(t *testing.T) {
 				},
 			},
 			expectedJobStatus: int(job.JobStatus_VMFinished),
-			cleanUpInstance:   true,
 		},
 		{
 			job: &db.Job{
@@ -96,7 +93,6 @@ func TestReconcileJob(t *testing.T) {
 				},
 			},
 			expectedJobStatus: int(job.JobStatus_VMFailed),
-			cleanUpInstance:   true,
 		},
 	}
 
@@ -106,12 +102,8 @@ func TestReconcileJob(t *testing.T) {
 	}
 
 	for _, tc := range tc {
-		err := reconciler.reconcileJob(tc.job)
+		err := reconciler.updateJobStatus(tc.job)
 		assert.Nil(t, err)
 		assert.DeepEqual(t, tc.expectedJobStatus, tc.job.JobStatus)
-
-		// check if instance cleaned up after reconcile
-		_, ok := tee.instances[tc.job.InstanceName]
-		assert.NotEqual(t, tc.cleanUpInstance, ok)
 	}
 }
