@@ -60,10 +60,6 @@ spec:
               value: {{ .Values.mysql.host }}
             - name: MYSQL_PORT
               value:  {{ .Values.mysql.port | quote }}
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 8080
           {{- with .Values.volumeMounts }}
           volumeMounts:
             {{- toYaml . | nindent 12 }}

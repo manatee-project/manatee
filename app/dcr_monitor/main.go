@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
@@ -14,13 +13,6 @@ import (
 )
 
 func main() {
-	// Set up HTTP server for liveness probe
-	http.HandleFunc("/healthz", healthHandler)
-	go func() {
-		if err := http.ListenAndServe(":8080", nil); err != nil {
-			fmt.Println("Failed to start HTTP server:", err)
-		}
-	}()
 
 	err := config.InitConfig()
 	if err != nil {
@@ -48,10 +40,4 @@ func main() {
 
 		time.Sleep(10 * time.Second)
 	}
-}
-
-// healthHandler handles the liveness probe
-func healthHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("ok"))
 }
