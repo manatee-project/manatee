@@ -22,6 +22,11 @@ fi
 VAR_FILE=$(realpath $VAR_FILE)
 source $VAR_FILE
 
+if [ -z "$1" ]
+then 
+    echo "Error: No namespace argument supplied."
+    exit 1
+fi
 namespace=$1
 
 tag="latest"
