@@ -78,19 +78,13 @@ We are releasing an alpha version, which may miss some necessary features.
 
 ## Deploying in Google Cloud Platform (GCP)
 ### Defining environment variables
-First, determine whether there are multiple developers deploying simultaneously in your environment. If yes, use the multiple users template, otherwise use the single user template. 
+First, copy the example environment variables template to the existing directory.
 ```
-# multiple users
-cp .env.multiusers env.bzl
-```
-```
-# single user
-cp .env.singleuser env.bzl
+cp .env.example env.bzl
 ```
 Edit the variables in `env.bzl`. The `env.bzl` file is the one that really takes effect, the other files are just templates. The double quotes around a variable name are needed. For example:
 ```
 env="dev"                        # the deployment environment
-username="mock developer name"   # the developer name
 mysql_username="mockname"        # mysql database username 
 mysql_password="mockpwd"         # mysql database password
 project_id="you project id"      # gcp project id
@@ -102,14 +96,17 @@ zone=""                          # the zone that the resources created in
 ### Preparing resources
 Create resources for the data clean room by terraform. Make sure you have correctly defined environment variables in the `env.bzl`.
 
-`resources/gcp` directory contains the resources releated to the gcp including: clusters, cloud sql instance, database, docker repositories, and service accounts. These resource are global and only created once for all the developers in one project.
-
-`resources/kubernetes` directory includes the resources releated to the kubernete cluster including: namespace, role, secret.
-
-Create all the resources by:
+`resources/gcp` directory contains the resources releated to the gcp including: clusters, cloud sql instance, database, docker repositories, and service accounts. These resource are global and only created once for all the developers in one project. If you are the project owner, run the commands to create global resources.
 ```
-pushd resources
+pushd resources/gcp
 ./apply.sh
+popd
+```
+
+`resources/kubernetes` directory includes the resources releated to the kubernete cluster including: namespace, role, secret. Once the global resources have been created, the developers can run the commands to create user-specific resources. The namespace is required, and make sure the namespace is distinct.
+```
+pushd resources/kubernetes
+./apply.sh --namespace=xxxx
 popd
 ```
 

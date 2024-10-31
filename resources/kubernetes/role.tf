@@ -17,7 +17,7 @@
 resource "kubernetes_role" "role" {
   metadata {
     name      = "dcr-pod-role"
-    namespace = local.dcr_k8s_namespace
+    namespace = var.namespace
   }
 
   rule {
@@ -32,7 +32,7 @@ resource "kubernetes_role" "role" {
 resource "kubernetes_role_binding" "role_binding" {
   metadata {
     name      = "dcr-pod-role-binding"
-    namespace = local.dcr_k8s_namespace
+    namespace = var.namespace
   }
   role_ref {
     api_group = "rbac.authorization.k8s.io"
@@ -42,7 +42,7 @@ resource "kubernetes_role_binding" "role_binding" {
   subject {
     kind      = "ServiceAccount"
     name      = kubernetes_service_account.k8s_dcr_pod_service_account.metadata[0].name
-    namespace = local.dcr_k8s_namespace
+    namespace = var.namespace
   }
 }
 

@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-variable "username" {
-  type        = string
-  description = "Username to postfix resources with"
-  default     = ""
-}
-
 variable "env" {
   type        = string
   description = "Deployment environment, e.g., dev, prod, oss"
