@@ -41,19 +41,11 @@ type CloudProvider interface {
 	GetFilebyChunk(remotePath string, offset int64, chunkSize int64) ([]byte, error)
 	DeleteFile(remotePath string) error
 	UploadFile(fileReader io.Reader, remotePath string, compress bool) error
-	// KMS
-	CreateSymmetricKeys(keyId string) error
-	CheckIfKeyExists(keyId string) (bool, error)
-	EncryptWithKMS(keyId string, plaintext string) (string, error)
-	DecryptWithKMS(keyId string, ciphertextB64 string) (string, error)
-	GrantServiceAccountKeyRole(serviceAccount string, keyId string, role string) error
 	// workload identity pool
 	CreateWorkloadIdentityPoolProvider(wipName string) error
-	UpdateWorkloadIdentityPoolProvider(wipName string, imageDigest string) error
 	// compute engine
 	GetServiceAccountEmail() (string, error)
 	// confidential space
-	CreateConfidentialSpace(instanceName string, dockerImage string, stage1Token string, uuid string) error
 	PrepareResourcesForUser(userName string) error
 }
 

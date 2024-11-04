@@ -12,8 +12,6 @@ go_library(
         "//pkg/config",
         "@com_github_cloudwego_hertz//pkg/common/hlog",
         "@com_github_pkg_errors//:errors",
-        "@com_google_cloud_go_compute//apiv1",
-        "@com_google_cloud_go_compute//apiv1/computepb",
         "@com_google_cloud_go_compute_metadata//:metadata",
         "@com_google_cloud_go_iam//apiv1/iampb",
         "@com_google_cloud_go_kms//apiv1",
@@ -22,7 +20,6 @@ go_library(
         "@org_golang_google_api//iterator",
         "@org_golang_google_grpc//codes",
         "@org_golang_google_grpc//status",
-        "@org_golang_google_protobuf//proto",
         "@org_golang_x_oauth2//google",
     ],
 )

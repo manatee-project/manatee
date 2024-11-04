@@ -8,6 +8,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/model/job"
+	"github.com/manatee-project/manatee/app/dcr_monitor/imagebuilder"
 	"github.com/manatee-project/manatee/app/dcr_monitor/tee_backend"
 	"github.com/manatee-project/manatee/pkg/config"
 )
@@ -17,21 +18,30 @@ type Reconciler interface {
 }
 
 type ReconcilerImpl struct {
-	tee tee_backend.TEEProvider
-	ctx context.Context
+	tee     tee_backend.TEEProvider
+	builder imagebuilder.ImageBuilder
+	ctx     context.Context
 }
 
 func NewReconciler(ctx context.Context) *ReconcilerImpl {
 	// FIXME: get config to determine which TEE provider to use.
 	// for now, we only support GCP confidential space.
-	tee, err := tee_backend.NewTEEProviderGCPConfidentialSpace(ctx, config.GetProject(), config.GetZone())
+	tee, err := tee_backend.NewTEEProviderGCPConfidentialSpace(ctx, config.GetProject(), config.GetRegion(), config.GetZone(), config.GetEnv())
 	if err != nil {
 		hlog.Errorf("failed to init TEE provider %+v", err)
 	}
 
+	// FIXME: get config to determine which ImageBuilder to use.
+	// for now, we only support Kaniko Builder.
+	builder, err := imagebuilder.NewKanikoImageBuilder()
+	if err != nil {
+		hlog.Errorf("failed to init image builder %+v", err)
+	}
+
 	return &ReconcilerImpl{
-		tee: tee,
-		ctx: ctx,
+		tee:     tee,
+		builder: builder,
+		ctx:     ctx,
 	}
 }
 
@@ -70,6 +80,28 @@ func (r *ReconcilerImpl) updateJobStatus(j *db.Job) error {
 		j.JobStatus = int(job.JobStatus_VMFailed)
 	} else {
 		switch j.JobStatus {
+		case int(job.JobStatus_ImageBuilding):
+			done, info, err := r.builder.CheckImageBuilderStatusAndGetInfo(j.UUID)
+			if err != nil {
+				return fmt.Errorf("failed to get build status: %w", err)
+			}
+			if !done {
+				return nil
+			}
+			if info != nil {
+				j.DockerImage = info.Image
+				j.DockerImageDigest = info.Digest
+				instanceName, err := r.tee.LaunchInstance(j.Creator, j.DockerImage, j.DockerImageDigest, j.UUID)
+				if err != nil {
+					hlog.Errorf("failed to launch instance: %w", err)
+					return err
+				}
+				j.InstanceName = instanceName
+				j.JobStatus = int(job.JobStatus_VMWaiting)
+
+			} else {
+				j.JobStatus = int(job.JobStatus_ImageBuildingFailed)
+			}
 		case int(job.JobStatus_VMWaiting):
 			instanceStatus, err := r.tee.GetInstanceStatus(j.InstanceName)
 			if err != nil {

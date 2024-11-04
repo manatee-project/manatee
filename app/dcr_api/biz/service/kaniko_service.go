@@ -109,7 +109,8 @@ func (k *KubernetesBuildService) CreateBuildCtx(ctx context.Context, creator str
 func (k *KubernetesBuildService) BuildImage(j *db.Job, token string) error {
 	UUID := j.UUID
 	creator := j.Creator
-	imageTag := config.GetJobDockerImageFull(creator, UUID)
+
+	imageTag := fmt.Sprintf("us-docker.pkg.dev/%s/dcr-%s-user-images/%s-%s:latest", config.GetProject(), config.GetEnv(), creator, UUID)
 	buildCtx, err := k.CreateBuildCtx(k.ctx, creator)
 	if err != nil {
 		return err
@@ -144,7 +145,7 @@ func (k *KubernetesBuildService) BuildImage(j *db.Job, token string) error {
 		fmt.Sprintf("--build-arg=ENCRYPTED_CLOUDSTORAGE_PATH=%s", config.GetCloudStoragePath(config.GetEncryptedJobOutputPath(creator, UUID, j.JupyterFileName))),
 		fmt.Sprintf("--build-arg=JUPYTER_FILENAME=%s", j.JupyterFileName),
 		fmt.Sprintf("--build-arg=USER_WORKSPACE=%s", config.GetUserWorkSpaceDir(creator)),
-		fmt.Sprintf("--build-arg=BASE_IMAGE=%s", config.GetBaseDockerImage()),
+		fmt.Sprintf("--build-arg=BASE_IMAGE=%s", fmt.Sprintf("us-docker.pkg.dev/%s/dcr-%s-user-images/%s:latest", config.GetProject(), config.GetEnv(), "data-clean-room-base")),
 		fmt.Sprintf("--build-arg=CUSTOMTOKEN_CLOUDSTORAGE_PATH=%s", config.GetCloudStoragePath(config.GetCustomTokenPath(creator, UUID))),
 		fmt.Sprintf("--build-arg=IMPERSONATION_SERVICE_ACCOUNT=%s", trustedServiceAccountEmail),
 	}

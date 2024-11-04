@@ -140,45 +140,6 @@ func (js *JobService) DeleteJob(req *job.DeleteJobRequest) {
 	db.DeleteJob(req.Creator, req.UUID)
 }
 
-func (js *JobService) UpdateJob(req *job.UpdateJobStatusRequest) error {
-	creator := req.Creator
-	j, err := db.QueryJobByUUIDAndCreator(creator, req.UUID)
-	if err != nil {
-		return err
-	}
-	j.JobStatus = int(req.Status)
-	if j.JobStatus == int(job.JobStatus_VMWaiting) {
-		j.DockerImage = req.DockerImage
-		j.DockerImageDigest = req.DockerImageDigest
-		j.InstanceName = config.GetInstanceName(j.Creator, j.UUID)
-		err := js.RunJob(js.ctx, j, req.AccessToken)
-		if err != nil {
-			return err
-		}
-		j.JobStatus = int(job.JobStatus_VMRunning)
-	}
-	if j.JobStatus == int(job.JobStatus_VMFinished) {
-		j.AttestationReport = req.AttestationToken
-		j.JobStatus = int(job.JobStatus_VMFinished)
-	}
-	err = db.UpdateJob(j)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (js *JobService) RunJob(c context.Context, j *db.Job, token string) error {
-	hlog.Infof("[JobSerive] docker image stored in DB, run the job. Job status: %+v", job.JobStatus_VMWaiting)
-	provider := cloud.GetCloudProvider(js.ctx)
-	provider.UpdateWorkloadIdentityPoolProvider(config.GetUserWipProvider(j.Creator), j.DockerImageDigest)
-	err := provider.CreateConfidentialSpace(j.InstanceName, j.DockerImage, token, j.UUID)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (js *JobService) GetJobAttestationReport(req *job.QueryJobAttestationRequest) (string, error) {
 	j, err := db.QueryJobByIdAndCreator(req.ID, req.Creator)
 	if err != nil {

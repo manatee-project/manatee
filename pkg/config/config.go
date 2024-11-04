@@ -40,18 +40,12 @@ type Cluster struct {
 type GCPConfig struct {
 	Project              string `yaml:"Project"`
 	ProjectNumber        uint64 `yaml:"ProjectNumber"`
-	Repository           string `yaml:"Repository"`
 	HubBucket            string `yaml:"HubBucket"`
 	CvmServiceAccount    string `yaml:"CvmServiceAccount"`
 	Zone                 string `yaml:"Zone"`
 	Region               string `yaml:"Region"`
-	Cpus                 int    `yaml:"CPUs"`
-	DiskSize             int    `yaml:"DiskSize"`
 	Debug                bool   `yaml:"Debug"`
-	KeyRing              string `yaml:"KeyRing"`
 	WorkloadIdentityPool string `yaml:"WorkloadIdentityPool"`
-	Network              string `yaml:"Network"`
-	Subnetwork           string `yaml:"Subnetwork"`
 	Env                  string `yaml:"Env"`
 }
 
@@ -80,14 +74,6 @@ func GetBucket() string {
 	return Conf.CloudProvider.GCP.HubBucket
 }
 
-func GetKeyRing() string {
-	return fmt.Sprintf("projects/%s/locations/%s/keyRings/%s", Conf.CloudProvider.GCP.Project, Conf.CloudProvider.GCP.Region, Conf.CloudProvider.GCP.KeyRing)
-}
-
-func GetKeyFullName(keyName string) string {
-	return fmt.Sprintf("%s/cryptoKeys/%s", GetKeyRing(), keyName)
-}
-
 func getServiceAccountEmail(serviceAccount string, project string) string {
 	return fmt.Sprintf("%s@%s.iam.gserviceaccount.com", serviceAccount, project)
 }
@@ -102,10 +88,6 @@ func IsDebug() bool {
 
 func GetCreateWipProviderUrl(provider string) string {
 	return fmt.Sprintf("https://iam.googleapis.com/v1/projects/%s/locations/global/workloadIdentityPools/%s/providers?workloadIdentityPoolProviderId=%s", Conf.CloudProvider.GCP.Project, Conf.CloudProvider.GCP.WorkloadIdentityPool, provider)
-}
-
-func GetUpdateWipProviderUrl(provider string) string {
-	return fmt.Sprintf("https://iam.googleapis.com/v1/projects/%s/locations/global/workloadIdentityPools/%s/providers/%s?updateMask=attributeCondition", Conf.CloudProvider.GCP.Project, Conf.CloudProvider.GCP.WorkloadIdentityPool, provider)
 }
 
 func GetUserWipProvider(user string) string {
@@ -128,35 +110,8 @@ func GetProject() string {
 	return Conf.CloudProvider.GCP.Project
 }
 
-func GetMachineType() string {
-	return fmt.Sprintf("zones/%s/machineTypes/n2d-standard-%d", GetZone(), Conf.CloudProvider.GCP.Cpus)
-}
-
-func GetNetwork() string {
-	return fmt.Sprintf("https://compute.googleapis.com/compute/v1/projects/%s/global/networks/%s", GetProject(), Conf.CloudProvider.GCP.Network)
-}
-
-func GetSubNetwork() string {
-	return fmt.Sprintf("https://compute.googleapis.com/compute/v1/projects/%s/regions/%s/subnetworks/%s", GetProject(), GetRegion(), Conf.CloudProvider.GCP.Subnetwork)
-}
-
 func GetEnv() string {
 	return Conf.CloudProvider.GCP.Env
-}
-
-func GetTEEImageSource() string {
-	if Conf.CloudProvider.GCP.Debug {
-		return "projects/confidential-space-images/global/images/confidential-space-debug-240200"
-	}
-	return "projects/confidential-space-images/global/images/confidential-space-240200"
-}
-
-func GetCvmDiskSize() int64 {
-	return int64(Conf.CloudProvider.GCP.DiskSize)
-}
-
-func GetWipProviderFullName(provider string) string {
-	return fmt.Sprintf("projects/%v/locations/global/workloadIdentityPools/%s/providers/%s", Conf.CloudProvider.GCP.ProjectNumber, Conf.CloudProvider.GCP.WorkloadIdentityPool, provider)
 }
 
 func GetJobOutputFilename(UUID string, originName string) string {
@@ -182,20 +137,8 @@ func GetCustomTokenPath(creator string, UUID string) string {
 	return fmt.Sprintf("%s/output/%s-token", creator, UUID)
 }
 
-func GetBaseDockerImage() string {
-	return fmt.Sprintf("us-docker.pkg.dev/%s/%s/%s:latest", GetProject(), Conf.CloudProvider.GCP.Repository, "data-clean-room-base")
-}
-
 func GetCloudStoragePath(file string) string {
 	return fmt.Sprintf("gs://%s/%s", GetBucket(), file)
-}
-
-func GetJobDockerImageName(creator, UUID string) string {
-	return fmt.Sprintf("%s-%s", creator, UUID)
-}
-
-func GetJobDockerImageFull(creator string, UUID string) string {
-	return fmt.Sprintf("us-docker.pkg.dev/%s/%s/%s:latest", GetProject(), Conf.CloudProvider.GCP.Repository, GetJobDockerImageName(creator, UUID))
 }
 
 func GetUserWorkspaceFile(creator string) string {
@@ -224,8 +167,4 @@ func GetUserKey(user string) string {
 
 func GetK8sPodServiceAccount() string {
 	return Conf.Cluster.PodServiceAccount
-}
-
-func GetInstanceName(creator string, UUID string) string {
-	return fmt.Sprintf("%s-%s", creator, UUID[:8])
 }

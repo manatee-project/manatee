@@ -115,30 +115,6 @@ func DeleteJob(ctx context.Context, c *app.RequestContext) {
 	})
 }
 
-// UpdateJobStatus .
-// @router /v1/job/update/ [POST]
-func UpdateJobStatus(ctx context.Context, c *app.RequestContext) {
-	var err error
-	var req job.UpdateJobStatusRequest
-	err = c.BindAndValidate(&req)
-	if err != nil {
-		hlog.Errorf("[Job Handler]failed to parse parameters: %+v", err)
-		utils.ReturnsJSONError(c, err)
-		return
-	}
-	hlog.Debugf("update requeest %v", req)
-	err = service.NewJobService(ctx).UpdateJob(&req)
-	if err != nil {
-		hlog.Errorf("[Job Handler]failed to update job status: %+v", err)
-		utils.ReturnsJSONError(c, err)
-		return
-	}
-	c.JSON(consts.StatusOK, job.UpdateJobStatusResponse{
-		Code: errno.SuccessCode,
-		Msg:  errno.SuccessMsg,
-	})
-}
-
 // QueryJobOutputAttr .
 // @router /v1/job/file/attrs/ [POST]
 func QueryJobOutputAttr(ctx context.Context, c *app.RequestContext) {
