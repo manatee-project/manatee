@@ -52,9 +52,6 @@ type CloudProvider interface {
 	UpdateWorkloadIdentityPoolProvider(wipName string, imageDigest string) error
 	// compute engine
 	GetServiceAccountEmail() (string, error)
-	// instance
-	ListAllInstances() ([]*Instance, error)
-	DeleteInstance(instanceName string) error
 	// confidential space
 	CreateConfidentialSpace(instanceName string, dockerImage string, stage1Token string, uuid string) error
 	PrepareResourcesForUser(userName string) error

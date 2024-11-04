@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "tee_backend",
+    srcs = ["confidential_space.go"],
+    importpath = "github.com/manatee-project/manatee/app/dcr_monitor/tee_backend",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_google_cloud_go_compute//apiv1",
+        "@com_google_cloud_go_compute//apiv1/computepb",
+    ],
+)
