@@ -17,13 +17,13 @@
 locals {
   gcp_dcr_pod_sa_email     = "${local.gcp_dcr_pod_sa}@${var.project_id}.iam.gserviceaccount.com"
   gcp_jupyter_pod_sa_email = "${local.gcp_jupyter_pod_sa}@${var.project_id}.iam.gserviceaccount.com"
-  admin_binding            = var.username != "" ? "cluster-admin-binding-${var.env}-${var.username}" : "cluster-admin-binding--${var.env}"
+  admin_binding            = "${data.google_client_openid_userinfo.me.email}-binding"
 }
 
 resource "kubernetes_service_account" "k8s_dcr_pod_service_account" {
   metadata {
     name      = "dcr-k8s-pod-sa"
-    namespace = local.dcr_k8s_namespace
+    namespace = var.namespace
     annotations = {
       "iam.gke.io/gcp-service-account" = local.gcp_dcr_pod_sa_email
     }
@@ -35,29 +35,28 @@ resource "kubernetes_service_account" "k8s_dcr_pod_service_account" {
 resource "kubernetes_service_account" "k8s_jupyter_pod_service_account" {
   metadata {
     name      = "jupyter-k8s-pod-sa"
-    namespace = local.jupyter_k8s_namespace
-
+    namespace = var.namespace
     annotations = {
       "iam.gke.io/gcp-service-account" = local.gcp_jupyter_pod_sa_email
     }
   }
   automount_service_account_token = true
-  depends_on                      = [kubernetes_namespace.jupyterhub_k8s_namespace]
+  depends_on                      = [kubernetes_namespace.data_clean_room_k8s_namespace]
 }
 
 
 resource "google_service_account_iam_member" "dcr_pod_sa_iam_member" {
   service_account_id = "projects/${var.project_id}/serviceAccounts/${local.gcp_dcr_pod_sa}@${var.project_id}.iam.gserviceaccount.com"
   role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[${local.dcr_k8s_namespace}/${kubernetes_service_account.k8s_dcr_pod_service_account.metadata[0].name}]"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[${var.namespace}/${kubernetes_service_account.k8s_dcr_pod_service_account.metadata[0].name}]"
   depends_on         = [kubernetes_namespace.data_clean_room_k8s_namespace]
 }
 
 resource "google_service_account_iam_member" "jupyter_pod_sa_iam_member" {
   service_account_id = "projects/${var.project_id}/serviceAccounts/${local.gcp_jupyter_pod_sa}@${var.project_id}.iam.gserviceaccount.com"
   role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[${local.jupyter_k8s_namespace}/${kubernetes_service_account.k8s_jupyter_pod_service_account.metadata[0].name}]"
-  depends_on         = [kubernetes_namespace.jupyterhub_k8s_namespace]
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[${var.namespace}/${kubernetes_service_account.k8s_jupyter_pod_service_account.metadata[0].name}]"
+  depends_on         = [kubernetes_namespace.data_clean_room_k8s_namespace]
 }
 
 resource "kubernetes_cluster_role_binding" "cluster_admin_binding" {
