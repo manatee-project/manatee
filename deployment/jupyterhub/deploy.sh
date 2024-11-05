@@ -30,7 +30,7 @@ fi
 namespace=$1
 
 tag="latest"
-helm_name="jupyterhub-helm"
+helm_name="jupyterhub-helm-$namespace"
 api="http://data-clean-room.$namespace.svc.cluster.local"
 
 service_account="jupyter-k8s-pod-sa"

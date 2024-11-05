@@ -141,6 +141,9 @@ Find individual rules from corresponding `BUILD.bazel` files.
 
 Deploy data clean room and jupyterhub by helm chart.
 ```shell 
+source env.bzl
+gcloud container clusters get-credentials dcr-$env-cluster --zone $zone --project $project_id
+gcloud auth configure-docker us-docker.pkg.dev
 pushd deployment
 ./deploy.sh --namespace=dcr-namespace
 popd
