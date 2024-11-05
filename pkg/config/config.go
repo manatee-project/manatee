@@ -38,13 +38,12 @@ type Cluster struct {
 }
 
 type GCPConfig struct {
-	Project       string `yaml:"Project"`
-	ProjectNumber uint64 `yaml:"ProjectNumber"`
-	HubBucket     string `yaml:"HubBucket"`
-	Zone          string `yaml:"Zone"`
-	Region        string `yaml:"Region"`
-	Debug         bool   `yaml:"Debug"`
-	Env           string `yaml:"Env"`
+	Project   string `yaml:"Project"`
+	HubBucket string `yaml:"HubBucket"`
+	Zone      string `yaml:"Zone"`
+	Region    string `yaml:"Region"`
+	Debug     bool   `yaml:"Debug"`
+	Env       string `yaml:"Env"`
 }
 
 type APIConfig struct {

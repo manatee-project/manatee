@@ -5,16 +5,14 @@
 # Right now, we just generate one so that we can test the app.
 
 GCP_PROJECT_ID="$1"
-GCP_PROJECT_NUMBER="$2"
-DEPLOY_ENV="$3"
-GCP_REGION="$4"
-GCP_ZONE="$5"
+DEPLOY_ENV="$2"
+GCP_REGION="$3"
+GCP_ZONE="$4"
 
 cat <<EOF | envsubst
 CloudProvider:
   GCP:
     Project: "${GCP_PROJECT_ID}"
-    ProjectNumber: "${GCP_PROJECT_NUMBER}"
     HubBucket: "dcr-${DEPLOY_ENV}-hub"
     Zone: "${GCP_ZONE}"
     Region: "${GCP_REGION}"
