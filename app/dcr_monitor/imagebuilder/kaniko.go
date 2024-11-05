@@ -73,12 +73,15 @@ func (b *KanikoImageBuilder) CheckImageBuilderStatusAndGetInfo(uuid string) (boo
 	hlog.Infof("[KanikoJobMonitor]job name: %v, job status: %v", k8sJob.Name, k8sJob.Status.Conditions[0].Type)
 
 	if k8sJob.Status.Conditions[0].Type == batchv1.JobComplete {
-		image, digest, err := b.getImageDigestAndDeleteJob(k8sJob.Name)
+		image, digest, err := b.getImageDigest(k8sJob.Name)
 		if err != nil {
 			hlog.Errorf("[KanikoJobMonitor] failed to get image digest: %+v", err)
 			return false, nil, err
 		}
 		hlog.Infof("Image build done: %s@sha256:%s", image, digest)
+
+		b.deleteJob(k8sJob.Name)
+
 		return true, &ImageInfo{Image: image, Digest: digest}, nil
 	} else if k8sJob.Status.Conditions[0].Type == batchv1.JobFailed {
 		return true, nil, nil
@@ -86,7 +89,7 @@ func (b *KanikoImageBuilder) CheckImageBuilderStatusAndGetInfo(uuid string) (boo
 	return false, nil, nil
 }
 
-func (b *KanikoImageBuilder) getImageDigestAndDeleteJob(jobName string) (string, string, error) {
+func (b *KanikoImageBuilder) getImageDigest(jobName string) (string, string, error) {
 	pods, err := b.clientSet.CoreV1().Pods(b.namespace).List(b.ctx, metav1.ListOptions{
 		LabelSelector: "job-name=" + jobName,
 	})
@@ -110,7 +113,7 @@ func (b *KanikoImageBuilder) getImageDigestAndDeleteJob(jobName string) (string,
 			continue
 		}
 		hlog.Infof("[KanikoJobMonitor]got image digest %v", digest)
-		b.deleteJob(jobName)
+
 		return image, digest, nil
 	}
 	return "", "", errors.New("failed to read digest")
