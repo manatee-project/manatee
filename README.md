@@ -71,7 +71,7 @@ We are releasing an alpha version, which may miss some necessary features.
     - cloudresourcemanager.googleapis.com
     - sqladmin.googleapis.com
     - confidentialcomputing.googleapis.com
-* [Gcloud CLI](https://cloud.google.com/sdk/docs/install) Login to the GCP `gcloud auth login && cloud auth application-default login`
+* [Gcloud CLI](https://cloud.google.com/sdk/docs/install) Login to the GCP `gcloud auth login && gcloud auth application-default login && gcloud components install gke-gcloud-auth-plugin`
 * [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli) Terraform is an infrastructure as code tool that enables you to safely and predictably provision and manage infrastructure in any cloud.
 * [Helm](https://helm.sh/docs/intro/install/) Helm is a package manager for Kubernetes that allows developers and operators to more easily package, configure, and deploy applications and services onto Kubernetes clusters.
 * [Hertz](https://github.com/cloudwego/hertz) Hertz is a high-performance, high-usability, extensible HTTP framework for Go. It’s designed to make it easy for developers to build microservices.
@@ -85,8 +85,6 @@ cp .env.example env.bzl
 Edit the variables in `env.bzl`. The `env.bzl` file is the one that really takes effect, the other files are just templates. The double quotes around a variable name are needed. For example:
 ```
 env="dev"                        # the deployment environment
-mysql_username="mockname"        # mysql database username 
-mysql_password="mockpwd"         # mysql database password
 project_id="you project id"      # gcp project id
 project_number="1310xxxx092"     # gcp project number
 region=""                        # the region that the resources created in
@@ -94,20 +92,26 @@ zone=""                          # the zone that the resources created in
 ```
 
 ### Preparing resources
-Create resources for the data clean room by terraform. Make sure you have correctly defined environment variables in the `env.bzl`.
+The resources are created and managed by the project administrator who has the `Owner` role in the GCP project. Make sure you have correctly defined environment variables in the `env.bzl`. Only the project administrator is responsible to run these commands to create resources. The devdelopers can skip this part If the resources are already created.
 
-`resources/gcp` directory contains the resources releated to the gcp including: clusters, cloud sql instance, database, docker repositories, and service accounts. These resource are global and only created once for all the developers in one project. If you are the project owner, run the commands to create global resources.
+`resources/global` directory contains the global resources including: clusters, cloud sql instance, database, docker repositories, and service accounts. These resource are global and only created once for all the developers in one project. 
 ```
-pushd resources/gcp
+pushd resources/global
 ./apply.sh
 popd
 ```
 
-`resources/kubernetes` directory includes the resources releated to the kubernete cluster including: namespace, role, secret. Once the global resources have been created, the developers can run the commands to create user-specific resources. The namespace is required, and make sure the namespace is distinct.
-```
-pushd resources/kubernetes
-./apply.sh --namespace=xxxx
+When a new developer joins, the administrator needs to create resources for the new developer. Each developer should have his own namespace. 
+
+`resources/developer-specific` directory includes the resources releated to the  including: kubernetes namespace, role, secret. Once the global resources have been created, the developers can run the commands to create user-specific resources. The namespace is required, and make sure the namespace is distinct. The `database-user` and `database-password` are optional. If they are not provided, the script will use the namespace as the `database-user` and a ramdom string as `database-password`. 
+```shell 
+pushd resources/developer-specific
+./apply.sh --namespace=dcr-namespace
 popd
+```
+```shell
+# provide developer specific database account info
+./apply.sh --namespace=dcr-namespace --database-user=devloper-account --database-password=devloper-pwd
 ```
 
 ### Building and Pushing Images
@@ -122,7 +126,7 @@ popd
 
 
 ```shell 
-bazel query 'kind("oci_push", "//...")' | xargs -n1 bazel run
+./push_image.sh --namespace=dcr-namespace
 ```
 
 If you'd like to load the images in your local container runtime (e.g., Docker), you can use `oci_load` rules.
@@ -138,7 +142,7 @@ Find individual rules from corresponding `BUILD.bazel` files.
 Deploy data clean room and jupyterhub by helm chart.
 ```shell 
 pushd deployment
-./deploy.sh
+./deploy.sh --namespace=dcr-namespace
 popd
 ```
 When deployment is complete, you can follow the output of the script to get the public ip of jupyterhub. 

@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 set -e
 
 for arg in "$@"
@@ -26,38 +27,14 @@ do
     esac
 done
 
-
 if [ -z "$namespace" ]; then
-    echo "Error: the namespace parameter is required, run the script again like ./apply.sh --namespace="
-    exit 1
+    echo -e "Error: the namespace parameter is missing, please run the script like ./push_image.sh --namespace=xxx"
+    exit
 fi
 
-# Check if gcloud is installed
-if ! [ -x "$(command -v gcloud)" ]; then
-	echo "Error: gcloud is not installed." >&2
-	exit 1
-fi
+source env.bzl
 
-# Check if gcloud logged in
-if ! gcloud auth list | grep -q 'ACTIVE'; then
-	echo "Error: No active gcloud account found." >&2
-	exit 1
-fi
-
-# check whether variables has been set
-VAR_FILE="../../env.bzl"
-if [ ! -f "$VAR_FILE" ]; then
-    echo "Error: Variables file does not exist."
-    exit 1
-fi
-VAR_FILE=$(realpath $VAR_FILE)
-source $VAR_FILE
-
-zone=$region-a
-# get kubernete cluster credentials
-gcloud container clusters get-credentials dcr-$env-cluster --zone $zone --project $project_id
-
-cp $VAR_FILE terraform.tfvars
-echo -e "\nnamespace=\"$namespace\"\n" >> terraform.tfvars
-terraform init -reconfigure
-terraform apply
+bazel run //:push_dcr_api_image -- --repository "us-docker.pkg.dev/$project_id/dcr-$env-$namespace-images/data-clean-room-api"
+bazel run //:push_dcr_monitor_image -- --repository "us-docker.pkg.dev/$project_id/dcr-$env-$namespace-images/data-clean-room-monitor"
+bazel run //:push_jupyterlab_image -- --repository "us-docker.pkg.dev/$project_id/dcr-$env-$namespace-images/scipy-notebook-with-dcr"
+bazel run //:push_dcr_tee_image 

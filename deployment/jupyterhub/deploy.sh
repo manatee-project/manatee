@@ -34,7 +34,7 @@ helm_name="jupyterhub-helm"
 api="http://data-clean-room.$namespace.svc.cluster.local"
 
 service_account="jupyter-k8s-pod-sa"
-docker_repo="dcr-${env}-images"
+docker_repo="dcr-${env}-${namespace}-images"
 docker_reference="us-docker.pkg.dev/${project_id}/${docker_repo}/scipy-notebook-with-dcr"
 
 helm repo add jupyterhub https://hub.jupyter.org/helm-chart/

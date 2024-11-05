@@ -17,7 +17,6 @@
 locals {
   gcp_dcr_pod_sa_email     = "${local.gcp_dcr_pod_sa}@${var.project_id}.iam.gserviceaccount.com"
   gcp_jupyter_pod_sa_email = "${local.gcp_jupyter_pod_sa}@${var.project_id}.iam.gserviceaccount.com"
-  admin_binding            = "${data.google_client_openid_userinfo.me.email}-binding"
 }
 
 resource "kubernetes_service_account" "k8s_dcr_pod_service_account" {
@@ -57,20 +56,4 @@ resource "google_service_account_iam_member" "jupyter_pod_sa_iam_member" {
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[${var.namespace}/${kubernetes_service_account.k8s_jupyter_pod_service_account.metadata[0].name}]"
   depends_on         = [kubernetes_namespace.data_clean_room_k8s_namespace]
-}
-
-resource "kubernetes_cluster_role_binding" "cluster_admin_binding" {
-  metadata {
-    name = local.admin_binding
-  }
-  role_ref {
-    api_group = "rbac.authorization.k8s.io"
-    kind      = "ClusterRole"
-    name      = "cluster-admin"
-  }
-  subject {
-    kind      = "User"
-    name      = data.google_client_openid_userinfo.me.email
-    api_group = "rbac.authorization.k8s.io"
-  }
 }

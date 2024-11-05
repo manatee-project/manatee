@@ -18,6 +18,4 @@ resource "kubernetes_namespace" "data_clean_room_k8s_namespace" {
   metadata {
     name = var.namespace
   }
-
-  depends_on = [ kubernetes_cluster_role_binding.cluster_admin_binding ]
 }

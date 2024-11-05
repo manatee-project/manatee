@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-terraform {
-  required_providers {
-    google = {
-      source = "hashicorp/google"
-    }
-  }
+resource "google_sql_database" "database" {
+  name     = "dcr-${var.namespace}-database"
+  project  = var.project_id
+  instance = "dcr-${var.env}-db-instance"
+}
+
+resource "google_sql_user" "dcr_db_user" {
+  name     = var.mysql_username
+  instance = "dcr-${var.env}-db-instance"
+  password = var.mysql_password
+  project  = var.project_id
 }

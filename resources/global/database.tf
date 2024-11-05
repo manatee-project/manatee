@@ -32,16 +32,3 @@ resource "google_sql_database_instance" "dcr_database_instance" {
   }
   depends_on = [ google_compute_subnetwork.data_clean_room_subnetwork, google_compute_global_address.dcr_private_address, google_service_networking_connection.private_vpc_connection ]
 }
-
-resource "google_sql_database" "database" {
-  name     = "dcr-${var.env}-database"
-  project  = var.project_id
-  instance = google_sql_database_instance.dcr_database_instance.name
-}
-
-resource "google_sql_user" "dcr_db_user" {
-  name     = var.mysql_username
-  instance = google_sql_database_instance.dcr_database_instance.name
-  password = var.mysql_password
-  project  = var.project_id
-}

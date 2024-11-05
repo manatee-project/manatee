@@ -14,35 +14,9 @@
  * limitations under the License.
  */
 
-variable "namespace" {
-  type        = string
-  description = "Kubernetes namespaces"
-  default = ""
-}
-
 variable "env" {
   type        = string
   description = "Deployment environment, e.g., dev, prod, oss"
-}
-
-variable "project_id" {
-  type        = string
-  description = "The GCP project ID"
-}
-
-variable "project_number" {
-  type        = string
-  description = "The GCP project number"
-}
-
-variable "mysql_username" {
-  type        = string
-  description = "Mysql username"
-}
-
-variable "mysql_password" {
-  type        = string
-  description = "Mysql password"
 }
 
 variable "region" {
@@ -55,8 +29,24 @@ variable "zone" {
   description = "Zone to create the gcp resources"
 }
 
-locals {
-  gcp_dcr_pod_sa = "dcr-${var.env}-pod-sa"
-  gcp_jupyter_pod_sa = "jupyter-${var.env}-pod-sa"
-  database = "dcr-${var.env}-database"
+variable "project_id" {
+  type        = string
+  description = "The GCP project ID"
+}
+
+variable "project_number" {
+  type        = string
+  description = "The GCP project number"
+}
+
+variable "type" {
+  type        = string
+  description = "Instance type for the GKE instances"
+  default     = "n2-standard-4"
+}
+
+variable "num_nodes" {
+  type        = number
+  description = "Number of nodes to create in the GKE cluster"
+  default     = 2
 }

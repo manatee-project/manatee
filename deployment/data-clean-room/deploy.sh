@@ -34,7 +34,7 @@ helm_name="data-clean-room-helm"
 
 connection_name="${project_id}:${region}:dcr-${env}-db-instance"
 service_account="dcr-k8s-pod-sa"
-docker_repo="dcr-${env}-images"
+docker_repo="dcr-${env}-${namespace}-images"
 api_docker_reference="us-docker.pkg.dev/${project_id}/${docker_repo}/data-clean-room-api"
 monitor_docker_reference="us-docker.pkg.dev/${project_id}/${docker_repo}/data-clean-room-monitor"
 
