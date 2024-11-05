@@ -19,7 +19,7 @@ import (
 )
 
 type TEEProvider interface {
-	LaunchInstance(prefix string, image string, digest string, uuid string) (string, error)
+	LaunchInstance(instanceName string, image string, digest string) error
 	GetInstanceStatus(instanceName string) (string, error)
 	CleanUpInstance(instanceName string) error
 }
@@ -70,6 +70,10 @@ func (c *TEEProviderGCPConfidentialSpace) GetInstanceStatus(instanceName string)
 }
 
 func (c *TEEProviderGCPConfidentialSpace) CleanUpInstance(instanceName string) error {
+	err := c.deleteWorkloadIdentityPoolProvider(instanceName)
+	if err != nil {
+		return err
+	}
 
 	req := &computepb.DeleteInstanceRequest{
 		Project:  c.projectId,
@@ -87,22 +91,23 @@ func (c *TEEProviderGCPConfidentialSpace) CleanUpInstance(instanceName string) e
 	return nil
 }
 
-func (c *TEEProviderGCPConfidentialSpace) LaunchInstance(prefix string, image string, digest string, uuid string) (string, error) {
+func (c *TEEProviderGCPConfidentialSpace) LaunchInstance(instanceName string, image string, digest string) error {
 
-	instanceName := fmt.Sprintf("%s-%s", prefix, uuid)
-	userWipProvider := fmt.Sprintf("%s-tee-provider", prefix)
-	c.updateWorkloadIdentityPoolProvider(userWipProvider, digest)
-	err := c.createConfidentialSpace(instanceName, image, uuid)
+	err := c.createWorkloadIdentityPoolProvider(instanceName, digest)
 	if err != nil {
-		return "", err
+		return err
+	}
+	err = c.createConfidentialSpace(instanceName, image)
+	if err != nil {
+		return err
 	}
 
-	return instanceName, nil
+	return nil
 }
 
-func (c *TEEProviderGCPConfidentialSpace) createConfidentialSpace(instanceName string, dockerImage string, uuid string) error {
+func (c *TEEProviderGCPConfidentialSpace) createConfidentialSpace(instanceName string, dockerImage string) error {
 
-	req := c.getConfidentialSpaceInsertInstanceRequest(instanceName, dockerImage, uuid)
+	req := c.getConfidentialSpaceInsertInstanceRequest(instanceName, dockerImage)
 
 	op, err := c.client.Insert(c.ctx, req)
 	if err != nil {
@@ -114,7 +119,7 @@ func (c *TEEProviderGCPConfidentialSpace) createConfidentialSpace(instanceName s
 	return nil
 }
 
-func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequest(instanceName string, dockerImage string, uuid string) *computepb.InsertInstanceRequest {
+func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequest(instanceName string, dockerImage string) *computepb.InsertInstanceRequest {
 	network := fmt.Sprintf("https://compute.googleapis.com/compute/v1/projects/%s/global/networks/dcr-%s-network", c.projectId, c.env)
 	subNetwork := fmt.Sprintf("https://compute.googleapis.com/compute/v1/projects/%s/regions/%s/subnetworks/dcr-%s-subnetwork", c.projectId, c.region, c.env)
 
@@ -156,9 +161,6 @@ func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequ
 			}, &computepb.Items{}, &computepb.Items{
 				Key:   proto.String("tee-env-KEY_LOCATION"),
 				Value: proto.String(c.region),
-			}, &computepb.Items{
-				Key:   proto.String("JOB-UUID"),
-				Value: proto.String(uuid),
 			},
 			},
 		},
@@ -208,7 +210,54 @@ func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequ
 	return req
 }
 
+func (c *TEEProviderGCPConfidentialSpace) createWorkloadIdentityPoolProvider(name string, digest string) error {
+	// truncate name to 32 characters to avoid error
+	if len(name) > 32 {
+		name = name[:32]
+	}
+	requestBody, err := c.workloadIdentityRequestBody(name, digest)
+	if err != nil {
+		// err already is wrapped
+		return err
+	}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: false,
+			MinVersion:         tls.VersionTLS12,
+		},
+	}
+	client := &http.Client{Transport: tr}
+	createWipProviderUrl := fmt.Sprintf(
+		"https://iam.googleapis.com/v1/projects/%s/locations/global/workloadIdentityPools/dcr-%s-pool/providers?workloadIdentityPoolProviderId=%s",
+		c.projectId, c.env, name)
+	req, err := http.NewRequest("POST", createWipProviderUrl, bytes.NewReader(requestBody))
+	if err != nil {
+		return errors.Wrap(err, "failed to create request")
+	}
+	token, err := c.getAccessToken()
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		return errors.Wrap(err, "failed to do http request")
+	}
+	defer resp.Body.Close()
+	res, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errors.Wrap(err, "failed to read http response")
+	}
+	hlog.Debugf("%v", string(res))
+	return nil
+}
+
 func (c *TEEProviderGCPConfidentialSpace) updateWorkloadIdentityPoolProvider(name string, imageDigest string) error {
+	// truncate name to 32 characters to avoid error
+	if len(name) > 32 {
+		name = name[:32]
+	}
 	requestBody, err := c.workloadIdentityRequestBody(name, imageDigest)
 	if err != nil {
 		return err
@@ -246,7 +295,43 @@ func (c *TEEProviderGCPConfidentialSpace) updateWorkloadIdentityPoolProvider(nam
 	return nil
 }
 
-// FIXME: duplicated from pkg/cloud
+func (c *TEEProviderGCPConfidentialSpace) deleteWorkloadIdentityPoolProvider(name string) error {
+	// truncate name to 32 characters to avoid error
+	if len(name) > 32 {
+		name = name[:32]
+	}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: false,
+			MinVersion:         tls.VersionTLS12,
+		},
+	}
+	client := &http.Client{Transport: tr}
+	deleteWipProviderUrl := fmt.Sprintf(
+		"https://iam.googleapis.com/v1/projects/%s/locations/global/workloadIdentityPools/dcr-%s-pool/providers/%s",
+		c.projectId, c.env, name)
+	req, err := http.NewRequest("DELETE", deleteWipProviderUrl, nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to create request")
+	}
+	token, err := c.getAccessToken()
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		return errors.Wrap(err, "failed to do http request")
+	}
+	defer resp.Body.Close()
+	_, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return errors.Wrap(err, "failed to read http response")
+	}
+	return nil
+}
+
 type WorkloadIdentityPoolProvider struct {
 	DisplayName        string            `json:"displayName"`
 	Description        string            `json:"description"`
@@ -255,14 +340,12 @@ type WorkloadIdentityPoolProvider struct {
 	OIDC               OIDC              `json:"oidc"`
 }
 
-// FIXME: duplicated from pkg/cloud
 type OIDC struct {
 	IssuerUri        string   `json:"issuerUri"`
 	AllowedAudiences []string `json:"allowedAudiences"`
 	JwksJson         string   `json:"jwksJson"`
 }
 
-// FIXME: duplicated from pkg/cloud
 type Token struct {
 	AccessToken string `json:"access_token"`
 	ExpiresIn   uint64 `json:"expires_in"`
@@ -270,7 +353,6 @@ type Token struct {
 }
 
 func (c *TEEProviderGCPConfidentialSpace) workloadIdentityRequestBody(name string, imageDigest string) ([]byte, error) {
-
 	attributeCondition := fmt.Sprintf(
 		"assertion.submods.container.image_digest == '%s' && '%s' in assertion.google_service_accounts && assertion.swname == 'CONFIDENTIAL_SPACE'",
 		imageDigest, c.saEmail)
@@ -295,7 +377,6 @@ func (c *TEEProviderGCPConfidentialSpace) workloadIdentityRequestBody(name strin
 	return jsonStringBytes, nil
 }
 
-// FIXME: duplicated from pkg/cloud
 func (c *TEEProviderGCPConfidentialSpace) getAccessToken() (string, error) {
 	// Get access token
 	if metadata.OnGCE() {

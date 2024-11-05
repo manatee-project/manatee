@@ -38,15 +38,13 @@ type Cluster struct {
 }
 
 type GCPConfig struct {
-	Project              string `yaml:"Project"`
-	ProjectNumber        uint64 `yaml:"ProjectNumber"`
-	HubBucket            string `yaml:"HubBucket"`
-	CvmServiceAccount    string `yaml:"CvmServiceAccount"`
-	Zone                 string `yaml:"Zone"`
-	Region               string `yaml:"Region"`
-	Debug                bool   `yaml:"Debug"`
-	WorkloadIdentityPool string `yaml:"WorkloadIdentityPool"`
-	Env                  string `yaml:"Env"`
+	Project       string `yaml:"Project"`
+	ProjectNumber uint64 `yaml:"ProjectNumber"`
+	HubBucket     string `yaml:"HubBucket"`
+	Zone          string `yaml:"Zone"`
+	Region        string `yaml:"Region"`
+	Debug         bool   `yaml:"Debug"`
+	Env           string `yaml:"Env"`
 }
 
 type APIConfig struct {
@@ -74,28 +72,8 @@ func GetBucket() string {
 	return Conf.CloudProvider.GCP.HubBucket
 }
 
-func getServiceAccountEmail(serviceAccount string, project string) string {
-	return fmt.Sprintf("%s@%s.iam.gserviceaccount.com", serviceAccount, project)
-}
-
-func GetCvmServiceAccountEmail() string {
-	return getServiceAccountEmail(Conf.CloudProvider.GCP.CvmServiceAccount, Conf.CloudProvider.GCP.Project)
-}
-
 func IsDebug() bool {
 	return Conf.CloudProvider.GCP.Debug
-}
-
-func GetCreateWipProviderUrl(provider string) string {
-	return fmt.Sprintf("https://iam.googleapis.com/v1/projects/%s/locations/global/workloadIdentityPools/%s/providers?workloadIdentityPoolProviderId=%s", Conf.CloudProvider.GCP.Project, Conf.CloudProvider.GCP.WorkloadIdentityPool, provider)
-}
-
-func GetUserWipProvider(user string) string {
-	name := fmt.Sprintf("%s-tee-provider", user)
-	if len(name) > 32 {
-		return name[:32]
-	}
-	return name
 }
 
 func GetZone() string {
@@ -159,12 +137,4 @@ func GetBuildContextFileName(UUID string) string {
 
 func GetBuildContextPath(creator, UUID string) string {
 	return fmt.Sprintf("%s/%s", creator, GetBuildContextFileName(UUID))
-}
-
-func GetUserKey(user string) string {
-	return fmt.Sprintf("%s-key", user)
-}
-
-func GetK8sPodServiceAccount() string {
-	return Conf.Cluster.PodServiceAccount
 }

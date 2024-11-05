@@ -33,10 +33,9 @@ func (f *FakeTEEProvider) GetInstanceStatus(instanceName string) (string, error)
 	return status, nil
 }
 
-func (f *FakeTEEProvider) LaunchInstance(prefix string, image string, digest string, uuid string) (string, error) {
-	instanceName := fmt.Sprintf("%s-%s", prefix, uuid)
+func (f *FakeTEEProvider) LaunchInstance(instanceName string, image string, digest string) error {
 	f.instances[instanceName] = "RUNNING"
-	return instanceName, nil
+	return nil
 }
 
 func (f *FakeTEEProvider) CleanUpInstance(instanceName string) error {

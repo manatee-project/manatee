@@ -19,20 +19,6 @@ import (
 	"io"
 )
 
-const (
-	INSTANCE_RUNNING    = 1
-	INSTANCE_TERMINATED = 2
-	INSTANCE_OTHER      = 3
-)
-
-type Instance struct {
-	UUID         string
-	Name         string
-	Token        string // Token is reserved for later user authentication
-	Status       int
-	CreationTime string
-}
-
 type CloudProvider interface {
 	// cloud storage
 	DownloadFile(remoteSrcPath string, localDestPath string) error
@@ -41,12 +27,8 @@ type CloudProvider interface {
 	GetFilebyChunk(remotePath string, offset int64, chunkSize int64) ([]byte, error)
 	DeleteFile(remotePath string) error
 	UploadFile(fileReader io.Reader, remotePath string, compress bool) error
-	// workload identity pool
-	CreateWorkloadIdentityPoolProvider(wipName string) error
 	// compute engine
 	GetServiceAccountEmail() (string, error)
-	// confidential space
-	PrepareResourcesForUser(userName string) error
 }
 
 func GetCloudProvider(ctx context.Context) CloudProvider {

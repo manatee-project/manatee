@@ -91,7 +91,8 @@ func (r *ReconcilerImpl) updateJobStatus(j *db.Job) error {
 			if info != nil {
 				j.DockerImage = info.Image
 				j.DockerImageDigest = info.Digest
-				instanceName, err := r.tee.LaunchInstance(j.Creator, j.DockerImage, j.DockerImageDigest, j.UUID)
+				instanceName := fmt.Sprintf("%s-%s", j.Creator, j.UUID)
+				err := r.tee.LaunchInstance(instanceName, j.DockerImage, j.DockerImageDigest)
 				if err != nil {
 					hlog.Errorf("failed to launch instance: %w", err)
 					return err

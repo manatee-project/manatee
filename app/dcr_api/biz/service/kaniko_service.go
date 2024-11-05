@@ -178,7 +178,7 @@ func (k *KubernetesBuildService) createBuildJob(clientSet *kubernetes.Clientset,
 			TTLSecondsAfterFinished: &ttlSecondsAfterFinished,
 			Template: corev1.PodTemplateSpec{
 				Spec: corev1.PodSpec{
-					ServiceAccountName: config.GetK8sPodServiceAccount(),
+					ServiceAccountName: "dcr-k8s-pod-sa",
 					Containers: []corev1.Container{
 						{
 							Name:  "kaniko",

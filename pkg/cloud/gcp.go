@@ -1,45 +1,20 @@
 package cloud
 
 import (
-	"bytes"
 	"compress/gzip"
 	"context"
-	"crypto/tls"
-	"encoding/json"
 	stderrors "errors"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 
 	"cloud.google.com/go/compute/metadata"
 	"cloud.google.com/go/storage"
 	"github.com/pkg/errors"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/iterator"
 
 	"github.com/manatee-project/manatee/pkg/config"
 )
-
-type WorkloadIdentityPoolProvider struct {
-	DisplayName        string            `json:"displayName"`
-	Description        string            `json:"description"`
-	AttributeMapping   map[string]string `json:"attributeMapping"`
-	AttributeCondition string            `json:"attributeCondition"`
-	OIDC               OIDC              `json:"oidc"`
-}
-
-type OIDC struct {
-	IssuerUri        string   `json:"issuerUri"`
-	AllowedAudiences []string `json:"allowedAudiences"`
-	JwksJson         string   `json:"jwksJson"`
-}
-
-type Token struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn   uint64 `json:"expires_in"`
-	TokenType   string `json:"token_type"`
-}
 
 type GcpService struct {
 	ctx context.Context
@@ -168,91 +143,6 @@ func (g *GcpService) UploadFile(reader io.Reader, remotePath string, compress bo
 	return nil
 }
 
-func workloadIdentityRequestBody(name string, imageDigest string) ([]byte, error) {
-	serviceAccountEmail := config.GetCvmServiceAccountEmail()
-	attributeCondition := fmt.Sprintf("assertion.submods.container.image_digest == '%s' && '%s' in assertion.google_service_accounts && assertion.swname == 'CONFIDENTIAL_SPACE'", imageDigest, serviceAccountEmail)
-	if !config.IsDebug() {
-		attributeCondition += " && 'STABLE' in assertion.submods.confidential_space.support_attributes"
-	}
-	provider := WorkloadIdentityPoolProvider{
-		DisplayName: name,
-		OIDC: OIDC{
-			IssuerUri:        "https://confidentialcomputing.googleapis.com/",
-			AllowedAudiences: []string{"https://sts.googleapis.com"},
-		},
-		AttributeMapping: map[string]string{
-			"google.subject": "assertion.sub",
-		},
-		AttributeCondition: attributeCondition,
-	}
-	jsonStringBytes, err := json.Marshal(provider)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to marshal workload identity pool provider")
-	}
-	return jsonStringBytes, nil
-}
-
-func (g *GcpService) getAccessToken() (string, error) {
-	// Get access token
-	if metadata.OnGCE() {
-		res, err := metadata.Get("instance/service-accounts/default/token")
-		if err != nil {
-			return "", err
-		}
-		var token Token
-		if err = json.Unmarshal([]byte(res), &token); err != nil {
-			return "", err
-		}
-		return token.AccessToken, nil
-	}
-	// Run on minikube
-	// Use application credentials to get token
-	credentials, err := google.FindDefaultCredentials(g.ctx, "https://www.googleapis.com/auth/cloud-platform")
-	if err != nil {
-		return "", errors.Wrap(err, "failed to find default credential")
-	}
-	token, err := credentials.TokenSource.Token()
-	if err != nil {
-		return "", errors.Wrap(err, "failed to get token source")
-	}
-	return token.AccessToken, nil
-}
-
-func (g *GcpService) CreateWorkloadIdentityPoolProvider(name string) error {
-	requestBody, err := workloadIdentityRequestBody(name, "")
-	if err != nil {
-		// err already is wrapped
-		return err
-	}
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: false,
-			MinVersion:         tls.VersionTLS12,
-		},
-	}
-	client := &http.Client{Transport: tr}
-	req, err := http.NewRequest("POST", config.GetCreateWipProviderUrl(name), bytes.NewReader(requestBody))
-	if err != nil {
-		return errors.Wrap(err, "failed to create request")
-	}
-	token, err := g.getAccessToken()
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := client.Do(req)
-	if err != nil {
-		return errors.Wrap(err, "failed to do http request")
-	}
-	defer resp.Body.Close()
-	_, err = io.ReadAll(resp.Body)
-	if err != nil {
-		return errors.Wrap(err, "failed to read http response")
-	}
-	return nil
-}
-
 func (g *GcpService) GetServiceAccountEmail() (string, error) {
 	if metadata.OnGCE() {
 		email, err := metadata.Email("default")
@@ -262,15 +152,4 @@ func (g *GcpService) GetServiceAccountEmail() (string, error) {
 		return email, nil
 	}
 	return "", nil
-}
-
-func (g *GcpService) PrepareResourcesForUser(user string) error {
-	// create the workload identity pool provider for the user. The image digest set empty
-	wipProvider := config.GetUserWipProvider(user)
-	err := g.CreateWorkloadIdentityPoolProvider(wipProvider)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

@@ -54,10 +54,6 @@ func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Read
 	if err != nil {
 		return "", err
 	}
-	err = provider.PrepareResourcesForUser(creator)
-	if err != nil {
-		return "", err
-	}
 
 	uuidStr, err := uuid.NewUUID()
 	if err != nil {
