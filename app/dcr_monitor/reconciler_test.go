@@ -33,9 +33,10 @@ func (f *FakeTEEProvider) GetInstanceStatus(instanceName string) (string, error)
 	return status, nil
 }
 
-func (f *FakeTEEProvider) LaunchInstance(string, string, string, string) (string, error) {
-	// NOT IMPLEMENTED
-	return "", nil
+func (f *FakeTEEProvider) LaunchInstance(prefix string, image string, digest string, uuid string) (string, error) {
+	instanceName := fmt.Sprintf("%s-%s", prefix, uuid)
+	f.instances[instanceName] = "RUNNING"
+	return instanceName, nil
 }
 
 func (f *FakeTEEProvider) CleanUpInstance(instanceName string) error {
@@ -192,6 +193,12 @@ func TestUpdateJobStatusImageBuilder(t *testing.T) {
 		}
 		if tc.expectedJobStatus != tc.job.JobStatus {
 			t.Errorf("%s status does not match: expected %v, got %v", tc.job.UUID, tc.expectedJobStatus, tc.job.JobStatus)
+		}
+		if tc.expectedJobStatus == int(job.JobStatus_VMWaiting) {
+			_, ok := tee.instances[fmt.Sprintf("%s-%s", tc.job.Creator, tc.job.UUID)]
+			if !ok {
+				t.Errorf("instance not found for %s", tc.job.UUID)
+			}
 		}
 	}
 }
