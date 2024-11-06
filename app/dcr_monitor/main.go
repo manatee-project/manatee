@@ -7,8 +7,6 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
-	"github.com/manatee-project/manatee/app/dcr_monitor/client"
-	"github.com/manatee-project/manatee/app/dcr_monitor/monitor"
 	"github.com/manatee-project/manatee/pkg/config"
 )
 
@@ -20,8 +18,6 @@ func main() {
 		panic(err)
 	}
 
-	client.InitK8sClient()
-	client.InitHTTPClient()
 	ctx := context.Background()
 
 	db.Init()
@@ -31,12 +27,6 @@ func main() {
 	for {
 		hlog.Info("Reconciling...")
 		reconciler.Reconcile(ctx)
-
-		// TODO: remove these and replace with logic in reconciler
-		err = monitor.CheckKanikoJobs(ctx, client.K8sClientSet)
-		if err != nil {
-			hlog.Errorf("[CronJob]failed to check kaniko jobs %+v", err)
-		}
 
 		time.Sleep(10 * time.Second)
 	}

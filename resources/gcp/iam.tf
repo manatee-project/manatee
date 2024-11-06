@@ -101,12 +101,6 @@ resource "google_project_iam_member" "dcr_pod_sa_sauser" {
   member  = "serviceAccount:${google_service_account.gcp_dcr_pod_sa.email}"
 }
 
-resource "google_kms_key_ring_iam_member" "dcr_pod_sa_keyring_admin" {
-  key_ring_id = google_kms_key_ring.dcr_key_ring.id
-  role        = "roles/cloudkms.admin"
-  member      = "serviceAccount:${google_service_account.gcp_dcr_pod_sa.email}"
-}
-
 resource "google_project_iam_member" "dcr_pod_sa_wip_admin" {
   project = var.project_id
   role    = "roles/iam.workloadIdentityPoolAdmin"

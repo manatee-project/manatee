@@ -58,21 +58,6 @@ struct DeleteJobResponse {
     2: string msg
 }
 
-struct UpdateJobStatusRequest {
-    1: string uuid (api.body="uuid", api.query="uuid")
-    2: JobStatus status (api.body="status", api.query="status")
-    3: string docker_image (api.body="image", api.query="image")
-    4: string docker_image_digest (api.body="digest", api.query="digest")
-    5: string creator (api.body="creator", api.vd="len($) > 0 && len($) < 32 && !regexp('.*\\.\\..*')")
-    6: string attestation_token (api.body="token", api.query="token")
-    255: required string access_token     (api.header="Authorization")
-}
-
-struct UpdateJobStatusResponse {
-    1: i32 code
-    2: string msg
-}
-
 struct QueryJobOutputRequest {
     1: i64 id (api.body="id", api.query="id")
     2: string creator (api.body="creator", api.vd="len($) > 0 && len($) < 32 && !regexp('.*\\.\\..*')")
@@ -115,7 +100,6 @@ service JobHandler {
     SubmitJobResponse SubmitJob(1:SubmitJobRequest req)(api.post="/v1/job/submit/")
     QueryJobResponse QueryJob(1:QueryJobRequest req)(api.post="/v1/job/query/")
     DeleteJobResponse DeleteJob(1:DeleteJobRequest req)(api.post="/v1/job/delete/")
-    UpdateJobStatusResponse UpdateJobStatus(1:UpdateJobStatusRequest req)(api.post="/v1/job/update/")
     QueryJobOutputResponse QueryJobOutputAttr(1:QueryJobOutputRequest req) (api.post="/v1/job/output/attrs/")
     DownloadJobOutputResponse DownloadJobOutput(1:DownloadJobOutputRequest req) (api.post="/v1/job/output/download/")
     QueryJobAttestationResponse QueryJobAttestationReport(1:QueryJobAttestationRequest req)  (api.post="/v1/job/attestation/")

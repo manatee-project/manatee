@@ -13,8 +13,7 @@ go_library(
     deps = [
         "//app/dcr_api/biz/dal/db",
         "//app/dcr_api/biz/model/job",
-        "//app/dcr_monitor/client",
-        "//app/dcr_monitor/monitor",
+        "//app/dcr_monitor/imagebuilder",
         "//app/dcr_monitor/tee_backend",
         "//pkg/config",
         "@com_github_cloudwego_hertz//pkg/common/hlog",
@@ -65,6 +64,7 @@ go_test(
     deps = [
         "//app/dcr_api/biz/dal/db",
         "//app/dcr_api/biz/model/job",
+        "//app/dcr_monitor/imagebuilder",
         "@com_github_cloudwego_hertz//pkg/common/test/assert",
         "@io_gorm_gorm//:gorm",
     ],

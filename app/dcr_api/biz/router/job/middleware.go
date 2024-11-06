@@ -56,11 +56,6 @@ func _updateMw() []app.HandlerFunc {
 	return nil
 }
 
-func _updatejobstatusMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
 func _fileMw() []app.HandlerFunc {
 	// your code...
 	return nil

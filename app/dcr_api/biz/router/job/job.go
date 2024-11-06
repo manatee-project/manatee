@@ -48,10 +48,6 @@ func Register(r *server.Hertz) {
 				_submit := _job.Group("/submit", _submitMw()...)
 				_submit.POST("/", append(_submitjobMw(), job.SubmitJob)...)
 			}
-			{
-				_update := _job.Group("/update", _updateMw()...)
-				_update.POST("/", append(_updatejobstatusMw(), job.UpdateJobStatus)...)
-			}
 		}
 	}
 }

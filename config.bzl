@@ -1,10 +1,9 @@
 # NOTE: this is a hacky way to load the configs, because it's not actually a .bzl file
 # In the future, we need to remove the separate env file and rely on a single config file.
-load("//:env.bzl", "env", "project_id", "project_number", "region", "zone")
+load("//:env.bzl", "env", "project_id", "region", "zone")
 
 # reassign external variables to bzl variables here.
 gcp_project_id = project_id
-gcp_project_number = project_number
 deploy_env = env
 gcp_region = region
 gcp_zone = zone
