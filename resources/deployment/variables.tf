@@ -30,11 +30,6 @@ variable "project_id" {
   description = "The GCP project ID"
 }
 
-variable "project_number" {
-  type        = string
-  description = "The GCP project number"
-}
-
 variable "mysql_username" {
   type        = string
   description = "Mysql username"

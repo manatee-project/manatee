@@ -34,11 +34,6 @@ variable "project_id" {
   description = "The GCP project ID"
 }
 
-variable "project_number" {
-  type        = string
-  description = "The GCP project number"
-}
-
 variable "type" {
   type        = string
   description = "Instance type for the GKE instances"

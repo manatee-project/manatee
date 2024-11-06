@@ -19,20 +19,6 @@ import (
 	"io"
 )
 
-const (
-	INSTANCE_RUNNING    = 1
-	INSTANCE_TERMINATED = 2
-	INSTANCE_OTHER      = 3
-)
-
-type Instance struct {
-	UUID         string
-	Name         string
-	Token        string // Token is reserved for later user authentication
-	Status       int
-	CreationTime string
-}
-
 type CloudProvider interface {
 	// cloud storage
 	DownloadFile(remoteSrcPath string, localDestPath string) error
@@ -41,23 +27,8 @@ type CloudProvider interface {
 	GetFilebyChunk(remotePath string, offset int64, chunkSize int64) ([]byte, error)
 	DeleteFile(remotePath string) error
 	UploadFile(fileReader io.Reader, remotePath string, compress bool) error
-	// KMS
-	CreateSymmetricKeys(keyId string) error
-	CheckIfKeyExists(keyId string) (bool, error)
-	EncryptWithKMS(keyId string, plaintext string) (string, error)
-	DecryptWithKMS(keyId string, ciphertextB64 string) (string, error)
-	GrantServiceAccountKeyRole(serviceAccount string, keyId string, role string) error
-	// workload identity pool
-	CreateWorkloadIdentityPoolProvider(wipName string) error
-	UpdateWorkloadIdentityPoolProvider(wipName string, imageDigest string) error
 	// compute engine
 	GetServiceAccountEmail() (string, error)
-	// instance
-	ListAllInstances() ([]*Instance, error)
-	DeleteInstance(instanceName string) error
-	// confidential space
-	CreateConfidentialSpace(instanceName string, dockerImage string, stage1Token string, uuid string) error
-	PrepareResourcesForUser(userName string) error
 }
 
 func GetCloudProvider(ctx context.Context) CloudProvider {

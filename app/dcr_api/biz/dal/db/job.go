@@ -103,3 +103,11 @@ func GetInProgressJobs(creator string) ([]*Job, error) {
 	}
 	return res, nil
 }
+
+func GetAllInProgressJobs() ([]*Job, error) {
+	var res []*Job
+	if err := DB.Model(Job{}).Where("job_status in (1, 3, 4)").Find(&res).Error; err != nil {
+		return nil, errors.Wrap(err, "failed to find finished job status")
+	}
+	return res, nil
+}

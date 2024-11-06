@@ -4,7 +4,6 @@ load(
     "//:config.bzl",
     "deploy_env",
     "gcp_project_id",
-    "gcp_project_number",
     "gcp_region",
     "gcp_zone",
     "registry_api_image",
@@ -20,7 +19,6 @@ sh_binary(
     srcs = [":generate_app_config_file.sh"],
     args = [
         gcp_project_id,
-        gcp_project_number,
         deploy_env,
         gcp_region,
         gcp_zone,
@@ -31,9 +29,8 @@ genrule(
     name = "generate_app_config",
     srcs = [],
     outs = ["config.yaml"],
-    cmd = "$(location :generate_app_config_sh) {} {} {} {} {} > $(OUTS)".format(
+    cmd = "$(location :generate_app_config_sh) {} {} {} {} > $(OUTS)".format(
         gcp_project_id,
-        gcp_project_number,
         deploy_env,
         gcp_region,
         gcp_zone,

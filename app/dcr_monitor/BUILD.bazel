@@ -1,15 +1,20 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 go_library(
     name = "dcr_monitor_lib",
-    srcs = ["main.go"],
+    srcs = [
+        "main.go",
+        "reconciler.go",
+    ],
     importpath = "github.com/manatee-project/manatee/app/dcr_monitor",
     visibility = ["//visibility:private"],
     deps = [
-        "//app/dcr_monitor/client",
-        "//app/dcr_monitor/monitor",
+        "//app/dcr_api/biz/dal/db",
+        "//app/dcr_api/biz/model/job",
+        "//app/dcr_monitor/imagebuilder",
+        "//app/dcr_monitor/tee_backend",
         "//pkg/config",
         "@com_github_cloudwego_hertz//pkg/common/hlog",
     ],
@@ -50,4 +55,17 @@ oci_load(
     name = "load_image",
     image = ":image",
     repo_tags = ["dcr_monitor:latest"],
+)
+
+go_test(
+    name = "dcr_monitor_test",
+    srcs = ["reconciler_test.go"],
+    embed = [":dcr_monitor_lib"],
+    deps = [
+        "//app/dcr_api/biz/dal/db",
+        "//app/dcr_api/biz/model/job",
+        "//app/dcr_monitor/imagebuilder",
+        "@com_github_cloudwego_hertz//pkg/common/test/assert",
+        "@io_gorm_gorm//:gorm",
+    ],
 )
