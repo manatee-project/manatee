@@ -1,20 +1,12 @@
 package tee_backend
 
 import (
-	"bytes"
 	"context"
-	"crypto/tls"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 
 	compute "cloud.google.com/go/compute/apiv1"
 	"cloud.google.com/go/compute/apiv1/computepb"
-	"cloud.google.com/go/compute/metadata"
-	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/pkg/errors"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -70,10 +62,6 @@ func (c *TEEProviderGCPConfidentialSpace) GetInstanceStatus(instanceName string)
 }
 
 func (c *TEEProviderGCPConfidentialSpace) CleanUpInstance(instanceName string) error {
-	err := c.deleteWorkloadIdentityPoolProvider(instanceName)
-	if err != nil {
-		return err
-	}
 
 	req := &computepb.DeleteInstanceRequest{
 		Project:  c.projectId,
@@ -93,11 +81,7 @@ func (c *TEEProviderGCPConfidentialSpace) CleanUpInstance(instanceName string) e
 
 func (c *TEEProviderGCPConfidentialSpace) LaunchInstance(instanceName string, image string, digest string) error {
 
-	err := c.createWorkloadIdentityPoolProvider(instanceName, digest)
-	if err != nil {
-		return err
-	}
-	err = c.createConfidentialSpace(instanceName, image)
+	err := c.createConfidentialSpace(instanceName, image)
 	if err != nil {
 		return err
 	}
@@ -208,197 +192,4 @@ func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequ
 		Project:          c.projectId,
 	}
 	return req
-}
-
-func (c *TEEProviderGCPConfidentialSpace) createWorkloadIdentityPoolProvider(name string, digest string) error {
-	// truncate name to 32 characters to avoid error
-	if len(name) > 32 {
-		name = name[:32]
-	}
-	requestBody, err := c.workloadIdentityRequestBody(name, digest)
-	if err != nil {
-		// err already is wrapped
-		return err
-	}
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: false,
-			MinVersion:         tls.VersionTLS12,
-		},
-	}
-	client := &http.Client{Transport: tr}
-	createWipProviderUrl := fmt.Sprintf(
-		"https://iam.googleapis.com/v1/projects/%s/locations/global/workloadIdentityPools/dcr-%s-pool/providers?workloadIdentityPoolProviderId=%s",
-		c.projectId, c.env, name)
-	req, err := http.NewRequest("POST", createWipProviderUrl, bytes.NewReader(requestBody))
-	if err != nil {
-		return errors.Wrap(err, "failed to create request")
-	}
-	token, err := c.getAccessToken()
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := client.Do(req)
-	if err != nil {
-		return errors.Wrap(err, "failed to do http request")
-	}
-	defer resp.Body.Close()
-	res, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return errors.Wrap(err, "failed to read http response")
-	}
-	hlog.Debugf("%v", string(res))
-	return nil
-}
-
-func (c *TEEProviderGCPConfidentialSpace) updateWorkloadIdentityPoolProvider(name string, imageDigest string) error {
-	// truncate name to 32 characters to avoid error
-	if len(name) > 32 {
-		name = name[:32]
-	}
-	requestBody, err := c.workloadIdentityRequestBody(name, imageDigest)
-	if err != nil {
-		return err
-	}
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: false,
-			MinVersion:         tls.VersionTLS12,
-		},
-	}
-	client := &http.Client{Transport: tr}
-	updateWipProviderUrl := fmt.Sprintf(
-		"https://iam.googleapis.com/v1/projects/%s/locations/global/workloadIdentityPools/dcr-%s-pool/providers/%s?updateMask=attributeCondition",
-		c.projectId, c.env, name)
-	req, err := http.NewRequest("PATCH", updateWipProviderUrl, bytes.NewReader(requestBody))
-	if err != nil {
-		return errors.Wrap(err, "failed to create request")
-	}
-	token, err := c.getAccessToken()
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := client.Do(req)
-	if err != nil {
-		return errors.Wrap(err, "failed to do http request")
-	}
-	defer resp.Body.Close()
-	res, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return errors.Wrap(err, "failed to read http response")
-	}
-	hlog.Debugf("%v", string(res))
-	return nil
-}
-
-func (c *TEEProviderGCPConfidentialSpace) deleteWorkloadIdentityPoolProvider(name string) error {
-	// truncate name to 32 characters to avoid error
-	if len(name) > 32 {
-		name = name[:32]
-	}
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: false,
-			MinVersion:         tls.VersionTLS12,
-		},
-	}
-	client := &http.Client{Transport: tr}
-	deleteWipProviderUrl := fmt.Sprintf(
-		"https://iam.googleapis.com/v1/projects/%s/locations/global/workloadIdentityPools/dcr-%s-pool/providers/%s",
-		c.projectId, c.env, name)
-	req, err := http.NewRequest("DELETE", deleteWipProviderUrl, nil)
-	if err != nil {
-		return errors.Wrap(err, "failed to create request")
-	}
-	token, err := c.getAccessToken()
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := client.Do(req)
-	if err != nil {
-		return errors.Wrap(err, "failed to do http request")
-	}
-	defer resp.Body.Close()
-	_, err = io.ReadAll(resp.Body)
-	if err != nil {
-		return errors.Wrap(err, "failed to read http response")
-	}
-	return nil
-}
-
-type WorkloadIdentityPoolProvider struct {
-	DisplayName        string            `json:"displayName"`
-	Description        string            `json:"description"`
-	AttributeMapping   map[string]string `json:"attributeMapping"`
-	AttributeCondition string            `json:"attributeCondition"`
-	OIDC               OIDC              `json:"oidc"`
-}
-
-type OIDC struct {
-	IssuerUri        string   `json:"issuerUri"`
-	AllowedAudiences []string `json:"allowedAudiences"`
-	JwksJson         string   `json:"jwksJson"`
-}
-
-type Token struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn   uint64 `json:"expires_in"`
-	TokenType   string `json:"token_type"`
-}
-
-func (c *TEEProviderGCPConfidentialSpace) workloadIdentityRequestBody(name string, imageDigest string) ([]byte, error) {
-	attributeCondition := fmt.Sprintf(
-		"assertion.submods.container.image_digest == '%s' && '%s' in assertion.google_service_accounts && assertion.swname == 'CONFIDENTIAL_SPACE'",
-		imageDigest, c.saEmail)
-	if !c.debug {
-		attributeCondition += " && 'STABLE' in assertion.submods.confidential_space.support_attributes"
-	}
-	provider := WorkloadIdentityPoolProvider{
-		DisplayName: name,
-		OIDC: OIDC{
-			IssuerUri:        "https://confidentialcomputing.googleapis.com/",
-			AllowedAudiences: []string{"https://sts.googleapis.com"},
-		},
-		AttributeMapping: map[string]string{
-			"google.subject": "assertion.sub",
-		},
-		AttributeCondition: attributeCondition,
-	}
-	jsonStringBytes, err := json.Marshal(provider)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to marshal workload identity pool provider")
-	}
-	return jsonStringBytes, nil
-}
-
-func (c *TEEProviderGCPConfidentialSpace) getAccessToken() (string, error) {
-	// Get access token
-	if metadata.OnGCE() {
-		res, err := metadata.GetWithContext(c.ctx, "instance/service-accounts/default/token")
-		if err != nil {
-			return "", err
-		}
-		var token Token
-		if err = json.Unmarshal([]byte(res), &token); err != nil {
-			return "", err
-		}
-		return token.AccessToken, nil
-	}
-	// Run on minikube
-	// Use application credentials to get token
-	credentials, err := google.FindDefaultCredentials(c.ctx, "https://www.googleapis.com/auth/cloud-platform")
-	if err != nil {
-		return "", errors.Wrap(err, "failed to find default credential")
-	}
-	token, err := credentials.TokenSource.Token()
-	if err != nil {
-		return "", errors.Wrap(err, "failed to get token source")
-	}
-	return token.AccessToken, nil
 }
