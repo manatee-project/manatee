@@ -92,26 +92,20 @@ zone=""                          # the zone that the resources created in
 ```
 
 ### Preparing resources
-The resources are created and managed by the project administrator who has the `Owner` role in the GCP project. Make sure you have correctly defined environment variables in the `env.bzl`. Only the project administrator is responsible to run these commands to create resources. The devdelopers can skip this part If the resources are already created.
+The resources are created and managed by the project administrator who has the `Owner` role in the GCP project. Make sure you have correctly defined environment variables in the `env.bzl`. Only the project administrator is responsible to run these commands to create resources.
 
-`resources/global` directory contains the global resources including: clusters, cloud sql instance, database, docker repositories, and service accounts. These resource are global and only created once for all the developers in one project. 
+`resources/global` directory contains the global resources including: clusters, cloud sql instance, database, docker repositories, and service accounts. These resource are global and only created once.
 ```
 pushd resources/global
 ./apply.sh
 popd
 ```
 
-When a new developer joins, the administrator needs to create resources for the new developer. Each developer should have his own namespace. 
-
-`resources/developer-specific` directory includes the resources releated to the  including: kubernetes namespace, role, secret. Once the global resources have been created, the developers can run the commands to create user-specific resources. The namespace is required, and make sure the namespace is distinct. The `database-user` and `database-password` are optional. If they are not provided, the script will use the namespace as the `database-user` and a ramdom string as `database-password`. 
+`resources/deployment` directory includes the resources releated to kunernates including: kubernetes namespace, role, secret. These resources are created under different namespace. So the namespace parameter is required, and you can create different deployments under different namespaces.
 ```shell 
-pushd resources/developer-specific
+pushd resources/deployment
 ./apply.sh --namespace=dcr-namespace
 popd
-```
-```shell
-# provide developer specific database account info
-./apply.sh --namespace=dcr-namespace --database-user=devloper-account --database-password=devloper-pwd
 ```
 
 ### Building and Pushing Images
@@ -150,5 +144,5 @@ popd
 ```
 When deployment is complete, you can follow the output of the script to get the public ip of jupyterhub. 
 ```
-kubectl --namespace=$(your namespace) get service proxy-public
+kubectl --namespace=dcr-namespace get service proxy-public
 ```
