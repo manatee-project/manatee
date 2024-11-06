@@ -113,12 +113,6 @@ resource "google_project_iam_member" "dcr_pod_sa_wip_admin" {
   member  = "serviceAccount:${google_service_account.gcp_dcr_pod_sa.email}"
 }
 
-resource "google_service_account_iam_member" "dcr_pod_sa_iam_member" {
-  service_account_id = google_service_account.gcp_dcr_pod_sa.id
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.dcr-workload-identity-pool.name}/*"
-}
-
 resource "google_project_iam_member" "dcr_pod_sa_repo_writer" {
   project = var.project_id
   role    = "roles/artifactregistry.writer"
