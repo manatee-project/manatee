@@ -40,15 +40,6 @@ if ! gsutil ls gs://dcr-tf-state-$env > /dev/null 2>&1; then
   gsutil mb -l us gs://dcr-tf-state-$env
 fi
 
-cat << EOF > backend.tf
-terraform {
-  backend "gcs" {
-    bucket = "dcr-tf-state-$env"
-    prefix = "cloud"
-  }
-}
-EOF
-
 cp $VAR_FILE terraform.tfvars
-terraform init -reconfigure
+terraform init -reconfigure -backend-config="bucket=dcr-tf-state-$env"  -backend-config="prefix=cloud" 
 terraform apply

@@ -71,15 +71,6 @@ fi
 VAR_FILE=$(realpath $VAR_FILE)
 source $VAR_FILE
 
-cat << EOF > backend.tf
-terraform {
-  backend "gcs" {
-    bucket = "dcr-tf-state-$env"
-    prefix = "$namespace"
-  }
-}
-EOF
-
 zone=$region-a
 # get kubernete cluster credentials
 gcloud container clusters get-credentials dcr-$env-cluster --zone $zone --project $project_id
@@ -89,5 +80,6 @@ cp $VAR_FILE terraform.tfvars
 echo -e "\nnamespace=\"$namespace\"" >> terraform.tfvars
 echo -e "mysql_username=\"$dbuser\"" >> terraform.tfvars
 echo -e "mysql_password=\"$dbpwd\"" >> terraform.tfvars
-terraform init -reconfigure
+terraform init -reconfigure -backend-config="bucket=dcr-tf-state-$env"  -backend-config="prefix=$namespace" 
+
 terraform apply
