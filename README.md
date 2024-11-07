@@ -119,7 +119,7 @@ popd
 
 
 ```shell 
-./push_image.sh --namespace=dcr-namespace
+./push_all_images.sh --namespace=dcr-namespace
 ```
 
 If you'd like to load the images in your local container runtime (e.g., Docker), you can use `oci_load` rules.

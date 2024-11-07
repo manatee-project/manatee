@@ -28,7 +28,7 @@ do
 done
 
 if [ -z "$namespace" ]; then
-    echo -e "Error: the namespace parameter is missing, please run the script like ./push_image.sh --namespace=xxx"
+    echo -e "Error: the namespace parameter is missing, please run the script like ./push_all_image.sh --namespace=xxx"
     exit
 fi
 
