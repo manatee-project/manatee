@@ -103,7 +103,7 @@ popd
 `resources/deployment` directory includes the resources releated to kunernates including: kubernetes namespace, role, secret. These resources are created under different namespace. So the namespace parameter is required, and you can create different deployments under different namespaces.
 ```shell 
 pushd resources/deployment
-./apply.sh --namespace=dcr-namespace
+./apply.sh --namespace=<namespace-to-deploy>
 popd
 ```
 
@@ -117,10 +117,19 @@ popd
 
 [Bazel](https://bazel.build/install) is required to build all of the binaries and push them to the artifact registry.
 
-
 ```shell 
-./push_all_images.sh --namespace=dcr-namespace
+bazel run //:push_all_images --action_env=namespace=<namespace-to-deploy>
 ```
+
+> [!IMPORTANT]
+> the `--action_env=namespace=<namespace-to-deploy>` flag is required.
+
+You can also push images separately by this command. Replace `<app>` by the directory name under `/app` (e.g., dcr_api)
+
+```
+bazel run //:push_<app>_image --action_env=namespace=<namespace-to-deploy>
+```
+
 
 If you'd like to load the images in your local container runtime (e.g., Docker), you can use `oci_load` rules.
 
@@ -138,10 +147,10 @@ source env.bzl
 gcloud container clusters get-credentials dcr-$env-cluster --zone $zone --project $project_id
 gcloud auth configure-docker us-docker.pkg.dev
 pushd deployment
-./deploy.sh --namespace=dcr-namespace
+./deploy.sh --namespace=<namespace-to-deploy>
 popd
 ```
 When deployment is complete, you can follow the output of the script to get the public ip of jupyterhub. 
 ```
-kubectl --namespace=dcr-namespace get service proxy-public
+kubectl --namespace=<namespace-to-deploy> get service proxy-public
 ```

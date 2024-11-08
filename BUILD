@@ -1,16 +1,7 @@
 load("@bazel_gazelle//:def.bzl", "gazelle")
+load("@rules_multirun//:defs.bzl", "multirun")
 load("@rules_oci//oci:defs.bzl", "oci_push")
-load(
-    "//:config.bzl",
-    "deploy_env",
-    "gcp_project_id",
-    "gcp_region",
-    "gcp_zone",
-    "registry_api_image",
-    "registry_jupyter_image",
-    "registry_monitor_image",
-    "registry_user_base_image",
-)
+load("//:env.bzl", "env", "project_id", "region", "zone")
 
 # Generate app config file
 # TODO: this is temporary solution. Please remove in the future.
@@ -18,10 +9,10 @@ sh_binary(
     name = "generate_app_config_sh",
     srcs = [":generate_app_config_file.sh"],
     args = [
-        gcp_project_id,
-        deploy_env,
-        gcp_region,
-        gcp_zone,
+        project_id,
+        env,
+        region,
+        zone,
     ],
 )
 
@@ -30,10 +21,10 @@ genrule(
     srcs = [],
     outs = ["config.yaml"],
     cmd = "$(location :generate_app_config_sh) {} {} {} {} > $(OUTS)".format(
-        gcp_project_id,
-        deploy_env,
-        gcp_region,
-        gcp_zone,
+        project_id,
+        env,
+        region,
+        zone,
     ),
     tools = [":generate_app_config_sh"],
     visibility = ["//visibility:public"],
@@ -42,32 +33,37 @@ genrule(
 # gazelle:prefix github.com/manatee-project/manatee
 gazelle(name = "gazelle")
 
-# push images
-oci_push(
-    name = "push_dcr_api_image",
-    image = "//app/dcr_api:image",
-    remote_tags = ["latest"],
-    repository = registry_api_image,
-)
+REPOS = {
+    "dcr_api": "us-docker.pkg.dev/{}/dcr-{}-$$namespace-images/data-clean-room-api".format(project_id, env),
+    "dcr_monitor": "us-docker.pkg.dev/{}/dcr-{}-$$namespace-images/data-clean-room-monitor".format(project_id, env),
+    "jupyterlab_manatee": "us-docker.pkg.dev/{}/dcr-{}-$$namespace-images/scipy-notebook-with-dcr".format(project_id, env),
+    "dcr_tee": "us-docker.pkg.dev/{}/dcr-{}-user-images/data-clean-room-base".format(project_id, env),
+}
 
-oci_push(
-    name = "push_dcr_monitor_image",
-    image = "//app/dcr_monitor:image",
-    remote_tags = ["latest"],
-    repository = registry_monitor_image,
-)
+[
+    genrule(
+        name = "{}_repo".format(k),
+        outs = ["{}_repo.txt".format(k)],
+        cmd = "echo '{}' | envsubst > $@".format(v),
+    )
+    for (k, v) in REPOS.items()
+]
 
-oci_push(
-    name = "push_jupyterlab_image",
-    image = "//app/jupyterlab_manatee:image",
-    remote_tags = ["latest"],
-    repository = registry_jupyter_image,
-)
+[
+    oci_push(
+        name = "push_{}_image".format(k),
+        image = "//app/{}:image".format(k),
+        remote_tags = ["latest"],
+        repository_file = ":{}_repo".format(k),
+    )
+    for k in REPOS.keys()
+]
 
-# push user images
-oci_push(
-    name = "push_dcr_tee_image",
-    image = "//app/dcr_tee:image",
-    remote_tags = ["latest"],
-    repository = registry_user_base_image,
+multirun(
+    name = "push_all_images",
+    commands = [
+        "push_{}_image".format(k)
+        for k in REPOS.keys()
+    ],
+    jobs = 0,
 )
