@@ -1,6 +1,5 @@
 load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@rules_multirun//:defs.bzl", "command", "multirun")
-load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_oci//oci:defs.bzl", "oci_push")
 load("//:env.bzl", "env", "project_id", "region", "zone")
 
