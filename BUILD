@@ -53,7 +53,7 @@ REPOS = {
     oci_push(
         name = "push_{}_image".format(k),
         image = "//app/{}:image".format(k),
-        remote_tags = ["lIatest"],
+        remote_tags = ["latest"],
         repository_file = ":{}_repo".format(k)
     )
     for (k, v) in REPOS.items()
