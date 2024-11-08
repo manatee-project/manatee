@@ -15,8 +15,8 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
     hub_name = "pydeps",
     python_version = "3.11",
+    requirements_linux = "//app/jupyterlab_manatee:requirements_linux.txt",
     requirements_lock = "//app/jupyterlab_manatee:requirements.txt",
-    requirements_linux = "//app/jupyterlab_manatee:requirements_linux.txt"
 )
 use_repo(pip, "pydeps")
 

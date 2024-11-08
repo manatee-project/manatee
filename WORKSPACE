@@ -34,8 +34,6 @@ go_register_toolchains(version = "1.22.0")
 
 gazelle_dependencies()
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
 http_archive(
     name = "rules_multirun",
     sha256 = "0e124567fa85287874eff33a791c3bbdcc5343329a56faa828ef624380d4607c",
