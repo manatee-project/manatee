@@ -1,5 +1,5 @@
 load("@bazel_gazelle//:def.bzl", "gazelle")
-load("@rules_multirun//:defs.bzl", "command", "multirun")
+load("@rules_multirun//:defs.bzl", "multirun")
 load("@rules_oci//oci:defs.bzl", "oci_push")
 load("//:env.bzl", "env", "project_id", "region", "zone")
 
@@ -57,18 +57,11 @@ REPOS = {
     )
     for (k, v) in REPOS.items()
 ]
-[
-    command(
-        name = "pushcmd_{}".format(k),
-        command = ":push_{}_image".format(k),
-    )
-    for (k, v) in REPOS.items()
-]
 
 multirun(
     name = "push_all_images",
     commands = [
-        "pushcmd_{}".format(k)
+        "push_{}_image".format(k)
         for (k, _) in REPOS.items()
     ],
     jobs = 0,
