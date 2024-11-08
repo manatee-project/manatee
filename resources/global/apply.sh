@@ -12,25 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-set -e
 
-for arg in "$@"
-do
-    case $arg in
-        --namespace=*)
-        # If we find an argument --namespace=something, split the string into a name/value array.
-        IFS='=' read -ra NAMESPACE <<< "$arg"
-        # Assign the second element of the array (the value of the --namespace argument) to our variable.
-        namespace="${NAMESPACE[1]}"
-        ;;
-    esac
-done
-
-
-if [ -z "$namespace" ]; then
-    echo "Error: the namespace parameter is required, run the script again like ./apply.sh --namespace="
-    exit 1
-fi
+echo "You are creating the gcp resources and this should only be done once."
 
 # Check if gcloud is installed
 if ! [ -x "$(command -v gcloud)" ]; then
@@ -53,11 +36,10 @@ fi
 VAR_FILE=$(realpath $VAR_FILE)
 source $VAR_FILE
 
-zone=$region-a
-# get kubernete cluster credentials
-gcloud container clusters get-credentials dcr-$env-cluster --zone $zone --project $project_id
+if ! gsutil ls gs://dcr-tf-state-$env > /dev/null 2>&1; then
+  gsutil mb -l us gs://dcr-tf-state-$env
+fi
 
 cp $VAR_FILE terraform.tfvars
-echo -e "\nnamespace=\"$namespace\"\n" >> terraform.tfvars
-terraform init -reconfigure
+terraform init -reconfigure -backend-config="bucket=dcr-tf-state-$env"  -backend-config="prefix=cloud" 
 terraform apply

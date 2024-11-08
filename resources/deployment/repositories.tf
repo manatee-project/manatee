@@ -14,20 +14,10 @@
  * limitations under the License.
  */
 
-terraform {
-  required_providers {
-    google = {
-      source = "hashicorp/google"
-    }
-    kubernetes = {
-      source = "hashicorp/kubernetes"
-    }
-  }
-  
+resource "google_artifact_registry_repository" "data_clean_room_images" {
+  project       = var.project_id
+  location      = "us"
+  repository_id = "dcr-${var.env}-${var.namespace}-images"
+  description   = "Data Clean Room Images"
+  format        = "DOCKER"
 }
-
-provider "kubernetes" {
-  config_path = "~/.kube/config"
-}
-
-data "google_client_openid_userinfo" "me" {}

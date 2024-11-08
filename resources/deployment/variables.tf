@@ -53,5 +53,5 @@ variable "zone" {
 locals {
   gcp_dcr_pod_sa = "dcr-${var.env}-pod-sa"
   gcp_jupyter_pod_sa = "jupyter-${var.env}-pod-sa"
-  database = "dcr-${var.env}-database"
+  database = "dcr-${var.namespace}-database"
 }

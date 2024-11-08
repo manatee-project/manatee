@@ -34,16 +34,6 @@ variable "project_id" {
   description = "The GCP project ID"
 }
 
-variable "mysql_username" {
-  type        = string
-  description = "Mysql username"
-}
-
-variable "mysql_password" {
-  type        = string
-  description = "Mysql password"
-}
-
 variable "type" {
   type        = string
   description = "Instance type for the GKE instances"

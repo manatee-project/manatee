@@ -25,8 +25,6 @@ resource "kubernetes_role" "role" {
     resources  = ["jobs", "pods", "pods/log"]
     verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
   }
-
-  depends_on = [kubernetes_cluster_role_binding.cluster_admin_binding]
 }
 
 resource "kubernetes_role_binding" "role_binding" {

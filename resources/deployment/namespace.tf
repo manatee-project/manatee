@@ -14,14 +14,8 @@
  * limitations under the License.
  */
 
-resource "kubernetes_secret" "secret" {
+resource "kubernetes_namespace" "data_clean_room_k8s_namespace" {
   metadata {
-    name      = "mysql-secret"
-    namespace = kubernetes_namespace.data_clean_room_k8s_namespace.metadata[0].name
-  }
-  data = {
-    mysql-username = var.mysql_username,
-    mysql-password = var.mysql_password,
-    mysql-database = local.database
+    name = var.namespace
   }
 }

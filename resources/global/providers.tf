@@ -21,3 +21,9 @@ terraform {
     }
   }
 }
+
+provider "kubernetes" {
+  config_path = "~/.kube/config"
+}
+
+data "google_client_openid_userinfo" "me" {}

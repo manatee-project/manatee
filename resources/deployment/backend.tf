@@ -13,11 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-resource "kubernetes_namespace" "data_clean_room_k8s_namespace" {
-  metadata {
-    name = var.namespace
-  }
-
-  depends_on = [ kubernetes_cluster_role_binding.cluster_admin_binding ]
+ 
+terraform {
+  backend "gcs" {}
 }

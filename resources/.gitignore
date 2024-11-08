@@ -2,4 +2,3 @@
 terraform.tfstate
 terraform.tfstate.backup
 terraform.tfvars
-backend.tf

@@ -21,11 +21,3 @@ resource "google_artifact_registry_repository" "dcr_user_images" {
   description   = "The repository stores the images that are built by data clean room API and running in the confidential space."
   format        = "DOCKER"
 }
-
-resource "google_artifact_registry_repository" "data_clean_room_images" {
-  project       = var.project_id
-  location      = "us"
-  repository_id = "dcr-${var.env}-images"
-  description   = "Data Clean Room Images"
-  format        = "DOCKER"
-}

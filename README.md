@@ -71,7 +71,7 @@ We are releasing an alpha version, which may miss some necessary features.
     - cloudresourcemanager.googleapis.com
     - sqladmin.googleapis.com
     - confidentialcomputing.googleapis.com
-* [Gcloud CLI](https://cloud.google.com/sdk/docs/install) Login to the GCP `gcloud auth login && cloud auth application-default login`
+* [Gcloud CLI](https://cloud.google.com/sdk/docs/install) Login to the GCP `gcloud auth login && gcloud auth application-default login && gcloud components install gke-gcloud-auth-plugin`
 * [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli) Terraform is an infrastructure as code tool that enables you to safely and predictably provision and manage infrastructure in any cloud.
 * [Helm](https://helm.sh/docs/intro/install/) Helm is a package manager for Kubernetes that allows developers and operators to more easily package, configure, and deploy applications and services onto Kubernetes clusters.
 * [Hertz](https://github.com/cloudwego/hertz) Hertz is a high-performance, high-usability, extensible HTTP framework for Go. It’s designed to make it easy for developers to build microservices.
@@ -85,27 +85,25 @@ cp .env.example env.bzl
 Edit the variables in `env.bzl`. The `env.bzl` file is the one that really takes effect, the other files are just templates. The double quotes around a variable name are needed. For example:
 ```
 env="dev"                        # the deployment environment
-mysql_username="mockname"        # mysql database username 
-mysql_password="mockpwd"         # mysql database password
 project_id="you project id"      # gcp project id
 region=""                        # the region that the resources created in
 zone=""                          # the zone that the resources created in
 ```
 
 ### Preparing resources
-Create resources for the data clean room by terraform. Make sure you have correctly defined environment variables in the `env.bzl`.
+The resources are created and managed by the project administrator who has the `Owner` role in the GCP project. Make sure you have correctly defined environment variables in the `env.bzl`. Only the project administrator is responsible to run these commands to create resources.
 
-`resources/gcp` directory contains the resources releated to the gcp including: clusters, cloud sql instance, database, docker repositories, and service accounts. These resource are global and only created once for all the developers in one project. If you are the project owner, run the commands to create global resources.
+`resources/global` directory contains the global resources including: clusters, cloud sql instance, database, docker repositories, and service accounts. These resource are global and only created once.
 ```
-pushd resources/gcp
+pushd resources/global
 ./apply.sh
 popd
 ```
 
-`resources/kubernetes` directory includes the resources releated to the kubernete cluster including: namespace, role, secret. Once the global resources have been created, the developers can run the commands to create user-specific resources. The namespace is required, and make sure the namespace is distinct.
-```
-pushd resources/kubernetes
-./apply.sh --namespace=xxxx
+`resources/deployment` directory includes the resources releated to kunernates including: kubernetes namespace, role, secret. These resources are created under different namespace. So the namespace parameter is required, and you can create different deployments under different namespaces.
+```shell 
+pushd resources/deployment
+./apply.sh --namespace=dcr-namespace
 popd
 ```
 
@@ -121,7 +119,7 @@ popd
 
 
 ```shell 
-bazel query 'kind("oci_push", "//...")' | xargs -n1 bazel run
+./push_all_images.sh --namespace=dcr-namespace
 ```
 
 If you'd like to load the images in your local container runtime (e.g., Docker), you can use `oci_load` rules.
@@ -136,11 +134,14 @@ Find individual rules from corresponding `BUILD.bazel` files.
 
 Deploy data clean room and jupyterhub by helm chart.
 ```shell 
+source env.bzl
+gcloud container clusters get-credentials dcr-$env-cluster --zone $zone --project $project_id
+gcloud auth configure-docker us-docker.pkg.dev
 pushd deployment
-./deploy.sh
+./deploy.sh --namespace=dcr-namespace
 popd
 ```
 When deployment is complete, you can follow the output of the script to get the public ip of jupyterhub. 
 ```
-kubectl --namespace=$(your namespace) get service proxy-public
+kubectl --namespace=dcr-namespace get service proxy-public
 ```
