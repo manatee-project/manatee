@@ -3,30 +3,29 @@ load("@rules_multirun//:defs.bzl", "multirun")
 load("@rules_oci//oci:defs.bzl", "oci_push")
 load("//:env.bzl", "env", "project_id", "region", "zone")
 
-# Generate app config file
-# TODO: this is temporary solution. Please remove in the future.
-sh_binary(
-    name = "generate_app_config_sh",
-    srcs = [":generate_app_config_file.sh"],
-    args = [
-        project_id,
-        env,
-        region,
-        zone,
-    ],
-)
-
+# NOTE: this is temporary solution for making config file for the app.
+# Ideally, the config should be provisioned at the deployment, not at the build.
+# Right now, we just generate one so that we can test the app.
 genrule(
     name = "generate_app_config",
-    srcs = [],
     outs = ["config.yaml"],
-    cmd = "$(location :generate_app_config_sh) {} {} {} {} > $(OUTS)".format(
-        project_id,
-        env,
-        region,
-        zone,
+    cmd = """
+echo 'CloudProvider:
+  GCP:
+    Project: "{project_id}"
+    HubBucket: "dcr-{env}-hub"
+    Zone: "{zone}"
+    Region: "{region}"
+    Debug: false
+    Env: {env}
+Cluster:
+  PodServiceAccount: "dcr-k8s-pod-sa"' > $@
+    """.format(
+        env = env,
+        project_id = project_id,
+        region = region,
+        zone = zone,
     ),
-    tools = [":generate_app_config_sh"],
     visibility = ["//visibility:public"],
 )
 
