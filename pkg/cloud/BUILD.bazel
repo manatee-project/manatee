@@ -11,8 +11,6 @@ go_library(
     deps = [
         "//pkg/config",
         "@com_github_pkg_errors//:errors",
-        "@com_google_cloud_go_compute_metadata//:metadata",
         "@com_google_cloud_go_storage//:storage",
-        "@org_golang_google_api//iterator",
     ],
 )

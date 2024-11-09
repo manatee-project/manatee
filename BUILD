@@ -17,9 +17,7 @@ echo 'CloudProvider:
     Zone: "{zone}"
     Region: "{region}"
     Debug: false
-    Env: {env}
-Cluster:
-  PodServiceAccount: "dcr-k8s-pod-sa"' > $@
+    Env: {env}' > $@
     """.format(
         env = env,
         project_id = project_id,

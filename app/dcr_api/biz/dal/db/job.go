@@ -27,6 +27,7 @@ type Job struct {
 	UUID              string `gorm:"uuid" json:"uuid"`
 	Creator           string `gorm:"creator" json:"creator"`
 	JupyterFileName   string `gorm:"jupyter_file_name" json:"jupyter_file_name"`
+	BuildContextPath  string `gorm:"build_context_path" json:"build_context_path"`
 	DockerImage       string `gorm:"docker_image" json:"docker_image"`
 	DockerImageDigest string `gorm:"docker_image_digest" json:"docker_image_digest"`
 	AttestationReport string `gorm:"attestation_report" json:"attestation_report"`
@@ -50,7 +51,7 @@ func CreateJob(job *Job) error {
 }
 
 func UpdateJob(j *Job) error {
-	result := DB.Model(j).Updates(Job{JobStatus: j.JobStatus, DockerImageDigest: j.DockerImageDigest, DockerImage: j.DockerImage, AttestationReport: j.AttestationReport, InstanceName: j.InstanceName})
+	result := DB.Model(j).Updates(Job{JobStatus: j.JobStatus, BuildContextPath: j.BuildContextPath, DockerImageDigest: j.DockerImageDigest, DockerImage: j.DockerImage, AttestationReport: j.AttestationReport, InstanceName: j.InstanceName})
 	if result.Error != nil {
 		return errors.Wrap(result.Error, "failed to update job %v")
 	}
@@ -98,7 +99,7 @@ func QueryJobByUUIDAndCreator(creator string, uuid string) (*Job, error) {
 
 func GetInProgressJobs(creator string) ([]*Job, error) {
 	var res []*Job
-	if err := DB.Model(Job{}).Where("creator = ? AND job_status in (1, 3, 4)", creator).Find(&res).Error; err != nil {
+	if err := DB.Model(Job{}).Where("creator = ? AND job_status in (0, 1, 3, 4)", creator).Find(&res).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to find finished job status")
 	}
 	return res, nil
@@ -106,7 +107,7 @@ func GetInProgressJobs(creator string) ([]*Job, error) {
 
 func GetAllInProgressJobs() ([]*Job, error) {
 	var res []*Job
-	if err := DB.Model(Job{}).Where("job_status in (1, 3, 4)").Find(&res).Error; err != nil {
+	if err := DB.Model(Job{}).Where("job_status in (0, 1, 3, 4)").Find(&res).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to find finished job status")
 	}
 	return res, nil

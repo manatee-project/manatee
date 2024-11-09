@@ -142,9 +142,6 @@ func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequ
 			}, &computepb.Items{}, &computepb.Items{
 				Key:   proto.String("tee-env-PROJECT_ID"),
 				Value: proto.String(c.projectId),
-			}, &computepb.Items{}, &computepb.Items{
-				Key:   proto.String("tee-env-KEY_LOCATION"),
-				Value: proto.String(c.region),
 			},
 			},
 		},

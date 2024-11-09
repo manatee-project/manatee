@@ -3,14 +3,17 @@ package imagebuilder
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"regexp"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
 	"github.com/pkg/errors"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -22,6 +25,7 @@ type ImageInfo struct {
 }
 
 type ImageBuilder interface {
+	BuildImage(*db.Job, string, string, string) error
 	CheckImageBuilderStatusAndGetInfo(string) (bool, *ImageInfo, error)
 }
 
@@ -147,6 +151,73 @@ func (b *KanikoImageBuilder) deleteJob(name string) error {
 		PropagationPolicy: &deletePolicy,
 	}); err != nil {
 		return errors.Wrap(err, "failed to delete job")
+	}
+	return nil
+}
+
+func (b *KanikoImageBuilder) BuildImage(j *db.Job, bucket string, baseImage string, image string) error {
+
+	buildArgs := []string{
+		fmt.Sprintf("--context=%s", j.BuildContextPath),
+		fmt.Sprintf("--destination=%s", image),
+		// TODO: this should be signed URL (See https://github.com/manatee-project/manatee/issues/23)
+		fmt.Sprintf("--build-arg=OUTPUTPATH=%s", fmt.Sprintf("gs://%s/%s/output/out-%s-%s", bucket, j.Creator, j.UUID[:8], j.JupyterFileName)),
+		fmt.Sprintf("--build-arg=JUPYTER_FILENAME=%s", j.JupyterFileName),
+		fmt.Sprintf("--build-arg=USER_WORKSPACE=%s", fmt.Sprintf("%s-workspace", j.Creator)),
+		fmt.Sprintf("--build-arg=BASE_IMAGE=%s", baseImage),
+		// TODO: this should be signed URL (See https://github.com/manatee-project/manatee/issues/23)
+		fmt.Sprintf("--build-arg=CUSTOMTOKEN_CLOUDSTORAGE_PATH=%s", fmt.Sprintf("gs://%s/%s/output/%s-token", j.Creator, j.UUID)),
+	}
+	kanikoJobName := fmt.Sprintf("kaniko-%s", j.UUID)
+	err := b.createBuildJob(kanikoJobName, buildArgs)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b *KanikoImageBuilder) createBuildJob(jobName string, buildArgs []string) error {
+	memQuantity, err := resource.ParseQuantity("6000M")
+	if err != nil {
+		return errors.Wrap(err, "failed to parse mem quantity")
+	}
+	ttlSecondsAfterFinished := int32(3600 * 24)
+	kanikoJob := &batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      jobName,
+			Namespace: b.namespace,
+		},
+		Spec: batchv1.JobSpec{
+			TTLSecondsAfterFinished: &ttlSecondsAfterFinished,
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					ServiceAccountName: "dcr-k8s-pod-sa",
+					Containers: []corev1.Container{
+						{
+							Name:  "kaniko",
+							Image: "gcr.io/kaniko-project/executor:latest",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									corev1.ResourceMemory: memQuantity,
+								},
+							},
+							Args: append([]string{
+								"--dockerfile=Dockerfile",
+								"--reproducible",
+								"--compressed-caching=false",
+								"--cache=true",
+								"--cache-ttl=72h",
+							}, buildArgs...),
+						},
+					},
+					RestartPolicy: "Never",
+				},
+			},
+		},
+	}
+	_, err = b.clientSet.BatchV1().Jobs(b.namespace).Create(b.ctx, kanikoJob, metav1.CreateOptions{})
+	if err != nil {
+		return errors.Wrap(err, "failed to create kubernetes job")
 	}
 	return nil
 }

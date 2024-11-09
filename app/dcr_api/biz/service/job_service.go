@@ -14,10 +14,14 @@
 package service
 
 import (
+	"archive/tar"
+	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/base64"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/google/uuid"
@@ -26,7 +30,6 @@ import (
 	"github.com/manatee-project/manatee/pkg/cloud"
 	"github.com/manatee-project/manatee/pkg/config"
 	"github.com/manatee-project/manatee/pkg/errno"
-	"github.com/manatee-project/manatee/pkg/utils"
 	"github.com/pkg/errors"
 )
 
@@ -50,22 +53,34 @@ func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Read
 	}
 
 	provider := cloud.GetCloudProvider(js.ctx)
-	err = provider.UploadFile(userWorkspace, config.GetUserWorkSpacePath(creator), false)
+
+	// inject Dockerfile in /usr/local/dcr_conf/Dockerfile into the build context
+	// FIXME: avoid reading the file system, use a string instead in the future.
+	dockerFileContent, err := os.ReadFile("/usr/local/dcr_conf/Dockerfile")
 	if err != nil {
 		return "", err
 	}
+	buildctx, err := js.addDockerfileToTarGz(userWorkspace, string(dockerFileContent))
+	if err != nil {
+		return "", err
+	}
+	err = provider.UploadFile(buildctx, fmt.Sprintf("%s/%s-workspace.tar.gz", creator, creator), false)
+	if err != nil {
+		return "", err
+	}
+	buildctxpath := fmt.Sprintf("gs://%s/%s/%s-workspace.tar.gz", config.GetBucket(), creator, creator)
 
 	uuidStr, err := uuid.NewUUID()
 	if err != nil {
 		return "", errors.Wrap(err, "failed to generate uuid")
 	}
 	t := db.Job{
-		UUID:            uuidStr.String(),
-		Creator:         req.Creator,
-		JupyterFileName: req.JupyterFileName,
-		JobStatus:       int(job.JobStatus_ImageBuilding),
+		UUID:             uuidStr.String(),
+		Creator:          req.Creator,
+		JupyterFileName:  req.JupyterFileName,
+		JobStatus:        int(job.JobStatus_Created),
+		BuildContextPath: buildctxpath,
 	}
-	err = BuildImage(js.ctx, t, req.AccessToken)
 	if err != nil {
 		return "", err
 	}
@@ -78,6 +93,60 @@ func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Read
 	return uuidStr.String(), nil
 }
 
+func (js *JobService) addDockerfileToTarGz(input io.Reader, dockerfileContent string) (io.Reader, error) {
+	gzReader, err := gzip.NewReader(input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create gzip reader: %w", err)
+	}
+	defer gzReader.Close()
+
+	var buffer bytes.Buffer
+	gzWriter := gzip.NewWriter(&buffer)
+	defer gzWriter.Close()
+
+	tarReader := tar.NewReader(gzReader)
+	tarWriter := tar.NewWriter(gzWriter)
+	defer tarWriter.Close()
+	for {
+		header, err := tarReader.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("failed to read tar entry: %w", err)
+		}
+
+		// Write the existing header and file content to the new tar archive
+		if err := tarWriter.WriteHeader(header); err != nil {
+			return nil, fmt.Errorf("failed to write tar header: %w", err)
+		}
+
+		if _, err := io.Copy(tarWriter, tarReader); err != nil {
+			return nil, fmt.Errorf("failed to write tar entry: %w", err)
+		}
+	}
+	// Add the Dockerfile as a new entry
+	dockerfileHeader := &tar.Header{
+		Name: "Dockerfile",
+		Size: int64(len(dockerfileContent)),
+		Mode: 0600,
+	}
+	if err := tarWriter.WriteHeader(dockerfileHeader); err != nil {
+		return nil, fmt.Errorf("failed to write Dockerfile header: %w", err)
+	}
+	if _, err := tarWriter.Write([]byte(dockerfileContent)); err != nil {
+		return nil, fmt.Errorf("failed to write Dockerfile content: %w", err)
+	}
+	// Close the tar and gzip writers
+	if err := tarWriter.Close(); err != nil {
+		return nil, fmt.Errorf("failed to close tar writer: %w", err)
+	}
+	if err := gzWriter.Close(); err != nil {
+		return nil, fmt.Errorf("failed to close gzip writer: %w", err)
+	}
+	return &buffer, nil
+}
+
 func convertEntityToModel(j *db.Job) *job.Job {
 	return &job.Job{
 		ID:              int64(j.ID),
@@ -85,8 +154,8 @@ func convertEntityToModel(j *db.Job) *job.Job {
 		Creator:         j.Creator,
 		JobStatus:       job.JobStatus(j.JobStatus),
 		JupyterFileName: j.JupyterFileName,
-		CreatedAt:       j.CreatedAt.Format(utils.Layout),
-		UpdatedAt:       j.UpdatedAt.Format(utils.Layout),
+		CreatedAt:       j.CreatedAt.Format("2006-01-02 15:04:05"),
+		UpdatedAt:       j.UpdatedAt.Format("2006-01-02 15:04:05"),
 	}
 }
 
@@ -107,14 +176,14 @@ func (js *JobService) GetJobOutputAttrs(req *job.QueryJobOutputRequest) (string,
 	if err != nil {
 		return "", 0, err
 	}
-	outputPath := config.GetJobOutputPath(j.Creator, j.UUID, j.JupyterFileName)
+	outputPath := js.getJobOutputPath(j.Creator, j.UUID, j.JupyterFileName)
 
 	provider := cloud.GetCloudProvider(js.ctx)
 	size, err := provider.GetFileSize(outputPath)
 	if err != nil {
 		return "", 0, err
 	}
-	return config.GetJobOutputFilename(fmt.Sprintf("%v", j.ID), j.JupyterFileName), size, nil
+	return js.getJobOutputFilename(fmt.Sprintf("%v", j.ID), j.JupyterFileName), size, nil
 }
 
 func (js *JobService) DownloadJobOutput(req *job.DownloadJobOutputRequest) (string, error) {
@@ -122,7 +191,7 @@ func (js *JobService) DownloadJobOutput(req *job.DownloadJobOutputRequest) (stri
 	if err != nil {
 		return "", err
 	}
-	outputPath := config.GetJobOutputPath(j.Creator, j.UUID, j.JupyterFileName)
+	outputPath := js.getJobOutputPath(j.Creator, j.UUID, j.JupyterFileName)
 	provider := cloud.GetCloudProvider(js.ctx)
 	datg, err := provider.GetFilebyChunk(outputPath, req.Offset, req.Chunk)
 	if err != nil {
@@ -145,4 +214,12 @@ func (js *JobService) GetJobAttestationReport(req *job.QueryJobAttestationReques
 		return "", errors.Wrap(fmt.Errorf("failed to query attestation for job %v", req.ID), "")
 	}
 	return j.AttestationReport, nil
+}
+
+func (js *JobService) getJobOutputFilename(UUID string, originName string) string {
+	return fmt.Sprintf("out-%s-%s", UUID, originName)
+}
+
+func (js *JobService) getJobOutputPath(creator string, UUID string, originName string) string {
+	return fmt.Sprintf("%s/output/%s", creator, js.getJobOutputFilename(UUID, originName))
 }

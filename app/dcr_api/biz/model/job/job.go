@@ -13,6 +13,7 @@ import (
 type JobStatus int64
 
 const (
+	JobStatus_Created             JobStatus = 0
 	JobStatus_ImageBuilding       JobStatus = 1
 	JobStatus_ImageBuildingFailed JobStatus = 2
 	JobStatus_VMWaiting           JobStatus = 3
@@ -25,6 +26,8 @@ const (
 
 func (p JobStatus) String() string {
 	switch p {
+	case JobStatus_Created:
+		return "Created"
 	case JobStatus_ImageBuilding:
 		return "ImageBuilding"
 	case JobStatus_ImageBuildingFailed:
@@ -47,6 +50,8 @@ func (p JobStatus) String() string {
 
 func JobStatusFromString(s string) (JobStatus, error) {
 	switch s {
+	case "Created":
+		return JobStatus_Created, nil
 	case "ImageBuilding":
 		return JobStatus_ImageBuilding, nil
 	case "ImageBuildingFailed":
