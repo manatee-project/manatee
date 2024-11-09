@@ -23,11 +23,11 @@ import (
 	"io"
 	"os"
 
+	"cloud.google.com/go/storage"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/google/uuid"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/model/job"
-	"github.com/manatee-project/manatee/pkg/cloud"
 	"github.com/manatee-project/manatee/pkg/config"
 	"github.com/manatee-project/manatee/pkg/errno"
 	"github.com/pkg/errors"
@@ -52,8 +52,6 @@ func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Read
 		return "", errors.Wrap(fmt.Errorf(errno.ReachJobLimitErrMsg), "")
 	}
 
-	provider := cloud.GetCloudProvider(js.ctx)
-
 	// inject Dockerfile in /usr/local/dcr_conf/Dockerfile into the build context
 	// FIXME: avoid reading the file system, use a string instead in the future.
 	dockerFileContent, err := os.ReadFile("/usr/local/dcr_conf/Dockerfile")
@@ -64,7 +62,7 @@ func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Read
 	if err != nil {
 		return "", err
 	}
-	err = provider.UploadFile(buildctx, fmt.Sprintf("%s/%s-workspace.tar.gz", creator, creator), false)
+	err = js.uploadFile(buildctx, fmt.Sprintf("%s/%s-workspace.tar.gz", creator, creator), false)
 	if err != nil {
 		return "", err
 	}
@@ -178,8 +176,7 @@ func (js *JobService) GetJobOutputAttrs(req *job.QueryJobOutputRequest) (string,
 	}
 	outputPath := js.getJobOutputPath(j.Creator, j.UUID, j.JupyterFileName)
 
-	provider := cloud.GetCloudProvider(js.ctx)
-	size, err := provider.GetFileSize(outputPath)
+	size, err := js.getFileSize(outputPath)
 	if err != nil {
 		return "", 0, err
 	}
@@ -192,8 +189,7 @@ func (js *JobService) DownloadJobOutput(req *job.DownloadJobOutputRequest) (stri
 		return "", err
 	}
 	outputPath := js.getJobOutputPath(j.Creator, j.UUID, j.JupyterFileName)
-	provider := cloud.GetCloudProvider(js.ctx)
-	datg, err := provider.GetFilebyChunk(outputPath, req.Offset, req.Chunk)
+	datg, err := js.getFilebyChunk(outputPath, req.Offset, req.Chunk)
 	if err != nil {
 		return "", err
 	}
@@ -222,4 +218,63 @@ func (js *JobService) getJobOutputFilename(UUID string, originName string) strin
 
 func (js *JobService) getJobOutputPath(creator string, UUID string, originName string) string {
 	return fmt.Sprintf("%s/output/%s", creator, js.getJobOutputFilename(UUID, originName))
+}
+
+func (g *JobService) getFileSize(remotePath string) (int64, error) {
+	client, err := storage.NewClient(g.ctx)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create gcp storage client")
+	}
+	defer client.Close()
+	bucket := config.GetBucket()
+	attr, err := client.Bucket(bucket).Object(remotePath).Attrs(g.ctx)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to get file attributes, or it doesn't exist")
+	}
+	return attr.Size, nil
+}
+
+func (g *JobService) getFilebyChunk(remotePath string, offset int64, chunkSize int64) ([]byte, error) {
+	client, err := storage.NewClient(g.ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create gcp storage client")
+	}
+	defer client.Close()
+	bucket := config.GetBucket()
+	objectHandle := client.Bucket(bucket).Object(remotePath)
+	objectReader, err := objectHandle.NewRangeReader(g.ctx, offset, chunkSize)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("failed to create reader on %s", remotePath))
+	}
+	defer objectReader.Close()
+	data := make([]byte, chunkSize)
+	n, err := objectReader.Read(data)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read cloud storage object")
+	}
+	data = data[:n]
+	return data, nil
+}
+
+func (g *JobService) uploadFile(reader io.Reader, remotePath string, compress bool) error {
+	client, err := storage.NewClient(g.ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to create storage client")
+	}
+	defer client.Close()
+	bucket := config.GetBucket()
+	writer := client.Bucket(bucket).Object(remotePath).NewWriter(g.ctx)
+	defer writer.Close()
+	if compress {
+		gzipWriter := gzip.NewWriter(writer)
+		if _, err = io.Copy(gzipWriter, reader); err != nil {
+			return errors.Wrap(err, "failed to copy content to gzip writer")
+		}
+		defer gzipWriter.Close()
+	} else {
+		if _, err = io.Copy(writer, reader); err != nil {
+			return errors.Wrap(err, "failed to copy content to writer")
+		}
+	}
+	return nil
 }
