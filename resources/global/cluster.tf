@@ -61,4 +61,7 @@ resource "google_container_node_pool" "dcr_node_pool" {
   depends_on = [
     google_service_account.gcp_dcr_cluster_sa,
   ]
+  autoscaling {
+    max_node_count = 8
+  }
 }
