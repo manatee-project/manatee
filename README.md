@@ -118,6 +118,7 @@ popd
 [Bazel](https://bazel.build/install) is required to build all of the binaries and push them to the artifact registry.
 
 ```shell 
+gcloud auth configure-docker us-docker.pkg.dev # authenticate to artifact registry
 bazel run //:push_all_images --action_env=namespace=<namespace-to-deploy>
 ```
 
@@ -145,7 +146,7 @@ Deploy data clean room and jupyterhub by helm chart.
 ```shell 
 source env.bzl
 gcloud container clusters get-credentials dcr-$env-cluster --zone $zone --project $project_id
-gcloud auth configure-docker us-docker.pkg.dev
+
 pushd deployment
 ./deploy.sh --namespace=<namespace-to-deploy>
 popd
