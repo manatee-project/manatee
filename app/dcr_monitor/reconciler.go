@@ -53,10 +53,10 @@ func (r *ReconcilerImpl) Reconcile(ctx context.Context) {
 	}
 
 	// debug log
-	hlog.Infof("[Reconciler] found %d jobs in progress", len(jobs))
+	hlog.Debugf("[Reconciler] found %d jobs in progress", len(jobs))
 	for _, j := range jobs {
 		// debug log
-		hlog.Infof("[Reconciler] job %s in status %d", j.UUID, j.JobStatus)
+		hlog.Debugf("[Reconciler] job %s in status %d", j.UUID, j.JobStatus)
 		err := r.updateJobStatus(j)
 		if err != nil {
 			hlog.Errorf("[Reconciler] failed to reconcile job %s: %v", j.UUID, err)
@@ -80,49 +80,70 @@ func (r *ReconcilerImpl) updateJobStatus(j *db.Job) error {
 		j.JobStatus = int(job.JobStatus_VMFailed)
 	} else {
 		switch j.JobStatus {
+		case int(job.JobStatus_Created):
+			return r.handleCreatedJob(j)
 		case int(job.JobStatus_ImageBuilding):
-			done, info, err := r.builder.CheckImageBuilderStatusAndGetInfo(j.UUID)
-			if err != nil {
-				return fmt.Errorf("failed to get build status: %w", err)
-			}
-			if !done {
-				return nil
-			}
-			if info != nil {
-				j.DockerImage = info.Image
-				j.DockerImageDigest = info.Digest
-				instanceName := fmt.Sprintf("%s-%s", j.Creator, j.UUID)
-				err := r.tee.LaunchInstance(instanceName, j.DockerImage, j.DockerImageDigest)
-				if err != nil {
-					hlog.Errorf("failed to launch instance: %w", err)
-					return err
-				}
-				j.InstanceName = instanceName
-				j.JobStatus = int(job.JobStatus_VMWaiting)
-
-			} else {
-				j.JobStatus = int(job.JobStatus_ImageBuildingFailed)
-			}
+			return r.handleImageBuildingJob(j)
 		case int(job.JobStatus_VMWaiting):
-			instanceStatus, err := r.tee.GetInstanceStatus(j.InstanceName)
-			if err != nil {
-				return fmt.Errorf("failed to get instance status: %w", err)
-			}
-			if instanceStatus == "RUNNING" {
-				j.JobStatus = int(job.JobStatus_VMRunning)
-			} else if instanceStatus == "TERMINATED" {
-				j.JobStatus = int(job.JobStatus_VMFinished)
-			}
+			return r.handleRunningJob(j)
 		case int(job.JobStatus_VMRunning):
-			instanceStatus, err := r.tee.GetInstanceStatus(j.InstanceName)
-			if err != nil {
-				return fmt.Errorf("failed to get instance status: %w", err)
-			}
-			if instanceStatus == "TERMINATED" {
-				j.JobStatus = int(job.JobStatus_VMFinished)
-			}
+			return r.handleRunningJob(j)
 		}
 	}
 
+	return nil
+}
+
+func (r *ReconcilerImpl) handleCreatedJob(j *db.Job) error {
+	// TODO: make the base image configurable
+	baseImage := fmt.Sprintf("us-docker.pkg.dev/%s/dcr-%s-user-images/%s:latest", config.GetProject(), config.GetEnv(), "data-clean-room-base")
+	imageTag := fmt.Sprintf("us-docker.pkg.dev/%s/dcr-%s-user-images/%s-%s:latest", config.GetProject(), config.GetEnv(), j.Creator, j.UUID)
+	err := r.builder.BuildImage(j, config.GetBucket(), baseImage, imageTag)
+	if err != nil {
+		hlog.Errorf("failed to build image: %w", err)
+		return err
+	}
+	j.JobStatus = int(job.JobStatus_ImageBuilding)
+	return nil
+}
+
+func (r *ReconcilerImpl) handleImageBuildingJob(j *db.Job) error {
+	done, info, err := r.builder.CheckImageBuilderStatusAndGetInfo(j.UUID)
+	if err != nil {
+		return fmt.Errorf("failed to get build status: %w", err)
+	}
+	if !done {
+		return nil
+	}
+	if info != nil {
+		j.DockerImage = info.Image
+		j.DockerImageDigest = info.Digest
+		instanceName := fmt.Sprintf("%s-%s", j.Creator, j.UUID)
+		err := r.tee.LaunchInstance(instanceName, j.DockerImage, j.DockerImageDigest)
+		if err != nil {
+			hlog.Errorf("failed to launch instance: %w", err)
+			return err
+		}
+		j.InstanceName = instanceName
+		j.JobStatus = int(job.JobStatus_VMWaiting)
+
+	} else {
+		j.JobStatus = int(job.JobStatus_ImageBuildingFailed)
+	}
+	return nil
+}
+
+func (r *ReconcilerImpl) handleRunningJob(j *db.Job) error {
+	instanceStatus, err := r.tee.GetInstanceStatus(j.InstanceName)
+	if err != nil {
+		return fmt.Errorf("failed to get instance status: %w", err)
+	}
+	if j.JobStatus == int(job.JobStatus_VMWaiting) && instanceStatus == "RUNNING" {
+		j.JobStatus = int(job.JobStatus_VMRunning)
+	} else if j.JobStatus == int(job.JobStatus_VMWaiting) && instanceStatus == "TERMINATED" {
+		j.JobStatus = int(job.JobStatus_VMFinished)
+	} else if j.JobStatus == int(job.JobStatus_VMRunning) && instanceStatus == "TERMINATED" {
+		j.JobStatus = int(job.JobStatus_VMFinished)
+	}
 	return nil
 }

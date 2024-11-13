@@ -6,12 +6,9 @@ go_library(
     importpath = "github.com/manatee-project/manatee/app/dcr_monitor/tee_backend",
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_cloudwego_hertz//pkg/common/hlog",
         "@com_github_pkg_errors//:errors",
         "@com_google_cloud_go_compute//apiv1",
         "@com_google_cloud_go_compute//apiv1/computepb",
-        "@com_google_cloud_go_compute_metadata//:metadata",
         "@org_golang_google_protobuf//proto",
-        "@org_golang_x_oauth2//google",
     ],
 )

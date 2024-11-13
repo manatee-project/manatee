@@ -1,6 +1,7 @@
 namespace go job
 
 enum JobStatus {
+    Created = 0
     ImageBuilding = 1
     ImageBuildingFailed = 2
     VMWaiting = 3
