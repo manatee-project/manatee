@@ -119,6 +119,10 @@ ENTRYPOINT jupyter nbconvert --execute --to notebook --inplace $JUPYTER_FILENAME
     && ./gscp custom_token $CUSTOMTOKEN_CLOUDSTORAGE_PATH
 `
 
+// TODO: this actually needs to support different TEE backends.
+// for now, we only support GCP confidential space.
+// in the future, the build context should be completed by the ImageBuilder,
+// which will also finalize the Dockerfile.
 func (js *JobService) generateDockerfile(keys []string) string {
 	if len(keys) == 0 {
 		return fmt.Sprintf(dockerFileTemplate, "")
