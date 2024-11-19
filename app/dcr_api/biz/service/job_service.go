@@ -21,7 +21,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"os"
+	"strings"
 
 	"cloud.google.com/go/storage"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
@@ -52,12 +52,15 @@ func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Read
 		return "", errors.Wrap(fmt.Errorf(errno.ReachJobLimitErrMsg), "")
 	}
 
-	// inject Dockerfile in /usr/local/dcr_conf/Dockerfile into the build context
-	// FIXME: avoid reading the file system, use a string instead in the future.
-	dockerFileContent, err := os.ReadFile("/usr/local/dcr_conf/Dockerfile")
-	if err != nil {
-		return "", err
+	var keys []string
+	var extraEnvs = make(map[string]string)
+	for _, v := range req.GetEnvs() {
+		keys = append(keys, v.GetKey())
+		extraEnvs[v.GetKey()] = v.GetValue()
 	}
+
+	// inject Dockerfile into the build context
+	dockerFileContent := js.generateDockerfile(keys)
 	buildctx, err := js.addDockerfileToTarGz(userWorkspace, string(dockerFileContent))
 	if err != nil {
 		return "", err
@@ -74,10 +77,12 @@ func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Read
 	}
 	t := db.Job{
 		UUID:             uuidStr.String(),
+		Dockerfile:       dockerFileContent,
 		Creator:          req.Creator,
 		JupyterFileName:  req.JupyterFileName,
 		JobStatus:        int(job.JobStatus_Created),
 		BuildContextPath: buildctxpath,
+		ExtraEnvs:        extraEnvs,
 	}
 	if err != nil {
 		return "", err
@@ -89,6 +94,38 @@ func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Read
 	}
 	hlog.Infof("[JobService] inserted job. Job Status %+v", job.JobStatus_ImageBuilding)
 	return uuidStr.String(), nil
+}
+
+var dockerFileTemplate string = `ARG BASE_IMAGE
+ARG BASE_IMAGE
+FROM $BASE_IMAGE
+ARG OUTPUTPATH
+ARG JUPYTER_FILENAME
+ARG USER_WORKSPACE
+ARG CUSTOMTOKEN_CLOUDSTORAGE_PATH 
+
+ENV OUTPUTPATH=$OUTPUTPATH
+ENV JUPYTER_FILENAME=$JUPYTER_FILENAME
+ENV CUSTOMTOKEN_CLOUDSTORAGE_PATH=$CUSTOMTOKEN_CLOUDSTORAGE_PATH
+
+WORKDIR /home/jovyan
+COPY $USER_WORKSAPCE/* ./
+%s
+
+ENTRYPOINT jupyter nbconvert --execute --to notebook --inplace $JUPYTER_FILENAME --ExecutePreprocessor.timeout=-1 --allow-errors \
+    && hash=$(md5sum $JUPYTER_FILENAME | awk '{ print $1 }') \
+    && ./gscp $JUPYTER_FILENAME $OUTPUTPATH \
+    && ./gen_custom_token --nonce $hash \
+    && ./gscp custom_token $CUSTOMTOKEN_CLOUDSTORAGE_PATH
+`
+
+func (js *JobService) generateDockerfile(keys []string) string {
+	if len(keys) == 0 {
+		return fmt.Sprintf(dockerFileTemplate, "")
+	} else {
+		envOverride := fmt.Sprintf(`LABEL "tee.launch_policy.allow_env_override"="%s"`, strings.Join(keys, ","))
+		return fmt.Sprintf(dockerFileTemplate, envOverride)
+	}
 }
 
 func (js *JobService) addDockerfileToTarGz(input io.Reader, dockerfileContent string) (io.Reader, error) {

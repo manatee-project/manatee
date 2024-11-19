@@ -11,7 +11,7 @@ import (
 )
 
 type TEEProvider interface {
-	LaunchInstance(instanceName string, image string, digest string) error
+	LaunchInstance(instanceName string, image string, digest string, extraEnvs map[string]string) error
 	GetInstanceStatus(instanceName string) (string, error)
 	CleanUpInstance(instanceName string) error
 }
@@ -79,9 +79,8 @@ func (c *TEEProviderGCPConfidentialSpace) CleanUpInstance(instanceName string) e
 	return nil
 }
 
-func (c *TEEProviderGCPConfidentialSpace) LaunchInstance(instanceName string, image string, digest string) error {
-
-	err := c.createConfidentialSpace(instanceName, image)
+func (c *TEEProviderGCPConfidentialSpace) LaunchInstance(instanceName string, image string, digest string, extraEnvs map[string]string) error {
+	err := c.createConfidentialSpace(instanceName, image, extraEnvs)
 	if err != nil {
 		return err
 	}
@@ -89,9 +88,9 @@ func (c *TEEProviderGCPConfidentialSpace) LaunchInstance(instanceName string, im
 	return nil
 }
 
-func (c *TEEProviderGCPConfidentialSpace) createConfidentialSpace(instanceName string, dockerImage string) error {
+func (c *TEEProviderGCPConfidentialSpace) createConfidentialSpace(instanceName string, dockerImage string, extraEnvs map[string]string) error {
 
-	req := c.getConfidentialSpaceInsertInstanceRequest(instanceName, dockerImage)
+	req := c.getConfidentialSpaceInsertInstanceRequest(instanceName, dockerImage, extraEnvs)
 
 	op, err := c.client.Insert(c.ctx, req)
 	if err != nil {
@@ -103,7 +102,7 @@ func (c *TEEProviderGCPConfidentialSpace) createConfidentialSpace(instanceName s
 	return nil
 }
 
-func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequest(instanceName string, dockerImage string) *computepb.InsertInstanceRequest {
+func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequest(instanceName string, dockerImage string, extraEnvs map[string]string) *computepb.InsertInstanceRequest {
 	network := fmt.Sprintf("https://compute.googleapis.com/compute/v1/projects/%s/global/networks/dcr-%s-network", c.projectId, c.env)
 	subNetwork := fmt.Sprintf("https://compute.googleapis.com/compute/v1/projects/%s/regions/%s/subnetworks/dcr-%s-subnetwork", c.projectId, c.region, c.env)
 
@@ -119,6 +118,22 @@ func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequ
 	// TODO: make disksize configurable
 	diskSize := int64(50)
 
+	metadataItems := []*computepb.Items{&computepb.Items{
+		Key:   proto.String("tee-container-log-redirect"),
+		Value: &logRedirectFlag,
+	}, &computepb.Items{
+		Key:   proto.String("tee-image-reference"),
+		Value: &dockerImage,
+	},
+	}
+
+	for key, value := range extraEnvs {
+		metadataItems = append(metadataItems, &computepb.Items{
+			Key:   proto.String(fmt.Sprintf("tee-env-%s", key)),
+			Value: proto.String(value),
+		})
+	}
+
 	instanceResource := computepb.Instance{
 		ConfidentialInstanceConfig: &computepb.ConfidentialInstanceConfig{
 			EnableConfidentialCompute: proto.Bool(true),
@@ -127,23 +142,7 @@ func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequ
 			EnableSecureBoot: proto.Bool(true),
 		},
 		Metadata: &computepb.Metadata{
-			Items: []*computepb.Items{&computepb.Items{
-				Key:   proto.String("tee-container-log-redirect"),
-				Value: &logRedirectFlag,
-			}, &computepb.Items{
-				Key:   proto.String("tee-image-reference"),
-				Value: &dockerImage,
-			}, &computepb.Items{
-				Key:   proto.String("tee-env-EXECUTION_STAGE"),
-				Value: proto.String("2"),
-			}, &computepb.Items{
-				Key:   proto.String("tee-env-DEPLOYMENT_ENV"),
-				Value: proto.String(c.env),
-			}, &computepb.Items{}, &computepb.Items{
-				Key:   proto.String("tee-env-PROJECT_ID"),
-				Value: proto.String(c.projectId),
-			},
-			},
+			Items: metadataItems,
 		},
 		Tags: &computepb.Tags{
 			Items: []string{"tee-instance"},

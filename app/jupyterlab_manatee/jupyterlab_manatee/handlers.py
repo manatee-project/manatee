@@ -69,28 +69,29 @@ class DataCleanRoomJobHandler(JupyterHandler):
     A Job Handler for Data Clean Room API.
     """
 
-    def _build_form_data(self, workspace_file, creator, jupyter_filename) -> FormData:
+    def _build_form_data(self, workspace_file, creator, jupyter_filename, envs) -> FormData:
         data = FormData()
         data.add_field('file',
                         value=open(workspace_file, 'rb'),
                         filename='workspace.tar.gz',
                         content_type='application/gzip')
+        data.add_field("envs", json.dumps(envs), content_type="application/json")
         data.add_field('creator', creator)
         data.add_field('filename', jupyter_filename)
         return data
 
-    async def post_file(self, endpoint, body, workspace_filename, headers) -> str:
+    async def post_file(self, endpoint, body, workspace_filename, envs, headers) -> str:
         """
         Post file to Data Clean Room API.
         """
         url = url_path_join(get_data_clean_room_url(), endpoint)
         try:
             async with aiohttp.ClientSession() as session:
-                data = self._build_form_data(workspace_filename, body['creator'], body['filename'])
+                data = self._build_form_data(workspace_filename, body['creator'], body['filename'], envs)
                 async with session.post(url, data=data, headers=headers, allow_redirects=False) as response:
                     if response.status == HTTPStatus.TEMPORARY_REDIRECT:
                         # when redirect, post manually again
-                        data = self._build_form_data(workspace_filename, body['creator'], body['filename'])
+                        data = self._build_form_data(workspace_filename, body['creator'], body['filename'], envs)
                         redirect_url = url_path_join(get_data_clean_room_url(), response.headers['Location']) 
                         async with session.post(redirect_url, data=data, headers=headers) as redirect_resp:
                             return await redirect_resp.text()
@@ -109,6 +110,16 @@ class DataCleanRoomJobHandler(JupyterHandler):
 
         request_body = json.loads(self.request.body.decode('utf-8'))
         request_body['creator'] = creator
+        
+        # Get extra envs from environment variables
+        extra_env_prefix = "MANATEE_EXTRA_ENV_"
+        envs = []
+        for key, value in os.environ.items():
+            if key.startswith(extra_env_prefix):
+                envs.append({
+                    "key": key.replace(extra_env_prefix,""),
+                    "value": value
+                })
 
         headers = {
             "Authorization" : get_user_token()
@@ -120,7 +131,7 @@ class DataCleanRoomJobHandler(JupyterHandler):
         tar_filename = "/tmp/workspace.tar.gz"
         make_tarfile(tar_filename, os.getcwd(), creator + '-workspace')
 
-        self.finish(await self.post_file("v1/job/submit", request_body, tar_filename, headers))
+        self.finish(await self.post_file("v1/job/submit", request_body, tar_filename, envs, headers))
 
     @tornado.web.authenticated
     async def get(self):

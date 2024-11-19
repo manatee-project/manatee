@@ -22,9 +22,15 @@ struct Job {
     7: string updated_at
 }
 
+struct Env {
+    1: string key
+    2: string value
+}
+
 struct SubmitJobRequest{
     1: string jupyter_file_name (api.body="filename", api.vd="len($) > 0 && len($) < 128 && regexp('^.*\\.ipynb$') && !regexp('.*\\.\\..*')")
-    2: string creator (api.body="creator", api.vd="len($) > 0 && len($) < 32 && !regexp('.*\\.\\..*')")
+    2: string creator (api.body="creator", api.vd="len($) > 0 && len($) < 32 && !regexp('.*\\.\\..*')") 
+    3: list<Env> envs (api.body="envs", api.json="envs")
     255: required string access_token     (api.header="Authorization")
 }
 
