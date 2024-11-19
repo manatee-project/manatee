@@ -15,9 +15,11 @@
 package config
 
 import (
+	"fmt"
+	"os"
+	"strconv"
+
 	"github.com/cloudwego/hertz/pkg/common/hlog"
-	"github.com/pkg/errors"
-	"github.com/spf13/viper"
 )
 
 type Config struct {
@@ -44,15 +46,27 @@ type APIConfig struct {
 var Conf Config
 
 func InitConfig() error {
-	viper.SetConfigType("yaml")
-	confPath := "/usr/local/dcr_conf/config.yaml"
-	hlog.Infof("[Config] Config file: %s", confPath)
-	viper.SetConfigFile(confPath)
-	if err := viper.ReadInConfig(); err != nil {
-		return errors.Wrap(err, "failed to read config")
+	env := os.Getenv("ENV")
+	projectId := os.Getenv("PROJECT_ID")
+	region := os.Getenv("REGION")
+	zone := os.Getenv("ZONE")
+	debug := os.Getenv("DEBUG")
+	hlog.Infof("env %s project id %s region %s zone %s debug %s", env, projectId, region, zone, debug)
+	d, err := strconv.ParseBool(debug)
+	if err != nil {
+		d = false
 	}
-	if err := viper.Unmarshal(&Conf); err != nil {
-		return errors.Wrap(err, "failed to unmarshal config")
+	Conf := Config{
+		CloudProvider: CloudProvider{
+			GCP: GCPConfig{
+				Project:   projectId,
+				HubBucket: fmt.Sprintf("dcr-%s-debug", env),
+				Zone:      zone,
+				Region:    region,
+				Debug:     d,
+				Env:       env,
+			},
+		},
 	}
 	hlog.Infof("[Config] Conf.CloudProvider: %#v", Conf.CloudProvider)
 	return nil

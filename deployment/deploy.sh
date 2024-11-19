@@ -14,6 +14,8 @@
 # limitations under the License.
 set -e
 
+debug=false
+
 for arg in "$@"
 do
     case $arg in
@@ -22,6 +24,10 @@ do
         IFS='=' read -ra NAMESPACE <<< "$arg"
         # Assign the second element of the array (the value of the --namespace argument) to our variable.
         namespace="${NAMESPACE[1]}"
+        ;;
+        --debug=*)
+        IFS='=' read -ra DEBUG <<< "$arg"
+        debug="${DEBUG[1]}"
         ;;
     esac
 done
@@ -35,9 +41,11 @@ fi
 deploy_service() {
     app=$1
     pushd $app
-    ./deploy.sh $2
+    ./deploy.sh $2 $3
     popd
 }
 
-deploy_service data-clean-room $namespace
+deploy_service data-clean-room $namespace $debug
+
+exit 1
 deploy_service jupyterhub $namespace

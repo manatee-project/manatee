@@ -28,7 +28,7 @@ then
     exit 1
 fi
 namespace=$1
-
+debug=$2
 tag="latest"
 helm_name="data-clean-room-helm"
 
@@ -38,6 +38,9 @@ docker_repo="dcr-${env}-${namespace}-images"
 api_docker_reference="us-docker.pkg.dev/${project_id}/${docker_repo}/data-clean-room-api"
 monitor_docker_reference="us-docker.pkg.dev/${project_id}/${docker_repo}/data-clean-room-monitor"
 
+
+echo $debug
+
 helm upgrade --cleanup-on-fail \
     --set apiImage.repository=${api_docker_reference} \
     --set apiImage.tag=${tag} \
@@ -46,6 +49,11 @@ helm upgrade --cleanup-on-fail \
     --set serviceAccount.name=${service_account} \
     --set cloudSql.connection_name=${connection_name} \
     --set namespace=${namespace} \
+    --set config.env=${env} \
+    --set config.project_id=${project_id} \
+    --set config.zone=${zone} \
+    --set config.region=${region} \
+    --set config.debug=${debug} \
     --install $helm_name ./ \
     --namespace $namespace \
     --values config.yaml
