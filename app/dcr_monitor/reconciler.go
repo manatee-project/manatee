@@ -100,7 +100,7 @@ func (r *ReconcilerImpl) handleCreatedJob(j *db.Job) error {
 	env := os.Getenv("ENV")
 	baseImage := fmt.Sprintf("us-docker.pkg.dev/%s/dcr-%s-user-images/%s:latest", projectId, env, "data-clean-room-base")
 	imageTag := fmt.Sprintf("us-docker.pkg.dev/%s/dcr-%s-user-images/%s-%s:latest", projectId, env, j.Creator, j.UUID)
-	bucket := fmt.Sprintf("dcr-%s-bucket", env)
+	bucket := fmt.Sprintf("dcr-%s-hub", env)
 	err := r.builder.BuildImage(j, bucket, baseImage, imageTag)
 	if err != nil {
 		hlog.Errorf("failed to build image: %w", err)

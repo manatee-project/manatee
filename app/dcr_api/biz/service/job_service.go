@@ -280,5 +280,5 @@ func (g *JobService) uploadFile(reader io.Reader, remotePath string, compress bo
 
 func getBucket() string {
 	env := os.Getenv("ENV")
-	return fmt.Sprintf("dcr-%s-bucket", env)
+	return fmt.Sprintf("dcr-%s-hub", env)
 }
