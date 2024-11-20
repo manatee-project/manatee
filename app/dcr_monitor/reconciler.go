@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
@@ -10,7 +11,6 @@ import (
 	"github.com/manatee-project/manatee/app/dcr_api/biz/model/job"
 	"github.com/manatee-project/manatee/app/dcr_monitor/imagebuilder"
 	"github.com/manatee-project/manatee/app/dcr_monitor/tee_backend"
-	"github.com/manatee-project/manatee/pkg/config"
 )
 
 type Reconciler interface {
@@ -26,7 +26,7 @@ type ReconcilerImpl struct {
 func NewReconciler(ctx context.Context) *ReconcilerImpl {
 	// FIXME: get config to determine which TEE provider to use.
 	// for now, we only support GCP confidential space.
-	tee, err := tee_backend.NewTEEProviderGCPConfidentialSpace(ctx, config.GetProject(), config.GetRegion(), config.GetZone(), config.GetEnv())
+	tee, err := tee_backend.NewTEEProviderGCPConfidentialSpace(ctx)
 	if err != nil {
 		hlog.Errorf("failed to init TEE provider %+v", err)
 	}
@@ -96,9 +96,12 @@ func (r *ReconcilerImpl) updateJobStatus(j *db.Job) error {
 
 func (r *ReconcilerImpl) handleCreatedJob(j *db.Job) error {
 	// TODO: make the base image configurable
-	baseImage := fmt.Sprintf("us-docker.pkg.dev/%s/dcr-%s-user-images/%s:latest", config.GetProject(), config.GetEnv(), "data-clean-room-base")
-	imageTag := fmt.Sprintf("us-docker.pkg.dev/%s/dcr-%s-user-images/%s-%s:latest", config.GetProject(), config.GetEnv(), j.Creator, j.UUID)
-	err := r.builder.BuildImage(j, config.GetBucket(), baseImage, imageTag)
+	projectId := os.Getenv("PROJECT_ID")
+	env := os.Getenv("ENV")
+	baseImage := fmt.Sprintf("us-docker.pkg.dev/%s/dcr-%s-user-images/%s:latest", projectId, env, "data-clean-room-base")
+	imageTag := fmt.Sprintf("us-docker.pkg.dev/%s/dcr-%s-user-images/%s-%s:latest", projectId, env, j.Creator, j.UUID)
+	bucket := fmt.Sprintf("dcr-%s-bucket", env)
+	err := r.builder.BuildImage(j, bucket, baseImage, imageTag)
 	if err != nil {
 		hlog.Errorf("failed to build image: %w", err)
 		return err

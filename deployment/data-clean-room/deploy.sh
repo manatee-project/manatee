@@ -38,9 +38,6 @@ docker_repo="dcr-${env}-${namespace}-images"
 api_docker_reference="us-docker.pkg.dev/${project_id}/${docker_repo}/data-clean-room-api"
 monitor_docker_reference="us-docker.pkg.dev/${project_id}/${docker_repo}/data-clean-room-monitor"
 
-
-echo $debug
-
 helm upgrade --cleanup-on-fail \
     --set apiImage.repository=${api_docker_reference} \
     --set apiImage.tag=${tag} \

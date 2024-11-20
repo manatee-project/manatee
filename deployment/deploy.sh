@@ -46,6 +46,4 @@ deploy_service() {
 }
 
 deploy_service data-clean-room $namespace $debug
-
-exit 1
 deploy_service jupyterhub $namespace

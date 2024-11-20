@@ -28,7 +28,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/model/job"
-	"github.com/manatee-project/manatee/pkg/config"
 	"github.com/manatee-project/manatee/pkg/errno"
 	"github.com/pkg/errors"
 )
@@ -66,7 +65,7 @@ func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Read
 	if err != nil {
 		return "", err
 	}
-	buildctxpath := fmt.Sprintf("gs://%s/%s/%s-workspace.tar.gz", config.GetBucket(), creator, creator)
+	buildctxpath := fmt.Sprintf("gs://%s/%s/%s-workspace.tar.gz", getBucket(), creator, creator)
 
 	uuidStr, err := uuid.NewUUID()
 	if err != nil {
@@ -226,7 +225,7 @@ func (g *JobService) getFileSize(remotePath string) (int64, error) {
 		return 0, errors.Wrap(err, "failed to create gcp storage client")
 	}
 	defer client.Close()
-	bucket := config.GetBucket()
+	bucket := getBucket()
 	attr, err := client.Bucket(bucket).Object(remotePath).Attrs(g.ctx)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to get file attributes, or it doesn't exist")
@@ -240,7 +239,7 @@ func (g *JobService) getFilebyChunk(remotePath string, offset int64, chunkSize i
 		return nil, errors.Wrap(err, "failed to create gcp storage client")
 	}
 	defer client.Close()
-	bucket := config.GetBucket()
+	bucket := getBucket()
 	objectHandle := client.Bucket(bucket).Object(remotePath)
 	objectReader, err := objectHandle.NewRangeReader(g.ctx, offset, chunkSize)
 	if err != nil {
@@ -262,7 +261,7 @@ func (g *JobService) uploadFile(reader io.Reader, remotePath string, compress bo
 		return errors.Wrap(err, "failed to create storage client")
 	}
 	defer client.Close()
-	bucket := config.GetBucket()
+	bucket := getBucket()
 	writer := client.Bucket(bucket).Object(remotePath).NewWriter(g.ctx)
 	defer writer.Close()
 	if compress {
@@ -277,4 +276,9 @@ func (g *JobService) uploadFile(reader io.Reader, remotePath string, compress bo
 		}
 	}
 	return nil
+}
+
+func getBucket() string {
+	env := os.Getenv("ENV")
+	return fmt.Sprintf("dcr-%s-bucket", env)
 }

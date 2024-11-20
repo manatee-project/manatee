@@ -23,7 +23,6 @@ go_library(
         "//app/dcr_api/biz/dal",
         "//app/dcr_api/biz/handler",
         "//app/dcr_api/biz/router",
-        "//pkg/config",
         "@com_github_cloudwego_hertz//pkg/app/server",
         "@com_github_cloudwego_hertz//pkg/common/hlog",
     ],
@@ -32,13 +31,6 @@ go_library(
 pkg_tar(
     name = "tar",
     srcs = [":api"],
-)
-
-# TODO: config needs to be provisioned at deployment, not at build time
-pkg_tar(
-    name = "app_config",
-    srcs = ["//:config.yaml"],
-    package_dir = "/usr/local/dcr_conf/",
 )
 
 # TODO: remove app_data and dockerfile when we stop using file system for building kaniko context
@@ -61,7 +53,6 @@ oci_image(
     entrypoint = ["/api"],
     tars = [
         ":tar",
-        ":app_config",
         ":app_data",
         ":dockerfile",
     ],

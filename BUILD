@@ -3,30 +3,6 @@ load("@rules_multirun//:defs.bzl", "multirun")
 load("@rules_oci//oci:defs.bzl", "oci_push")
 load("//:env.bzl", "env", "project_id", "region", "zone")
 
-# NOTE: this is temporary solution for making config file for the app.
-# Ideally, the config should be provisioned at the deployment, not at the build.
-# Right now, we just generate one so that we can test the app.
-genrule(
-    name = "generate_app_config",
-    outs = ["config.yaml"],
-    cmd = """
-echo 'CloudProvider:
-  GCP:
-    Project: "{project_id}"
-    HubBucket: "dcr-{env}-hub"
-    Zone: "{zone}"
-    Region: "{region}"
-    Debug: false
-    Env: {env}' > $@
-    """.format(
-        env = env,
-        project_id = project_id,
-        region = region,
-        zone = zone,
-    ),
-    visibility = ["//visibility:public"],
-)
-
 # gazelle:prefix github.com/manatee-project/manatee
 gazelle(name = "gazelle")
 
