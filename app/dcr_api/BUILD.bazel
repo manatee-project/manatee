@@ -41,20 +41,6 @@ pkg_tar(
     package_dir = "/usr/local/dcr_conf/",
 )
 
-# TODO: remove app_data and dockerfile when we stop using file system for building kaniko context
-# See https://github.com/manatee-project/manatee/issues/3
-pkg_tar(
-    name = "app_data",
-    empty_dirs = ["data"],
-    package_dir = "/app",
-)
-
-pkg_tar(
-    name = "dockerfile",
-    srcs = ["Dockerfile"],
-    package_dir = "/usr/local/dcr_conf/",
-)
-
 oci_image(
     name = "image",
     base = "@distroless_base_linux_amd64",
@@ -62,8 +48,6 @@ oci_image(
     tars = [
         ":tar",
         ":app_config",
-        ":app_data",
-        ":dockerfile",
     ],
     visibility = ["//visibility:public"],
 )
