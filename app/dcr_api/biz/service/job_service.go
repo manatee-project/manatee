@@ -280,5 +280,8 @@ func (g *JobService) uploadFile(reader io.Reader, remotePath string, compress bo
 
 func getBucket() string {
 	env := os.Getenv("ENV")
+	if env == "" {
+		hlog.Errorf("ENV environment variable is not present")
+	}
 	return fmt.Sprintf("dcr-%s-hub", env)
 }

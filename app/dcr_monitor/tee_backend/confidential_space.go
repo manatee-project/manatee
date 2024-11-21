@@ -31,9 +31,21 @@ type TEEProviderGCPConfidentialSpace struct {
 
 func NewTEEProviderGCPConfidentialSpace(ctx context.Context) (*TEEProviderGCPConfidentialSpace, error) {
 	env := os.Getenv("ENV")
+	if env == "" {
+		return nil, fmt.Errorf("ENV environment variable is not present")
+	}
 	projectId := os.Getenv("PROJECT_ID")
+	if projectId == "" {
+		return nil, fmt.Errorf("PROJECT_ID environment variable is not present")
+	}
 	region := os.Getenv("REGION")
+	if projectId == "" {
+		return nil, fmt.Errorf("REGION environment variable is not present")
+	}
 	zone := os.Getenv("ZONE")
+	if projectId == "" {
+		return nil, fmt.Errorf("ZONE environment variable is not present")
+	}
 	debug, err := strconv.ParseBool(os.Getenv("DEBUG"))
 	if err != nil {
 		debug = false

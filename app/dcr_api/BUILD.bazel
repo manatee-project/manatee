@@ -24,7 +24,6 @@ go_library(
         "//app/dcr_api/biz/handler",
         "//app/dcr_api/biz/router",
         "@com_github_cloudwego_hertz//pkg/app/server",
-        "@com_github_cloudwego_hertz//pkg/common/hlog",
     ],
 )
 
