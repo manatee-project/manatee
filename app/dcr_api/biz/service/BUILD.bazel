@@ -8,7 +8,6 @@ go_library(
     deps = [
         "//app/dcr_api/biz/dal/db",
         "//app/dcr_api/biz/model/job",
-        "//pkg/config",
         "//pkg/errno",
         "@com_github_cloudwego_hertz//pkg/common/hlog",
         "@com_github_google_uuid//:uuid",
