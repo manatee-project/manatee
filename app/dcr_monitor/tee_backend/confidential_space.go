@@ -3,6 +3,8 @@ package tee_backend
 import (
 	"context"
 	"fmt"
+	"os"
+	"strconv"
 
 	compute "cloud.google.com/go/compute/apiv1"
 	"cloud.google.com/go/compute/apiv1/computepb"
@@ -27,7 +29,27 @@ type TEEProviderGCPConfidentialSpace struct {
 	client    *compute.InstancesClient
 }
 
-func NewTEEProviderGCPConfidentialSpace(ctx context.Context, projectId string, region string, zone string, env string) (*TEEProviderGCPConfidentialSpace, error) {
+func NewTEEProviderGCPConfidentialSpace(ctx context.Context) (*TEEProviderGCPConfidentialSpace, error) {
+	env := os.Getenv("ENV")
+	if env == "" {
+		return nil, fmt.Errorf("ENV environment variable is not present")
+	}
+	projectId := os.Getenv("PROJECT_ID")
+	if projectId == "" {
+		return nil, fmt.Errorf("PROJECT_ID environment variable is not present")
+	}
+	region := os.Getenv("REGION")
+	if projectId == "" {
+		return nil, fmt.Errorf("REGION environment variable is not present")
+	}
+	zone := os.Getenv("ZONE")
+	if projectId == "" {
+		return nil, fmt.Errorf("ZONE environment variable is not present")
+	}
+	debug, err := strconv.ParseBool(os.Getenv("DEBUG"))
+	if err != nil {
+		debug = false
+	}
 	client, err := compute.NewInstancesRESTClient(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create compute client: %w", err)
@@ -39,10 +61,9 @@ func NewTEEProviderGCPConfidentialSpace(ctx context.Context, projectId string, r
 		zone:      zone,
 		env:       env,
 		saEmail:   fmt.Sprintf("dcr-%s-cvm-sa@%s.iam.gserviceaccount.com", env, projectId),
-		// FIXME: make debug configurable
-		debug:  false,
-		ctx:    ctx,
-		client: client,
+		debug:     debug,
+		ctx:       ctx,
+		client:    client,
 	}, nil
 }
 

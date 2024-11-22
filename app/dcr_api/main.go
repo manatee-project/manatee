@@ -4,18 +4,11 @@ package main
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/cloudwego/hertz/pkg/common/hlog"
 
 	"github.com/manatee-project/manatee/app/dcr_api/biz/dal"
-	"github.com/manatee-project/manatee/pkg/config"
 )
 
 func Init() {
-	err := config.InitConfig()
-	if err != nil {
-		hlog.Errorf("failed to init config %+v", err)
-		panic(err)
-	}
 	dal.Init()
 }
 

@@ -15,7 +15,6 @@ go_library(
         "//app/dcr_api/biz/model/job",
         "//app/dcr_monitor/imagebuilder",
         "//app/dcr_monitor/tee_backend",
-        "//pkg/config",
         "@com_github_cloudwego_hertz//pkg/common/hlog",
     ],
 )
@@ -33,20 +32,12 @@ pkg_tar(
     srcs = [":dcr_monitor"],
 )
 
-# TODO: config needs to be provisioned at deployment, not at build time
-pkg_tar(
-    name = "app_config",
-    srcs = ["//:config.yaml"],
-    package_dir = "/usr/local/dcr_conf/",
-)
-
 oci_image(
     name = "image",
     base = "@distroless_base_linux_amd64",
     entrypoint = ["/dcr_monitor"],
     tars = [
         ":tar",
-        ":app_config",
     ],
     visibility = ["//visibility:public"],
 )

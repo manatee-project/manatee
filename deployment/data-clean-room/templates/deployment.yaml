@@ -59,6 +59,31 @@ spec:
               value: {{ .Values.mysql.host }}
             - name: MYSQL_PORT
               value:  {{ .Values.mysql.port | quote }}
+            - name: ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: env
+            - name: PROJECT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: project_id
+            - name: REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: region
+            - name: ZONE
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: zone
+            - name: DEBUG
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: debug
           ports:
             - name: http
               containerPort: {{ .Values.api.port }}

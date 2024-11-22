@@ -161,12 +161,12 @@ func (b *KanikoImageBuilder) BuildImage(j *db.Job, bucket string, baseImage stri
 		fmt.Sprintf("--context=%s", j.BuildContextPath),
 		fmt.Sprintf("--destination=%s", image),
 		// TODO: this should be signed URL (See https://github.com/manatee-project/manatee/issues/23)
-		fmt.Sprintf("--build-arg=OUTPUTPATH=%s", fmt.Sprintf("gs://%s/%s/output/out-%s-%s", bucket, j.Creator, j.UUID[:8], j.JupyterFileName)),
+		fmt.Sprintf("--build-arg=OUTPUTPATH=%s", fmt.Sprintf("gs://%s/%s/output/out-%s-%s", bucket, j.Creator, j.UUID, j.JupyterFileName)),
 		fmt.Sprintf("--build-arg=JUPYTER_FILENAME=%s", j.JupyterFileName),
 		fmt.Sprintf("--build-arg=USER_WORKSPACE=%s", fmt.Sprintf("%s-workspace", j.Creator)),
 		fmt.Sprintf("--build-arg=BASE_IMAGE=%s", baseImage),
 		// TODO: this should be signed URL (See https://github.com/manatee-project/manatee/issues/23)
-		fmt.Sprintf("--build-arg=CUSTOMTOKEN_CLOUDSTORAGE_PATH=%s", fmt.Sprintf("gs://%s/%s/output/%s-token", j.Creator, j.UUID)),
+		fmt.Sprintf("--build-arg=CUSTOMTOKEN_CLOUDSTORAGE_PATH=%s", fmt.Sprintf("gs://%s/%s/output/%s-token", bucket, j.Creator, j.UUID)),
 	}
 	kanikoJobName := fmt.Sprintf("kaniko-%s", j.UUID)
 	err := b.createBuildJob(kanikoJobName, buildArgs)

@@ -28,7 +28,7 @@ then
     exit 1
 fi
 namespace=$1
-
+debug=$2
 tag="latest"
 helm_name="data-clean-room-helm"
 
@@ -46,6 +46,11 @@ helm upgrade --cleanup-on-fail \
     --set serviceAccount.name=${service_account} \
     --set cloudSql.connection_name=${connection_name} \
     --set namespace=${namespace} \
+    --set config.env=${env} \
+    --set config.project_id=${project_id} \
+    --set config.zone=${zone} \
+    --set config.region=${region} \
+    --set config.debug=${debug} \
     --install $helm_name ./ \
     --namespace $namespace \
     --values config.yaml
