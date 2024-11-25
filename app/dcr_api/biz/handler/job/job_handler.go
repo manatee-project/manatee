@@ -32,6 +32,7 @@ import (
 type FileParas struct {
 	FileHeader      *multipart.FileHeader `form:"file"`
 	Creator         string                `form:"creator"`
+	Envs            []*job.Env            `form:"envs"`
 	JupyterFileName string                `form:"filename"`
 	AccessToken     string                `header:"Authorization,required"`
 }
@@ -51,6 +52,7 @@ func SubmitJob(ctx context.Context, c *app.RequestContext) {
 	req.JupyterFileName = formReq.JupyterFileName
 	req.AccessToken = formReq.AccessToken
 	req.Creator = formReq.Creator
+	req.Envs = formReq.Envs
 	file, err := formReq.FileHeader.Open()
 	if err != nil {
 		hlog.Errorf("[Job Handler]failed to open file %+v", err)
