@@ -122,7 +122,7 @@ func (r *ReconcilerImpl) handleImageBuildingJob(j *db.Job) error {
 		j.DockerImage = info.Image
 		j.DockerImageDigest = info.Digest
 		instanceName := fmt.Sprintf("%s-%s", j.Creator, j.UUID)
-		err := r.tee.LaunchInstance(instanceName, j.DockerImage, j.DockerImageDigest, j.ExtraEnvs)
+		err := r.tee.LaunchInstance(instanceName, j.DockerImage, j.DockerImageDigest, j.ExtraEnvs, j.CPUCount, j.DiskSize)
 		if err != nil {
 			hlog.Errorf("failed to launch instance: %w", err)
 			return err

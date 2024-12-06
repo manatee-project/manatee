@@ -17,6 +17,7 @@ package job
 
 import (
 	"context"
+	"fmt"
 	"mime/multipart"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -34,6 +35,8 @@ type FileParas struct {
 	Creator         string                `form:"creator"`
 	Envs            []*job.Env            `form:"envs"`
 	JupyterFileName string                `form:"filename"`
+	CPUCount        int32                 `form:"cpu"`
+	DiskSize        int32                 `form:"disk"`
 	AccessToken     string                `header:"Authorization,required"`
 }
 
@@ -49,10 +52,19 @@ func SubmitJob(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	formReq.CPUCount = 2
+	formReq.DiskSize = 50
+
+	// print size of cpu and disk
+	fmt.Printf("cpu size: %d\n", formReq.CPUCount)
+	fmt.Printf("disk size: %d\n", formReq.DiskSize)
+
 	req.JupyterFileName = formReq.JupyterFileName
 	req.AccessToken = formReq.AccessToken
 	req.Creator = formReq.Creator
 	req.Envs = formReq.Envs
+	req.CPUCount = formReq.CPUCount
+	req.DiskSize = formReq.DiskSize
 	file, err := formReq.FileHeader.Open()
 	if err != nil {
 		hlog.Errorf("[Job Handler]failed to open file %+v", err)

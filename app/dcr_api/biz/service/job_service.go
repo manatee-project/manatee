@@ -80,6 +80,8 @@ func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Read
 		Dockerfile:       dockerFileContent,
 		Creator:          req.Creator,
 		JupyterFileName:  req.JupyterFileName,
+		CPUCount:         req.CPUCount,
+		DiskSize:         req.DiskSize,
 		JobStatus:        int(job.JobStatus_Created),
 		BuildContextPath: buildctxpath,
 		ExtraEnvs:        extraEnvs,

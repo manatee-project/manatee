@@ -13,7 +13,7 @@ import (
 )
 
 type TEEProvider interface {
-	LaunchInstance(instanceName string, image string, digest string, extraEnvs map[string]string) error
+	LaunchInstance(instanceName string, image string, digest string, extraEnvs map[string]string, cpuCount int32, diskSize int32) error
 	GetInstanceStatus(instanceName string) (string, error)
 	CleanUpInstance(instanceName string) error
 }
@@ -100,8 +100,8 @@ func (c *TEEProviderGCPConfidentialSpace) CleanUpInstance(instanceName string) e
 	return nil
 }
 
-func (c *TEEProviderGCPConfidentialSpace) LaunchInstance(instanceName string, image string, digest string, extraEnvs map[string]string) error {
-	err := c.createConfidentialSpace(instanceName, image, extraEnvs)
+func (c *TEEProviderGCPConfidentialSpace) LaunchInstance(instanceName string, image string, digest string, extraEnvs map[string]string, cpuCount int32, diskSize int32) error {
+	err := c.createConfidentialSpace(instanceName, image, extraEnvs, cpuCount, diskSize)
 	if err != nil {
 		return err
 	}
@@ -109,9 +109,9 @@ func (c *TEEProviderGCPConfidentialSpace) LaunchInstance(instanceName string, im
 	return nil
 }
 
-func (c *TEEProviderGCPConfidentialSpace) createConfidentialSpace(instanceName string, dockerImage string, extraEnvs map[string]string) error {
+func (c *TEEProviderGCPConfidentialSpace) createConfidentialSpace(instanceName string, dockerImage string, extraEnvs map[string]string, cpuCount int32, diskSize int32) error {
 
-	req := c.getConfidentialSpaceInsertInstanceRequest(instanceName, dockerImage, extraEnvs)
+	req := c.getConfidentialSpaceInsertInstanceRequest(instanceName, dockerImage, extraEnvs, cpuCount, diskSize)
 
 	op, err := c.client.Insert(c.ctx, req)
 	if err != nil {
@@ -123,7 +123,7 @@ func (c *TEEProviderGCPConfidentialSpace) createConfidentialSpace(instanceName s
 	return nil
 }
 
-func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequest(instanceName string, dockerImage string, extraEnvs map[string]string) *computepb.InsertInstanceRequest {
+func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequest(instanceName string, dockerImage string, extraEnvs map[string]string, cpuCount int32, diskSize int32) *computepb.InsertInstanceRequest {
 	network := fmt.Sprintf("https://compute.googleapis.com/compute/v1/projects/%s/global/networks/dcr-%s-network", c.projectId, c.env)
 	subNetwork := fmt.Sprintf("https://compute.googleapis.com/compute/v1/projects/%s/regions/%s/subnetworks/dcr-%s-subnetwork", c.projectId, c.region, c.env)
 
@@ -135,9 +135,13 @@ func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequ
 	}
 
 	// TODO: make machine type configurable
-	machineType := fmt.Sprintf("zones/%s/machineTypes/n2d-standard-2", c.zone)
+	// machineType := fmt.Sprintf("zones/%s/machineTypes/n2d-standard-2", c.zone)
 	// TODO: make disksize configurable
-	diskSize := int64(50)
+	// diskSize := int64(50)
+
+	cpuCountStr := strconv.Itoa(int(cpuCount)) // 将 int32 类型的 cpuCount 转换为字符串
+	machineType := fmt.Sprintf("zones/%s/machineTypes/n2d-standard-%s", c.zone, cpuCountStr)
+	diskSizeInt64 := int64(diskSize)
 
 	metadataItems := []*computepb.Items{&computepb.Items{
 		Key:   proto.String("tee-container-log-redirect"),
@@ -178,7 +182,7 @@ func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequ
 		MachineType: &machineType,
 		Disks: []*computepb.AttachedDisk{
 			&computepb.AttachedDisk{
-				DiskSizeGb: &diskSize,
+				DiskSizeGb: &diskSizeInt64,
 				AutoDelete: proto.Bool(true),
 				Boot:       proto.Bool(true),
 				InitializeParams: &computepb.AttachedDiskInitializeParams{
