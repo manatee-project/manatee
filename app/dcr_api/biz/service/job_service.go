@@ -21,25 +21,33 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
-	"cloud.google.com/go/storage"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/google/uuid"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/model/job"
 	"github.com/manatee-project/manatee/pkg/errno"
+	"github.com/manatee-project/manatee/pkg/storage"
+	bucketStorage "github.com/manatee-project/manatee/pkg/storage"
 	"github.com/pkg/errors"
 )
 
 type JobService struct {
-	ctx context.Context
+	ctx     context.Context
+	storage bucketStorage.Storage
 }
 
 // NewJobService create job service
 func NewJobService(ctx context.Context) *JobService {
-	return &JobService{ctx: ctx}
+	storage, err := storage.GetStorage(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return &JobService{
+		ctx:     ctx,
+		storage: storage,
+	}
 }
 
 func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Reader) (string, error) {
@@ -65,11 +73,13 @@ func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Read
 	if err != nil {
 		return "", err
 	}
-	err = js.uploadFile(buildctx, fmt.Sprintf("%s/%s-workspace.tar.gz", creator, creator), false)
+	remotePath := fmt.Sprintf("%s/%s-workspace.tar.gz", creator, creator)
+	err = js.storage.UploadFile(buildctx, remotePath, false)
+	// err = js.uploadFile(buildctx, fmt.Sprintf("%s/%s-workspace.tar.gz", creator, creator), false)
 	if err != nil {
 		return "", err
 	}
-	buildctxpath := fmt.Sprintf("gs://%s/%s/%s-workspace.tar.gz", getBucket(), creator, creator)
+	buildctxpath := fmt.Sprintf("%s/%s/%s-workspace.tar.gz", js.storage.BucketPath(), creator, creator)
 
 	uuidStr, err := uuid.NewUUID()
 	if err != nil {
@@ -83,9 +93,6 @@ func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Read
 		JobStatus:        int(job.JobStatus_Created),
 		BuildContextPath: buildctxpath,
 		ExtraEnvs:        extraEnvs,
-	}
-	if err != nil {
-		return "", err
 	}
 	err = db.CreateJob(&t)
 
@@ -216,8 +223,8 @@ func (js *JobService) GetJobOutputAttrs(req *job.QueryJobOutputRequest) (string,
 		return "", 0, err
 	}
 	outputPath := js.getJobOutputPath(j.Creator, j.UUID, j.JupyterFileName)
-
-	size, err := js.getFileSize(outputPath)
+	size, err := js.storage.GetFileSize(outputPath)
+	// size, err := js.getFileSize(outputPath)
 	if err != nil {
 		return "", 0, err
 	}
@@ -230,11 +237,12 @@ func (js *JobService) DownloadJobOutput(req *job.DownloadJobOutputRequest) (stri
 		return "", err
 	}
 	outputPath := js.getJobOutputPath(j.Creator, j.UUID, j.JupyterFileName)
-	datg, err := js.getFilebyChunk(outputPath, req.Offset, req.Chunk)
+	data, err := js.storage.GetFilebyChunk(outputPath, req.Offset, req.Chunk)
+	// datg, err := js.getFilebyChunk(outputPath, req.Offset, req.Chunk)
 	if err != nil {
 		return "", err
 	}
-	encoded := base64.StdEncoding.EncodeToString(datg)
+	encoded := base64.StdEncoding.EncodeToString(data)
 	return encoded, nil
 }
 
@@ -261,69 +269,69 @@ func (js *JobService) getJobOutputPath(creator string, UUID string, originName s
 	return fmt.Sprintf("%s/output/%s", creator, js.getJobOutputFilename(UUID, originName))
 }
 
-func (g *JobService) getFileSize(remotePath string) (int64, error) {
-	client, err := storage.NewClient(g.ctx)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to create gcp storage client")
-	}
-	defer client.Close()
-	bucket := getBucket()
-	attr, err := client.Bucket(bucket).Object(remotePath).Attrs(g.ctx)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to get file attributes, or it doesn't exist")
-	}
-	return attr.Size, nil
-}
+// func (g *JobService) getFileSize(remotePath string) (int64, error) {
+// 	client, err := storage.NewClient(g.ctx)
+// 	if err != nil {
+// 		return 0, errors.Wrap(err, "failed to create gcp storage client")
+// 	}
+// 	defer client.Close()
+// 	bucket := getBucket()
+// 	attr, err := client.Bucket(bucket).Object(remotePath).Attrs(g.ctx)
+// 	if err != nil {
+// 		return 0, errors.Wrap(err, "failed to get file attributes, or it doesn't exist")
+// 	}
+// 	return attr.Size, nil
+// }
 
-func (g *JobService) getFilebyChunk(remotePath string, offset int64, chunkSize int64) ([]byte, error) {
-	client, err := storage.NewClient(g.ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create gcp storage client")
-	}
-	defer client.Close()
-	bucket := getBucket()
-	objectHandle := client.Bucket(bucket).Object(remotePath)
-	objectReader, err := objectHandle.NewRangeReader(g.ctx, offset, chunkSize)
-	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("failed to create reader on %s", remotePath))
-	}
-	defer objectReader.Close()
-	data := make([]byte, chunkSize)
-	n, err := objectReader.Read(data)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to read cloud storage object")
-	}
-	data = data[:n]
-	return data, nil
-}
+// func (g *JobService) getFilebyChunk(remotePath string, offset int64, chunkSize int64) ([]byte, error) {
+// 	client, err := storage.NewClient(g.ctx)
+// 	if err != nil {
+// 		return nil, errors.Wrap(err, "failed to create gcp storage client")
+// 	}
+// 	defer client.Close()
+// 	bucket := getBucket()
+// 	objectHandle := client.Bucket(bucket).Object(remotePath)
+// 	objectReader, err := objectHandle.NewRangeReader(g.ctx, offset, chunkSize)
+// 	if err != nil {
+// 		return nil, errors.Wrap(err, fmt.Sprintf("failed to create reader on %s", remotePath))
+// 	}
+// 	defer objectReader.Close()
+// 	data := make([]byte, chunkSize)
+// 	n, err := objectReader.Read(data)
+// 	if err != nil {
+// 		return nil, errors.Wrap(err, "failed to read cloud storage object")
+// 	}
+// 	data = data[:n]
+// 	return data, nil
+// }
 
-func (g *JobService) uploadFile(reader io.Reader, remotePath string, compress bool) error {
-	client, err := storage.NewClient(g.ctx)
-	if err != nil {
-		return errors.Wrap(err, "failed to create storage client")
-	}
-	defer client.Close()
-	bucket := getBucket()
-	writer := client.Bucket(bucket).Object(remotePath).NewWriter(g.ctx)
-	defer writer.Close()
-	if compress {
-		gzipWriter := gzip.NewWriter(writer)
-		if _, err = io.Copy(gzipWriter, reader); err != nil {
-			return errors.Wrap(err, "failed to copy content to gzip writer")
-		}
-		defer gzipWriter.Close()
-	} else {
-		if _, err = io.Copy(writer, reader); err != nil {
-			return errors.Wrap(err, "failed to copy content to writer")
-		}
-	}
-	return nil
-}
+// func (g *JobService) uploadFile(reader io.Reader, remotePath string, compress bool) error {
+// 	client, err := storage.NewClient(g.ctx)
+// 	if err != nil {
+// 		return errors.Wrap(err, "failed to create storage client")
+// 	}
+// 	defer client.Close()
+// 	bucket := getBucket()
+// 	writer := client.Bucket(bucket).Object(remotePath).NewWriter(g.ctx)
+// 	defer writer.Close()
+// 	if compress {
+// 		gzipWriter := gzip.NewWriter(writer)
+// 		if _, err = io.Copy(gzipWriter, reader); err != nil {
+// 			return errors.Wrap(err, "failed to copy content to gzip writer")
+// 		}
+// 		defer gzipWriter.Close()
+// 	} else {
+// 		if _, err = io.Copy(writer, reader); err != nil {
+// 			return errors.Wrap(err, "failed to copy content to writer")
+// 		}
+// 	}
+// 	return nil
+// }
 
-func getBucket() string {
-	env := os.Getenv("ENV")
-	if env == "" {
-		hlog.Errorf("ENV environment variable is not present")
-	}
-	return fmt.Sprintf("dcr-%s-hub", env)
-}
+// func getBucket() string {
+// 	env := os.Getenv("ENV")
+// 	if env == "" {
+// 		hlog.Errorf("ENV environment variable is not present")
+// 	}
+// 	return fmt.Sprintf("dcr-%s-hub", env)
+// }

@@ -10,8 +10,8 @@ go_library(
     importpath = "github.com/manatee-project/manatee/pkg/storage",
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_minio_minio_go_v7//:go_default_library",
-        "@com_github_minio_minio_go_v7//pkg/credentials:go_default_library",
+        "@com_github_minio_minio_go_v7//:minio-go",
+        "@com_github_minio_minio_go_v7//pkg/credentials",
         "@com_github_pkg_errors//:errors",
         "@com_google_cloud_go_storage//:storage",
     ],

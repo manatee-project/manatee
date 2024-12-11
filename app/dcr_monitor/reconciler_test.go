@@ -43,7 +43,7 @@ func (f *FakeTEEProvider) CleanUpInstance(instanceName string) error {
 	return nil
 }
 
-func (f *FakeImageBuilder) BuildImage(j *db.Job, bucket string, base string, image string) error {
+func (f *FakeImageBuilder) BuildImage(j *db.Job, base string, image string) error {
 	f.buildjobs[j.UUID] = ImageBuildStatus{
 		done: false,
 		info: nil,

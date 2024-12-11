@@ -22,7 +22,7 @@ helm_name="data-clean-room-helm"
 eval $(minikube docker-env)
 kubectl apply -f mysql-deployment.yaml -n $namespace
 kubectl apply -f mysql-service.yaml -n $namespace
-
+kubectl apply -f minio-dev.yaml
 # deploy dcr api
 helm upgrade --cleanup-on-fail \
     --set apiImage.repository=docker.io/library/dcr_api \
@@ -36,15 +36,20 @@ helm upgrade --cleanup-on-fail \
     --set cloudSql.connection_name="" \
     --set namespace=${namespace} \
     --set config.env=${env} \
-    --set config.project_id=${project_id} \
+    --set config.projectId=${project_id} \
     --set config.zone=${zone} \
     --set config.region=${region} \
     --set config.debug=true \
+    --set config.registryType=MINIO \
+    --set config.storageType=MINIO \
+    --set config.minioSecretKey=minioadmin \
+    --set config.minioAccessKey=minioadmin \
+    --set config.minioEndpoint=minio-service:9000 \
     --set mysql.host=mysql-service \
     --set mysql.port=3306 \
     --install $helm_name ../data-clean-room \
     --namespace $namespace
-    
+
 helm repo add jupyterhub https://hub.jupyter.org/helm-chart/
 helm repo update
 

@@ -9,10 +9,10 @@ go_library(
         "//app/dcr_api/biz/dal/db",
         "//app/dcr_api/biz/model/job",
         "//pkg/errno",
+        "//pkg/storage",
         "@com_github_cloudwego_hertz//pkg/common/hlog",
         "@com_github_google_uuid//:uuid",
         "@com_github_pkg_errors//:errors",
-        "@com_google_cloud_go_storage//:storage",
     ],
 )
 

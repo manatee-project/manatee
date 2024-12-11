@@ -5,7 +5,7 @@ go_library(
     srcs = ["main.go"],
     importpath = "github.com/manatee-project/manatee/app/dcr_tee/util/gscp",
     visibility = ["//visibility:private"],
-    deps = ["@com_google_cloud_go_storage//:storage"],
+    deps = ["//pkg/storage"],
 )
 
 go_binary(

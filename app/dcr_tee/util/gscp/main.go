@@ -3,13 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"io"
 	"log"
 	"net/url"
 	"os"
 	"strings"
 
-	"cloud.google.com/go/storage"
+	storageBucket "github.com/manatee-project/manatee/pkg/storage"
 )
 
 // a util to replace `gsutil cp` command, to remove unncessary installation of a heavy debian package
@@ -21,17 +20,11 @@ func main() {
 	localFilePath := os.Args[1]
 	gcsURL := os.Args[2]
 
-	bucket, object, err := extractBucketAndObject(gcsURL)
-	if err != nil {
-		log.Fatalf("invalid GCS URL: %v", err)
-	}
-
 	ctx := context.Background()
-	client, err := storage.NewClient(ctx)
+	storage, object, err := extractBucketAndObject(ctx, gcsURL)
 	if err != nil {
-		log.Fatalf("failed to create client: %v", err)
+		log.Fatalf("invalid URL: %v", err)
 	}
-	defer client.Close()
 
 	file, err := os.Open(localFilePath)
 	if err != nil {
@@ -39,32 +32,35 @@ func main() {
 	}
 	defer file.Close()
 
-	wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
-	if _, err := io.Copy(wc, file); err != nil {
-		log.Fatalf("failed to copy file to GCS: %v", err)
+	err = storage.UploadFile(file, object, false)
+	if err != nil {
+		log.Fatalf("failed to upload file: %v", err)
 	}
 
-	if err := wc.Close(); err != nil {
-		log.Fatalf("failed to close GCS object: %v", err)
-	}
-
-	log.Printf("File %s uploaded to gs://%s/%s successfully.\n", localFilePath, bucket, object)
+	log.Printf("File %s uploaded to gs://%s/%s successfully.\n", localFilePath, storage.BucketPath(), object)
 }
 
-func extractBucketAndObject(gcsURL string) (bucketName, objectPath string, err error) {
+func extractBucketAndObject(ctx context.Context, gcsURL string) (storage storageBucket.Storage, objectPath string, err error) {
 	u, err := url.Parse(gcsURL)
 	if err != nil {
-		return "", "", fmt.Errorf("invalid GCS URL: %v", err)
+		return nil, "", fmt.Errorf("invalid GCS URL: %v", err)
 	}
 
-	if u.Scheme != "gs" {
-		return "", "", fmt.Errorf("URL must start with gs://")
+	if u.Scheme != "gs" && u.Scheme != "s3" {
+		return nil, "", fmt.Errorf("URL must start with gs:// or s3://")
 	}
 
-	bucketName = u.Host
+	bucketName := u.Host
 	objectPath = strings.TrimPrefix(u.Path, "/")
 
-	// Extract the filename from the local file path
+	if u.Scheme == "gs" {
+		storage = storageBucket.NewGoogleCloudStorage(ctx, bucketName)
+	} else if u.Scheme == "s3" {
+		storage, err = storageBucket.NewMinioStorage(ctx, bucketName)
+		if err != nil {
+			return nil, objectPath, err
+		}
+	}
 
-	return bucketName, objectPath, nil
+	return storage, objectPath, nil
 }

@@ -19,7 +19,7 @@ type MinioStorage struct {
 	secretAccessKey string
 }
 
-func NewMinioStorage(ctx context.Context, bucket string) *MinioStorage {
+func NewMinioStorage(ctx context.Context, bucket string) (*MinioStorage, error) {
 	accessKeyID := os.Getenv("AWS_ACCESS_KEY_ID")
 	if accessKeyID == "" {
 		panic("AWS_ACCESS_KEY_ID environment variable is not present")
@@ -32,13 +32,33 @@ func NewMinioStorage(ctx context.Context, bucket string) *MinioStorage {
 	if endpoint == "" {
 		panic("S3_ENDPOINT environment variable is not present")
 	}
+	minioClient, err := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+		Secure: false,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	exist, err := minioClient.BucketExists(ctx, bucket)
+	if err != nil {
+		return nil, err
+	}
+
+	if !exist {
+		err = minioClient.MakeBucket(ctx, bucket, minio.MakeBucketOptions{Region: "us"})
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &MinioStorage{
 		ctx:             ctx,
 		bucket:          bucket,
 		endpoint:        endpoint,
 		accessKeyID:     accessKeyID,
 		secretAccessKey: secretAccessKey,
-	}
+	}, nil
 }
 
 func (m *MinioStorage) BucketPath() string {

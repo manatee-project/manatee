@@ -7,6 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//app/dcr_api/biz/dal/db",
+        "//pkg/storage",
         "@com_github_cloudwego_hertz//pkg/common/hlog",
         "@com_github_pkg_errors//:errors",
         "@io_k8s_api//batch/v1:batch",

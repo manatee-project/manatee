@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
@@ -11,6 +10,7 @@ import (
 	"github.com/manatee-project/manatee/app/dcr_api/biz/model/job"
 	"github.com/manatee-project/manatee/app/dcr_monitor/imagebuilder"
 	"github.com/manatee-project/manatee/app/dcr_monitor/tee_backend"
+	"github.com/manatee-project/manatee/pkg/registry"
 )
 
 type Reconciler interface {
@@ -96,12 +96,10 @@ func (r *ReconcilerImpl) updateJobStatus(j *db.Job) error {
 
 func (r *ReconcilerImpl) handleCreatedJob(j *db.Job) error {
 	// TODO: make the base image configurable
-	projectId := os.Getenv("PROJECT_ID")
-	env := os.Getenv("ENV")
-	baseImage := fmt.Sprintf("us-docker.pkg.dev/%s/dcr-%s-user-images/%s:latest", projectId, env, "data-clean-room-base")
-	imageTag := fmt.Sprintf("us-docker.pkg.dev/%s/dcr-%s-user-images/%s-%s:latest", projectId, env, j.Creator, j.UUID)
-	bucket := fmt.Sprintf("dcr-%s-hub", env)
-	err := r.builder.BuildImage(j, bucket, baseImage, imageTag)
+	registry := registry.GetRegistry()
+	baseImage := registry.BaseImage()
+	imageTag := fmt.Sprintf("%s/%s-%s:latest", registry.Url(), j.Creator, j.UUID)
+	err := r.builder.BuildImage(j, baseImage, imageTag)
 	if err != nil {
 		hlog.Errorf("failed to build image: %w", err)
 		return err
