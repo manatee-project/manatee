@@ -52,8 +52,6 @@ genrule(
         "src/*.tsx",
         "style/*.css",
         "style/*.js",
-        "lib/**/*.js",
-        "lib/**/*.ts",
     ]) + [
         # pyproject-build
         "pyproject.toml",
