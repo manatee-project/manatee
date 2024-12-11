@@ -17,7 +17,6 @@ package job
 
 import (
 	"context"
-	"fmt"
 	"mime/multipart"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -35,8 +34,8 @@ type FileParas struct {
 	Creator         string                `form:"creator"`
 	Envs            []*job.Env            `form:"envs"`
 	JupyterFileName string                `form:"filename"`
-	CPUCount        int32                 `form:"cpu"`
-	DiskSize        int32                 `form:"disk"`
+	CPUCount        int32                 `form:"cpu_count"`
+	DiskSize        int32                 `form:"disk_size"`
 	AccessToken     string                `header:"Authorization,required"`
 }
 
@@ -52,12 +51,13 @@ func SubmitJob(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	formReq.CPUCount = 2
-	formReq.DiskSize = 50
+	if formReq.CPUCount%2 != 0 || formReq.CPUCount <= 0 || formReq.CPUCount > 10 {
+		formReq.CPUCount = 2
+	}
 
-	// print size of cpu and disk
-	fmt.Printf("cpu size: %d\n", formReq.CPUCount)
-	fmt.Printf("disk size: %d\n", formReq.DiskSize)
+	if formReq.DiskSize < 20 || formReq.DiskSize > 1024 {
+		formReq.DiskSize = 50
+	}
 
 	req.JupyterFileName = formReq.JupyterFileName
 	req.AccessToken = formReq.AccessToken
