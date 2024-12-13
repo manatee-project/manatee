@@ -30,14 +30,14 @@ func (g *GoogleDockerRegistry) BaseImage() string {
 	return fmt.Sprintf("%s/data-clean-room-base:latest", g.Url())
 }
 
-type MinioDockerRegistry struct {
+type MinikubeDockerRegistry struct {
 }
 
-func (m *MinioDockerRegistry) Url() string {
+func (m *MinikubeDockerRegistry) Url() string {
 	return "registry.kube-system.svc.cluster.local"
 }
 
-func (m *MinioDockerRegistry) BaseImage() string {
+func (m *MinikubeDockerRegistry) BaseImage() string {
 	return fmt.Sprintf("%s/dcr_tee:latest", m.Url())
 }
 
@@ -49,8 +49,8 @@ func GetRegistry() Registry {
 	var registry Registry
 	if registryType == "GCP" {
 		registry = &GoogleDockerRegistry{}
-	} else if registryType == "MINIO" {
-		registry = &MinioDockerRegistry{}
+	} else if registryType == "MINIKUBE" {
+		registry = &MinikubeDockerRegistry{}
 	}
 	return registry
 }

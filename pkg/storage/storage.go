@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 )
 
 type Storage interface {
@@ -12,6 +13,8 @@ type Storage interface {
 	UploadFile(reader io.Reader, remotePath string, compress bool) error
 	GetFileSize(remotePath string) (int64, error)
 	GetFilebyChunk(remotePath string, offset int64, chunkSize int64) ([]byte, error)
+	PresignedUrl(remotePath string, method string, expiry time.Duration) (string, error)
+	Close()
 }
 
 func getBucket() string {
@@ -30,7 +33,7 @@ func GetStorage(ctx context.Context) (Storage, error) {
 	var storage Storage
 	var err error
 	if storageType == "GCP" {
-		storage = NewGoogleCloudStorage(ctx, getBucket())
+		storage, err = NewGoogleCloudStorage(ctx, getBucket())
 	} else if storageType == "MINIO" {
 		storage, err = NewMinioStorage(ctx, getBucket())
 	}

@@ -9,6 +9,7 @@ data:
   zone: {{ .Values.config.zone | quote }}
   region: {{ .Values.config.region | quote }}
   debug: {{ .Values.config.debug | quote }}
+  teeBackend: {{.Values.config.teeBackend | quote }}
   registryType: {{.Values.config.registryType | quote }}
   storageType: {{.Values.config.storageType | quote }}
   minioEndpoint:  {{ .Values.config.minioEndpoint | quote }}

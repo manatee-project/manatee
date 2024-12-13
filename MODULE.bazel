@@ -100,6 +100,7 @@ use_repo(
     "com_github_pkg_errors",
     "com_google_cloud_go_compute",
     "com_google_cloud_go_storage",
+    "com_github_minio_minio_go_v7",
     "io_gorm_driver_mysql",
     "io_gorm_gorm",
     "io_k8s_api",

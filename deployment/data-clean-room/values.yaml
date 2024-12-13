@@ -127,6 +127,7 @@ config:
   zone: ""
   region: ""
   debug: "false"
+  teeBackend: "GCP"
   storageType: "GCP"
   registryType: "GCP"
   minioEndpoint: ""

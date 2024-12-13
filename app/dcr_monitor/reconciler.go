@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
@@ -25,10 +26,22 @@ type ReconcilerImpl struct {
 
 func NewReconciler(ctx context.Context) *ReconcilerImpl {
 	// FIXME: get config to determine which TEE provider to use.
-	// for now, we only support GCP confidential space.
-	tee, err := tee_backend.NewTEEProviderGCPConfidentialSpace(ctx)
-	if err != nil {
-		hlog.Errorf("failed to init TEE provider %+v", err)
+	// for now, we read the config from ens
+	var tee tee_backend.TEEProvider
+	var err error
+	teeType := os.Getenv("TEE_BACKEND")
+	if teeType == "MOCK" {
+		tee, err = tee_backend.NewMockTeeBackend(ctx)
+		if err != nil {
+			hlog.Errorf("failed to init TEE provider %+v", err)
+		}
+	} else if teeType == "GCP" {
+		tee, err = tee_backend.NewTEEProviderGCPConfidentialSpace(ctx)
+		if err != nil {
+			hlog.Errorf("failed to init TEE provider %+v", err)
+		}
+	} else {
+		panic("unkown tee type")
 	}
 
 	// FIXME: get config to determine which ImageBuilder to use.
@@ -59,7 +72,7 @@ func (r *ReconcilerImpl) Reconcile(ctx context.Context) {
 		hlog.Debugf("[Reconciler] job %s in status %d", j.UUID, j.JobStatus)
 		err := r.updateJobStatus(j)
 		if err != nil {
-			hlog.Errorf("[Reconciler] failed to reconcile job %s: %v", j.UUID, err)
+			hlog.Errorf("[Reconciler] failed to reconcile job %s: %+v", j.UUID, err)
 			continue
 		}
 		db.UpdateJob(j)
@@ -122,8 +135,9 @@ func (r *ReconcilerImpl) handleImageBuildingJob(j *db.Job) error {
 		instanceName := fmt.Sprintf("%s-%s", j.Creator, j.UUID)
 		err := r.tee.LaunchInstance(instanceName, j.DockerImage, j.DockerImageDigest, j.ExtraEnvs)
 		if err != nil {
-			hlog.Errorf("failed to launch instance: %w", err)
-			return err
+			hlog.Errorf("failed to launch instance: %+v", err)
+			j.JobStatus = int(job.JobStatus_VMLaunchFailed)
+			return nil
 		}
 		j.InstanceName = instanceName
 		j.JobStatus = int(job.JobStatus_VMWaiting)

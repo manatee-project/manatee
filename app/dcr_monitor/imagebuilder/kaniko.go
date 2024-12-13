@@ -84,7 +84,7 @@ func (b *KanikoImageBuilder) CheckImageBuilderStatusAndGetInfo(uuid string) (boo
 
 	hlog.Infof("[KanikoJobMonitor]job name: %v, job status: %v", k8sJob.Name, k8sJob.Status.Conditions[0].Type)
 
-	if k8sJob.Status.Conditions[0].Type == batchv1.JobComplete {
+	if k8sJob.Status.Conditions[0].Type == batchv1.JobComplete || k8sJob.Status.Conditions[0].Type == batchv1.JobSuccessCriteriaMet {
 		image, digest, err := b.getImageDigest(k8sJob.Name)
 		if err != nil {
 			hlog.Errorf("[KanikoJobMonitor] failed to get image digest: %+v", err)
@@ -164,19 +164,17 @@ func (b *KanikoImageBuilder) deleteJob(name string) error {
 }
 
 func (b *KanikoImageBuilder) BuildImage(j *db.Job, baseImage string, image string) error {
-	outputPath := fmt.Sprintf("%s/output/out-%s-%s", j.Creator, j.UUID, j.JupyterFileName)
-	customTokenPath := fmt.Sprintf("%s/output/%s-token", j.Creator, j.UUID)
+	// outputPath := fmt.Sprintf("%s/output/out-%s-%s", j.Creator, j.UUID, j.JupyterFileName)
+	// customTokenPath := fmt.Sprintf("%s/output/%s-token", j.Creator, j.UUID)
 
 	buildArgs := []string{
 		fmt.Sprintf("--context=%s", j.BuildContextPath),
 		fmt.Sprintf("--destination=%s", image),
-		// TODO: this should be signed URL (See https://github.com/manatee-project/manatee/issues/23)
-		fmt.Sprintf("--build-arg=OUTPUTPATH=%s", fmt.Sprintf("%s/%s", b.storage.BucketPath(), outputPath)),
+		fmt.Sprintf("--build-arg=OUTPUT_SIGNED_URL=%s", j.OutputPutSignedUrl),
 		fmt.Sprintf("--build-arg=JUPYTER_FILENAME=%s", j.JupyterFileName),
 		fmt.Sprintf("--build-arg=USER_WORKSPACE=%s", fmt.Sprintf("%s-workspace", j.Creator)),
 		fmt.Sprintf("--build-arg=BASE_IMAGE=%s", baseImage),
-		// TODO: this should be signed URL (See https://github.com/manatee-project/manatee/issues/23)
-		fmt.Sprintf("--build-arg=CUSTOMTOKEN_CLOUDSTORAGE_PATH=%s", fmt.Sprintf("%s/%s", b.storage.BucketPath(), customTokenPath)),
+		fmt.Sprintf("--build-arg=CUSTOMTOKEN_SIGNED_URL=%s", j.CustomTokenPutSignedUrl),
 	}
 	var envs []corev1.EnvVar
 

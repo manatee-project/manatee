@@ -23,18 +23,20 @@ import (
 
 type Job struct {
 	gorm.Model
-	ID                uint64            `gorm:"id" json:"id""`
-	UUID              string            `gorm:"uuid" json:"uuid"`
-	Creator           string            `gorm:"creator" json:"creator"`
-	JupyterFileName   string            `gorm:"jupyter_file_name" json:"jupyter_file_name"`
-	BuildContextPath  string            `gorm:"build_context_path" json:"build_context_path"`
-	Dockerfile        string            `gorm:"dockerfile" json:"dockerfile"`
-	DockerImage       string            `gorm:"docker_image" json:"docker_image"`
-	DockerImageDigest string            `gorm:"docker_image_digest" json:"docker_image_digest"`
-	AttestationReport string            `gorm:"attestation_report" json:"attestation_report"`
-	JobStatus         int               `gorm:"job_status" json:"job_status"`
-	InstanceName      string            `gorm:"instance_name" json:"instance_name"`
-	ExtraEnvs         map[string]string `gorm:"serializer:json"`
+	ID                      uint64            `gorm:"id" json:"id""`
+	UUID                    string            `gorm:"uuid" json:"uuid"`
+	Creator                 string            `gorm:"creator" json:"creator"`
+	JupyterFileName         string            `gorm:"jupyter_file_name" json:"jupyter_file_name"`
+	BuildContextPath        string            `gorm:"build_context_path" json:"build_context_path"`
+	OutputPutSignedUrl      string            `gorm:"output_put_signed_url" json:"output_put_signed_url"`
+	CustomTokenPutSignedUrl string            `gorm:"custom_token_put_signed_url" json:"custom_token_put_signed_url"`
+	Dockerfile              string            `gorm:"dockerfile" json:"dockerfile"`
+	DockerImage             string            `gorm:"docker_image" json:"docker_image"`
+	DockerImageDigest       string            `gorm:"docker_image_digest" json:"docker_image_digest"`
+	AttestationReport       string            `gorm:"attestation_report" json:"attestation_report"`
+	JobStatus               int               `gorm:"job_status" json:"job_status"`
+	InstanceName            string            `gorm:"instance_name" json:"instance_name"`
+	ExtraEnvs               map[string]string `gorm:"serializer:json"`
 }
 
 func (Job) TableName() string {

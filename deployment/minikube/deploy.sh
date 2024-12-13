@@ -40,7 +40,8 @@ helm upgrade --cleanup-on-fail \
     --set config.zone=${zone} \
     --set config.region=${region} \
     --set config.debug=true \
-    --set config.registryType=MINIO \
+    --set config.teeBackend=MOCK \
+    --set config.registryType=MINIKUBE \
     --set config.storageType=MINIO \
     --set config.minioSecretKey=minioadmin \
     --set config.minioAccessKey=minioadmin \
@@ -54,7 +55,7 @@ helm repo add jupyterhub https://hub.jupyter.org/helm-chart/
 helm repo update
 
 service_account="jupyter-k8s-pod-sa"
-helm_name="jupyterhub-helm-$namespace"
+helm_name="jupyterhub-helm"
 api="http://data-clean-room.$namespace.svc.cluster.local"
 
 helm upgrade --cleanup-on-fail \

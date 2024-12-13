@@ -110,6 +110,11 @@ spec:
                   configMapKeyRef:
                     name: manatee-configmap
                     key: registryType
+            - name: TEE_BACKEND
+              valueFrom:
+                  configMapKeyRef:
+                    name: manatee-configmap
+                    key: teeBackend
           {{- with .Values.volumeMounts }}
           volumeMounts:
             {{- toYaml . | nindent 12 }}
