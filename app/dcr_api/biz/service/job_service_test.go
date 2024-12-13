@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"os"
 	"strings"
 	"testing"
 )
@@ -29,6 +30,8 @@ ENTRYPOINT jupyter nbconvert --execute --to notebook --inplace $JUPYTER_FILENAME
 `
 
 func TestGenerateDockerfile(t *testing.T) {
+	os.Setenv("STORAGE_TYPE", "GCP")
+	os.Setenv("ENV", "minikube")
 	js := NewJobService(context.Background())
 
 	content := js.generateDockerfile([]string{})
