@@ -75,27 +75,6 @@ func (m *MinioStorage) UploadFile(reader io.Reader, remotePath string, compress 
 	return nil
 }
 
-func (m *MinioStorage) GetFileSize(remotePath string) (int64, error) {
-	objectInfo, err := m.minioClient.StatObject(m.ctx, m.bucket, remotePath, minio.StatObjectOptions{})
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to stat minio object")
-	}
-	return objectInfo.Size, nil
-}
-
-func (m *MinioStorage) GetFilebyChunk(remotePath string, offset int64, chunkSize int64) ([]byte, error) {
-	object, err := m.minioClient.GetObject(context.Background(), m.bucket, remotePath, minio.GetObjectOptions{})
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get minio oibject")
-	}
-	buf := make([]byte, chunkSize)
-	_, err = object.ReadAt(buf, offset)
-	if err != nil && err != io.EOF {
-		return nil, errors.Wrap(err, "failed to get minio oibject")
-	}
-	return buf, nil
-}
-
 func (m *MinioStorage) PresignedUrl(remotePath string, method string, expires time.Duration) (string, error) {
 	reqParams := make(url.Values)
 	var url *url.URL

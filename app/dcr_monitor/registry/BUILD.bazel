@@ -3,6 +3,6 @@ load("@rules_go//go:def.bzl", "go_library")
 go_library(
     name = "registry",
     srcs = ["registry.go"],
-    importpath = "github.com/manatee-project/manatee/pkg/registry",
+    importpath = "github.com/manatee-project/manatee/app/dcr_monitor/registry",
     visibility = ["//visibility:public"],
 )

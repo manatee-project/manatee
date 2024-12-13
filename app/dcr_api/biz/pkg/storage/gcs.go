@@ -55,30 +55,6 @@ func (g *GoogleCloudStorage) UploadFile(reader io.Reader, remotePath string, com
 	return nil
 }
 
-func (g *GoogleCloudStorage) GetFileSize(remotePath string) (int64, error) {
-	attr, err := g.client.Bucket(g.bucket).Object(remotePath).Attrs(g.ctx)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to get file attributes, or it doesn't exist")
-	}
-	return attr.Size, nil
-}
-
-func (g *GoogleCloudStorage) GetFilebyChunk(remotePath string, offset int64, chunkSize int64) ([]byte, error) {
-	objectHandle := g.client.Bucket(g.bucket).Object(remotePath)
-	objectReader, err := objectHandle.NewRangeReader(g.ctx, offset, chunkSize)
-	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("failed to create reader on %s", remotePath))
-	}
-	defer objectReader.Close()
-	data := make([]byte, chunkSize)
-	n, err := objectReader.Read(data)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to read cloud storage object")
-	}
-	data = data[:n]
-	return data, nil
-}
-
 func (g *GoogleCloudStorage) PresignedUrl(remotePath string, method string, expires time.Duration) (string, error) {
 	if method != "GET" && method != "PUT" {
 		return "", errors.Wrap(fmt.Errorf("unkown method for signed url, supported are GET and PUT"), "")

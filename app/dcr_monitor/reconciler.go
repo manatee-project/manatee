@@ -10,8 +10,8 @@ import (
 	"github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/model/job"
 	"github.com/manatee-project/manatee/app/dcr_monitor/imagebuilder"
+	"github.com/manatee-project/manatee/app/dcr_monitor/registry"
 	"github.com/manatee-project/manatee/app/dcr_monitor/tee_backend"
-	"github.com/manatee-project/manatee/pkg/registry"
 )
 
 type Reconciler interface {

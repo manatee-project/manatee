@@ -7,11 +7,9 @@ import (
 	"io"
 	"os"
 	"regexp"
-	"strings"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
-	"github.com/manatee-project/manatee/pkg/storage"
 	"github.com/pkg/errors"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -35,7 +33,6 @@ type KanikoImageBuilder struct {
 	ctx       context.Context
 	clientSet *kubernetes.Clientset
 	namespace string
-	storage   storage.Storage
 }
 
 func NewKanikoImageBuilder() (*KanikoImageBuilder, error) {
@@ -56,15 +53,11 @@ func NewKanikoImageBuilder() (*KanikoImageBuilder, error) {
 	}
 	namespace := string(RunningNameSpaceByte)
 	ctx := context.Background()
-	storage, err := storage.GetStorage(ctx)
-	if err != nil {
-		return nil, err
-	}
+
 	return &KanikoImageBuilder{
 		ctx:       ctx,
 		clientSet: clientSet,
 		namespace: namespace,
-		storage:   storage,
 	}, nil
 }
 
@@ -164,8 +157,6 @@ func (b *KanikoImageBuilder) deleteJob(name string) error {
 }
 
 func (b *KanikoImageBuilder) BuildImage(j *db.Job, baseImage string, image string) error {
-	// outputPath := fmt.Sprintf("%s/output/out-%s-%s", j.Creator, j.UUID, j.JupyterFileName)
-	// customTokenPath := fmt.Sprintf("%s/output/%s-token", j.Creator, j.UUID)
 
 	buildArgs := []string{
 		fmt.Sprintf("--context=%s", j.BuildContextPath),
@@ -178,7 +169,7 @@ func (b *KanikoImageBuilder) BuildImage(j *db.Job, baseImage string, image strin
 	}
 	var envs []corev1.EnvVar
 
-	if strings.HasPrefix(b.storage.BucketPath(), "s3") {
+	if os.Getenv("STORAGE_TYPE") == "MINIO" {
 		envs = append(envs, corev1.EnvVar{
 			Name:  "AWS_ACCESS_KEY_ID",
 			Value: os.Getenv("AWS_ACCESS_KEY_ID"),

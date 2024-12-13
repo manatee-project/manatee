@@ -14,8 +14,8 @@ go_library(
         "//app/dcr_api/biz/dal/db",
         "//app/dcr_api/biz/model/job",
         "//app/dcr_monitor/imagebuilder",
+        "//app/dcr_monitor/registry",
         "//app/dcr_monitor/tee_backend",
-        "//pkg/registry",
         "@com_github_cloudwego_hertz//pkg/common/hlog",
     ],
 )

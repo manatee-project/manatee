@@ -7,7 +7,7 @@ go_library(
         "minio.go",
         "storage.go",
     ],
-    importpath = "github.com/manatee-project/manatee/pkg/storage",
+    importpath = "github.com/manatee-project/manatee/app/dcr_api/biz/pkg/storage",
     visibility = ["//visibility:public"],
     deps = [
         "@com_github_minio_minio_go_v7//:minio-go",
