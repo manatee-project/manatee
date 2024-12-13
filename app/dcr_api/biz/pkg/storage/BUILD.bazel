@@ -13,6 +13,8 @@ go_library(
         "@com_github_minio_minio_go_v7//:minio-go",
         "@com_github_minio_minio_go_v7//pkg/credentials",
         "@com_github_pkg_errors//:errors",
+        "@com_google_cloud_go_iam//credentials/apiv1",
+        "@com_google_cloud_go_iam//credentials/apiv1/credentialspb",
         "@com_google_cloud_go_storage//:storage",
     ],
 )

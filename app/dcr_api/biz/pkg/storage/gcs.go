@@ -5,16 +5,21 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/pkg/errors"
+
+	credentials "cloud.google.com/go/iam/credentials/apiv1"
+	credentialspb "cloud.google.com/go/iam/credentials/apiv1/credentialspb"
 )
 
 type GoogleCloudStorage struct {
-	ctx    context.Context
-	bucket string
-	client *storage.Client
+	ctx            context.Context
+	bucket         string
+	client         *storage.Client
+	googleAccessId string
 }
 
 func NewGoogleCloudStorage(ctx context.Context, bucket string) (*GoogleCloudStorage, error) {
@@ -22,11 +27,13 @@ func NewGoogleCloudStorage(ctx context.Context, bucket string) (*GoogleCloudStor
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create storage client")
 	}
+	serviceAccount, err := getGoogleServiceAccount()
 
 	return &GoogleCloudStorage{
-		ctx:    ctx,
-		bucket: bucket,
-		client: client,
+		ctx:            ctx,
+		bucket:         bucket,
+		client:         client,
+		googleAccessId: serviceAccount,
 	}, nil
 }
 
@@ -59,11 +66,52 @@ func (g *GoogleCloudStorage) PresignedUrl(remotePath string, method string, expi
 	if method != "GET" && method != "PUT" {
 		return "", errors.Wrap(fmt.Errorf("unkown method for signed url, supported are GET and PUT"), "")
 	}
-	opts := &storage.SignedURLOptions{
-		Scheme:  storage.SigningSchemeV4,
-		Method:  method,
-		Expires: time.Now().Add(expires),
+	c, err := credentials.NewIamCredentialsClient(g.ctx)
+	if err != nil {
+		panic(err)
 	}
 
-	return storage.SignedURL(g.bucket, remotePath, opts)
+	opts := &storage.SignedURLOptions{
+		Scheme:         storage.SigningSchemeV4,
+		Method:         method,
+		Expires:        time.Now().Add(expires),
+		GoogleAccessID: g.googleAccessId,
+		SignBytes: func(b []byte) ([]byte, error) {
+			req := &credentialspb.SignBlobRequest{
+				Payload: b,
+				Name:    g.googleAccessId,
+			}
+			resp, err := c.SignBlob(g.ctx, req)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to sign blocb")
+			}
+			return resp.SignedBlob, err
+		},
+	}
+	url, err := storage.SignedURL(g.bucket, remotePath, opts)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to sign url")
+	}
+	return url, nil
+}
+
+func getGoogleServiceAccount() (string, error) {
+	url := "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/email"
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to create http client")
+	}
+	req.Header.Add("Metadata-Flavor", "Google")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to request google meta service account")
+	}
+	defer resp.Body.Close()
+	// 读取响应体
+	account, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to request google meta service account")
+	}
+	return string(account), nil
 }

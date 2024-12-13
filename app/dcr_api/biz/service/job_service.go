@@ -92,12 +92,12 @@ func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Read
 	outputPath := fmt.Sprintf("%s/output/out-%s-%s", creator, uuidStr.String(), req.JupyterFileName)
 	outputPutSignedUrl, err := js.storage.PresignedUrl(outputPath, "PUT", time.Second*3600*6)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to generate signed url")
+		return "", err
 	}
 	customTokenPath := fmt.Sprintf("%s/output/%s-token", creator, uuidStr.String())
 	customTokenPathPutSignedUrl, err := js.storage.PresignedUrl(customTokenPath, "PUT", time.Second*3600*6)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to generate signed url")
+		return "", err
 	}
 	t := db.Job{
 		UUID:                    uuidStr.String(),
