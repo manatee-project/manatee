@@ -38,7 +38,7 @@ extra_css:
 # Page tree
 nav:
   - Introduction: index.md
-  - Project Status: project-status.md
+  - Roadmap: project-status.md
   - Getting Started:
     - Build: getting-started/building.md
     - Deploy:
