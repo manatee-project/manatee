@@ -47,7 +47,7 @@ helm upgrade --cleanup-on-fail \
     --set cloudSql.connection_name=${connection_name} \
     --set namespace=${namespace} \
     --set config.env=${env} \
-    --set config.project_id=${project_id} \
+    --set config.projectId=${project_id} \
     --set config.zone=${zone} \
     --set config.region=${region} \
     --set config.debug=${debug} \

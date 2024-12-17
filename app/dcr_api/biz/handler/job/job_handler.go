@@ -117,31 +117,6 @@ func DeleteJob(ctx context.Context, c *app.RequestContext) {
 	})
 }
 
-// QueryJobOutputAttr .
-// @router /v1/job/file/attrs/ [POST]
-func QueryJobOutputAttr(ctx context.Context, c *app.RequestContext) {
-	var err error
-	var req job.QueryJobOutputRequest
-	err = c.BindAndValidate(&req)
-	if err != nil {
-		hlog.Errorf("[Job Handler]failed to parse parameters: %+v", err)
-		utils.ReturnsJSONError(c, err)
-		return
-	}
-	file, size, err := service.NewJobService(ctx).GetJobOutputAttrs(&req)
-	if err != nil {
-		hlog.Errorf("[Job Handler]failed to get job output attributes: %+v", err)
-		utils.ReturnsJSONError(c, err)
-		return
-	}
-	c.JSON(consts.StatusOK, job.QueryJobOutputResponse{
-		Code:     errno.SuccessCode,
-		Msg:      errno.SuccessMsg,
-		Filename: file,
-		Size:     size,
-	})
-}
-
 // DownloadJobOutput .
 // @router /v1/job/file/download/ [POST]
 func DownloadJobOutput(ctx context.Context, c *app.RequestContext) {
@@ -153,7 +128,7 @@ func DownloadJobOutput(ctx context.Context, c *app.RequestContext) {
 		utils.ReturnsJSONError(c, err)
 		return
 	}
-	content, err := service.NewJobService(ctx).DownloadJobOutput(&req)
+	signedUrl, filename, err := service.NewJobService(ctx).DownloadJobOutput(&req)
 	if err != nil {
 		hlog.Errorf("[Job Handler]failed to download job output: %+v", err)
 		utils.ReturnsJSONError(c, err)
@@ -161,9 +136,10 @@ func DownloadJobOutput(ctx context.Context, c *app.RequestContext) {
 	}
 
 	c.JSON(consts.StatusOK, job.DownloadJobOutputResponse{
-		Code:    errno.SuccessCode,
-		Msg:     errno.SuccessMsg,
-		Content: content,
+		Code:      errno.SuccessCode,
+		Msg:       errno.SuccessMsg,
+		SignedURL: signedUrl,
+		Filename:  filename,
 	})
 }
 
@@ -178,7 +154,7 @@ func QueryJobAttestationReport(ctx context.Context, c *app.RequestContext) {
 		utils.ReturnsJSONError(c, err)
 		return
 	}
-	report, err := service.NewJobService(ctx).GetJobAttestationReport(&req)
+	signedUrl, err := service.NewJobService(ctx).GetJobAttestationReport(&req)
 	if err != nil {
 		hlog.Errorf("[Job Handler]failed to query job attestation report: %+v", err)
 		utils.ReturnsJSONError(c, err)
@@ -187,6 +163,6 @@ func QueryJobAttestationReport(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, job.QueryJobAttestationResponse{
 		Code:  errno.SuccessCode,
 		Msg:   errno.SuccessMsg,
-		Token: report,
+		SignedURL: signedUrl,
 	})
 }

@@ -68,7 +68,7 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   name: manatee-configmap
-                  key: project_id
+                  key: projectId
             - name: REGION
               valueFrom:
                 configMapKeyRef:
@@ -84,6 +84,26 @@ spec:
                 configMapKeyRef:
                   name: manatee-configmap
                   key: debug
+            - name: STORAGE_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: storageType
+            - name: S3_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: minioEndpoint
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: minioAccessKey
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: minioSecretKey
           ports:
             - name: http
               containerPort: {{ .Values.api.port }}
