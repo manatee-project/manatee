@@ -90,12 +90,12 @@ func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Read
 
 	// generate signed put url for the output and custom token
 	outputPath := fmt.Sprintf("%s/output/out-%s-%s", creator, uuidStr.String(), req.JupyterFileName)
-	outputPutSignedUrl, err := js.storage.PresignedUrl(outputPath, "PUT", time.Second*3600*6)
+	outputPutSignedUrl, err := js.storage.IssueSignedUrl(outputPath, "PUT", time.Hour*6)
 	if err != nil {
 		return "", err
 	}
 	customTokenPath := fmt.Sprintf("%s/output/%s-token", creator, uuidStr.String())
-	customTokenPathPutSignedUrl, err := js.storage.PresignedUrl(customTokenPath, "PUT", time.Second*3600*6)
+	customTokenPathPutSignedUrl, err := js.storage.IssueSignedUrl(customTokenPath, "PUT", time.Hour*6)
 	if err != nil {
 		return "", err
 	}
@@ -238,8 +238,8 @@ func (js *JobService) DownloadJobOutput(req *job.DownloadJobOutputRequest) (stri
 		return "", "", err
 	}
 	outputPath := js.getJobOutputPath(j.Creator, j.UUID, j.JupyterFileName)
-	filename := js.getJobOutputFilename(fmt.Sprintf("%v", j.ID), j.JupyterFileName)
-	signedUrl, err := js.storage.PresignedUrl(outputPath, "GET", time.Second*3600)
+	filename := fmt.Sprintf("out-%v-%s", j.ID, j.JupyterFileName)
+	signedUrl, err := js.storage.IssueSignedUrl(outputPath, "GET", time.Hour)
 	if err != nil {
 		return "", "", err
 	}
@@ -257,7 +257,7 @@ func (js *JobService) GetJobAttestationReport(req *job.QueryJobAttestationReques
 		return "", err
 	}
 	attestationReportPath := fmt.Sprintf("%s/output/%s-token", j.Creator, j.UUID)
-	signedUrl, err := js.storage.PresignedUrl(attestationReportPath, "GET", time.Second*3600)
+	signedUrl, err := js.storage.IssueSignedUrl(attestationReportPath, "GET", time.Hour)
 	if err != nil {
 		return "", nil
 	}

@@ -33,7 +33,6 @@ type Job struct {
 	Dockerfile              string            `gorm:"dockerfile" json:"dockerfile"`
 	DockerImage             string            `gorm:"docker_image" json:"docker_image"`
 	DockerImageDigest       string            `gorm:"docker_image_digest" json:"docker_image_digest"`
-	AttestationReport       string            `gorm:"attestation_report" json:"attestation_report"`
 	JobStatus               int               `gorm:"job_status" json:"job_status"`
 	InstanceName            string            `gorm:"instance_name" json:"instance_name"`
 	ExtraEnvs               map[string]string `gorm:"serializer:json"`
@@ -61,7 +60,6 @@ func UpdateJob(j *Job) error {
 			BuildContextPath:  j.BuildContextPath,
 			DockerImageDigest: j.DockerImageDigest,
 			DockerImage:       j.DockerImage,
-			AttestationReport: j.AttestationReport,
 			InstanceName:      j.InstanceName,
 			ExtraEnvs:         j.ExtraEnvs,
 		})

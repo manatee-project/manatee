@@ -24,17 +24,17 @@ type MockTeeBackend struct {
 func NewMockTeeBackend(ctx context.Context) (*MockTeeBackend, error) {
 	clusterConfig, err := rest.InClusterConfig()
 	if err != nil {
-		panic(err)
+		return nil, errors.Wrap(err, "failed to init cluster config")
 	}
 
 	clientSet, err := kubernetes.NewForConfig(clusterConfig)
 	if err != nil {
-		panic(err)
+		return nil, errors.Wrap(err, "failed to create client")
 	}
 
 	RunningNameSpaceByte, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
 	if err != nil {
-		panic(err)
+		return nil, errors.Wrap(err, "failed to get namespace")
 	}
 	namespace := string(RunningNameSpaceByte)
 

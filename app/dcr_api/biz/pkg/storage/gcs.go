@@ -19,6 +19,7 @@ type GoogleCloudStorage struct {
 	ctx            context.Context
 	bucket         string
 	client         *storage.Client
+	iamClient      *credentials.IamCredentialsClient
 	googleAccessId string
 }
 
@@ -28,10 +29,17 @@ func NewGoogleCloudStorage(ctx context.Context, bucket string) (*GoogleCloudStor
 		return nil, errors.Wrap(err, "failed to create storage client")
 	}
 	serviceAccount, err := getGoogleServiceAccount()
-
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get google service account")
+	}
+	iamClient, err := credentials.NewIamCredentialsClient(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create iam client")
+	}
 	return &GoogleCloudStorage{
 		ctx:            ctx,
 		bucket:         bucket,
+		iamClient:      iamClient,
 		client:         client,
 		googleAccessId: serviceAccount,
 	}, nil
@@ -62,13 +70,9 @@ func (g *GoogleCloudStorage) UploadFile(reader io.Reader, remotePath string, com
 	return nil
 }
 
-func (g *GoogleCloudStorage) PresignedUrl(remotePath string, method string, expires time.Duration) (string, error) {
+func (g *GoogleCloudStorage) IssueSignedUrl(remotePath string, method string, expires time.Duration) (string, error) {
 	if method != "GET" && method != "PUT" {
 		return "", errors.Wrap(fmt.Errorf("unkown method for signed url, supported are GET and PUT"), "")
-	}
-	c, err := credentials.NewIamCredentialsClient(g.ctx)
-	if err != nil {
-		panic(err)
 	}
 
 	opts := &storage.SignedURLOptions{
@@ -81,7 +85,7 @@ func (g *GoogleCloudStorage) PresignedUrl(remotePath string, method string, expi
 				Payload: b,
 				Name:    g.googleAccessId,
 			}
-			resp, err := c.SignBlob(g.ctx, req)
+			resp, err := g.iamClient.SignBlob(g.ctx, req)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to sign blocb")
 			}
@@ -108,7 +112,6 @@ func getGoogleServiceAccount() (string, error) {
 		return "", errors.Wrap(err, "failed to request google meta service account")
 	}
 	defer resp.Body.Close()
-	// 读取响应体
 	account, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to request google meta service account")

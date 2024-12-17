@@ -75,7 +75,7 @@ func (m *MinioStorage) UploadFile(reader io.Reader, remotePath string, compress 
 	return nil
 }
 
-func (m *MinioStorage) PresignedUrl(remotePath string, method string, expires time.Duration) (string, error) {
+func (m *MinioStorage) IssueSignedUrl(remotePath string, method string, expires time.Duration) (string, error) {
 	reqParams := make(url.Values)
 	var url *url.URL
 	var err error

@@ -19,7 +19,7 @@ ENV JUPYTER_FILENAME=$JUPYTER_FILENAME
 ENV CUSTOMTOKEN_CLOUDSTORAGE_PATH=$CUSTOMTOKEN_CLOUDSTORAGE_PATH
 
 WORKDIR /home/jovyan
-COPY $USER_WORKSAPCE/* ./
+COPY $USER_WORKSPACE/* ./
 
 
 ENTRYPOINT jupyter nbconvert --execute --to notebook --inplace $JUPYTER_FILENAME --ExecutePreprocessor.timeout=-1 --allow-errors \

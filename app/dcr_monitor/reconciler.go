@@ -41,7 +41,10 @@ func NewReconciler(ctx context.Context) *ReconcilerImpl {
 			hlog.Errorf("failed to init TEE provider %+v", err)
 		}
 	} else {
-		panic("unkown tee type")
+		tee, err = tee_backend.NewMockTeeBackend(ctx)
+		if err != nil {
+			hlog.Errorf("failed to init TEE provider %+v", err)
+		}
 	}
 
 	// FIXME: get config to determine which ImageBuilder to use.
