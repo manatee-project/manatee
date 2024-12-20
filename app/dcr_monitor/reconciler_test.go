@@ -33,7 +33,7 @@ func (f *FakeTEEProvider) GetInstanceStatus(instanceName string) (string, error)
 	return status, nil
 }
 
-func (f *FakeTEEProvider) LaunchInstance(instanceName string, image string, digest string, extraEnvs map[string]string, cpuCount int32, diskSize int32) error {
+func (f *FakeTEEProvider) LaunchInstance(instanceName string, image string, digest string, extraEnvs map[string]string, cpuCount int64, diskSize int64) error {
 	f.instances[instanceName] = "RUNNING"
 	return nil
 }

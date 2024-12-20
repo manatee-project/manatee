@@ -34,8 +34,8 @@ type FileParas struct {
 	Creator         string                `form:"creator"`
 	Envs            []*job.Env            `form:"envs"`
 	JupyterFileName string                `form:"filename"`
-	CPUCount        int32                 `form:"cpu_count"`
-	DiskSize        int32                 `form:"disk_size"`
+	CPUCount        int64                 `form:"cpu_count"`
+	DiskSize        int64                 `form:"disk_size"`
 	AccessToken     string                `header:"Authorization,required"`
 }
 
@@ -49,14 +49,6 @@ func SubmitJob(ctx context.Context, c *app.RequestContext) {
 		hlog.Errorf("[Job Handler]failed to parse parameters: %+v", err)
 		utils.ReturnsJSONError(c, err)
 		return
-	}
-
-	if formReq.CPUCount%2 != 0 || formReq.CPUCount <= 0 || formReq.CPUCount > 10 {
-		formReq.CPUCount = 2
-	}
-
-	if formReq.DiskSize < 20 || formReq.DiskSize > 1024 {
-		formReq.DiskSize = 50
 	}
 
 	req.JupyterFileName = formReq.JupyterFileName

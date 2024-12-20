@@ -695,16 +695,22 @@ type SubmitJobRequest struct {
 	JupyterFileName string `thrift:"jupyter_file_name,1" form:"filename" json:"filename" vd:"len($) > 0 && len($) < 128 && regexp('^.*\\.ipynb$') && !regexp('.*\\.\\..*')"`
 	Creator         string `thrift:"creator,2" form:"creator" json:"creator" vd:"len($) > 0 && len($) < 32 && !regexp('.*\\.\\..*')"`
 	Envs            []*Env `thrift:"envs,3" form:"envs" json:"envs"`
-	CPUCount        int32  `thrift:"cpu_count,4" form:"cpu_count" json:"cpu_count" vd:"len($) > 0"`
-	DiskSize        int32  `thrift:"disk_size,5" form:"disk_size" json:"disk_size" vd:"len($) > 0"`
+	CPUCount        int64  `thrift:"cpu_count,4" form:"cpu_count" json:"cpu_count" vd:"len($) > 0"`
+	DiskSize        int64  `thrift:"disk_size,5" form:"disk_size" json:"disk_size" vd:"len($) > 0"`
 	AccessToken     string `thrift:"access_token,255,required" header:"Authorization,required" json:"access_token,required"`
 }
 
 func NewSubmitJobRequest() *SubmitJobRequest {
-	return &SubmitJobRequest{}
+	return &SubmitJobRequest{
+
+		CPUCount: 2,
+		DiskSize: 50,
+	}
 }
 
 func (p *SubmitJobRequest) InitDefault() {
+	p.CPUCount = 2
+	p.DiskSize = 50
 }
 
 func (p *SubmitJobRequest) GetJupyterFileName() (v string) {
@@ -719,11 +725,11 @@ func (p *SubmitJobRequest) GetEnvs() (v []*Env) {
 	return p.Envs
 }
 
-func (p *SubmitJobRequest) GetCPUCount() (v int32) {
+func (p *SubmitJobRequest) GetCPUCount() (v int64) {
 	return p.CPUCount
 }
 
-func (p *SubmitJobRequest) GetDiskSize() (v int32) {
+func (p *SubmitJobRequest) GetDiskSize() (v int64) {
 	return p.DiskSize
 }
 
@@ -785,7 +791,7 @@ func (p *SubmitJobRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 4:
-			if fieldTypeId == thrift.I32 {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -793,7 +799,7 @@ func (p *SubmitJobRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 5:
-			if fieldTypeId == thrift.I32 {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -891,8 +897,8 @@ func (p *SubmitJobRequest) ReadField3(iprot thrift.TProtocol) error {
 }
 func (p *SubmitJobRequest) ReadField4(iprot thrift.TProtocol) error {
 
-	var _field int32
-	if v, err := iprot.ReadI32(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -902,8 +908,8 @@ func (p *SubmitJobRequest) ReadField4(iprot thrift.TProtocol) error {
 }
 func (p *SubmitJobRequest) ReadField5(iprot thrift.TProtocol) error {
 
-	var _field int32
-	if v, err := iprot.ReadI32(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -1032,10 +1038,10 @@ WriteFieldEndError:
 }
 
 func (p *SubmitJobRequest) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("cpu_count", thrift.I32, 4); err != nil {
+	if err = oprot.WriteFieldBegin("cpu_count", thrift.I64, 4); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI32(p.CPUCount); err != nil {
+	if err := oprot.WriteI64(p.CPUCount); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1049,10 +1055,10 @@ WriteFieldEndError:
 }
 
 func (p *SubmitJobRequest) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("disk_size", thrift.I32, 5); err != nil {
+	if err = oprot.WriteFieldBegin("disk_size", thrift.I64, 5); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI32(p.DiskSize); err != nil {
+	if err := oprot.WriteI64(p.DiskSize); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
