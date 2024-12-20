@@ -3,6 +3,7 @@ package tee_backend
 import (
 	"context"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 
@@ -135,7 +136,30 @@ func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequ
 		logRedirectFlag = "true"
 	}
 
-	cpuCountStr := strconv.Itoa(int(j.CPUCount))
+	cpuCounts := []int64{2, 4, 8, 16, 32, 48, 64, 80, 96, 128, 224}
+
+	inList := false
+	closest := int64(0)
+	minDistance := int64(math.MaxInt64)
+
+	for _, n := range cpuCounts {
+		if n == j.CPUCount {
+			inList = true
+			closest = n
+			break
+		}
+		distance := int64(math.Abs(float64(j.CPUCount - n)))
+		if distance < minDistance {
+			minDistance = distance
+			closest = n
+		}
+	}
+
+	if !inList {
+		fmt.Printf("WARNNING: the cpu count %d is invalid, the nearest valid value is %d\n", j.CPUCount, closest)
+	}
+
+	cpuCountStr := strconv.Itoa(int(closest))
 	machineType := fmt.Sprintf("zones/%s/machineTypes/n2d-standard-%s", c.zone, cpuCountStr)
 
 	metadataItems := []*computepb.Items{&computepb.Items{
