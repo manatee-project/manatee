@@ -1,30 +1,28 @@
-name: lint
-
 on:
-  push:
-    branches:
-      - main
   pull_request:
-    branches:
-      - main
-
+    branches: [main]
 jobs:
-  check-format:
-    name: Check Format
+  format:
+    name: Enforce Code Format
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up Bazel
+        uses: bazel-contrib/setup-bazel@0.9.0
         with:
-          go-version: 1.22.0
-
-      - name: Install Make (if needed)
-        run: sudo apt-get install -y make
-
-      - name: Run Format Check using Makefile
-        run: make check-format
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
+      - name: Check code format
+        run: |
+          bazelisk run @go_sdk//:bin/gofmt -- -l . > gofmt_output.txt || true
+          if [ -s gofmt_output.txt ]; then
+            echo "Following files are not properly formatted:"
+            cat gofmt_output.txt
+            echo "Please run: bazelisk run @go_sdk//:bin/gofmt -- -w ."
+            exit 1
+          else
+            echo "All files are properly formatted!"
+          fi
 
