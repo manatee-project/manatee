@@ -1,10 +1,6 @@
 on:
   pull_request:
-    branches:
-      - main
-      - chore/17-init-cicd-lint
-      - chore/17-init-cicd-lint-breaking-test
-      - chore/17-init-cicd-lint-passing-test
+    branches: [main]
 jobs:
   format:
     name: Enforce Code Format
