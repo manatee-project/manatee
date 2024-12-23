@@ -17,6 +17,7 @@ package job
 
 import (
 	"context"
+	"math"
 	"mime/multipart"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -49,6 +50,29 @@ func SubmitJob(ctx context.Context, c *app.RequestContext) {
 		hlog.Errorf("[Job Handler]failed to parse parameters: %+v", err)
 		utils.ReturnsJSONError(c, err)
 		return
+	}
+
+	cpuCounts := []int64{2, 4, 8, 16, 32, 48, 64, 80, 96, 128, 224}
+
+	inList := false
+	closest := int64(0)
+	minDistance := int64(math.MaxInt64)
+
+	for _, n := range cpuCounts {
+		if n == formReq.CPUCount {
+			inList = true
+			closest = n
+			break
+		}
+		distance := int64(math.Abs(float64(formReq.CPUCount - n)))
+		if distance < minDistance {
+			minDistance = distance
+			closest = n
+		}
+	}
+
+	if !inList {
+		formReq.CPUCount = closest
 	}
 
 	req.JupyterFileName = formReq.JupyterFileName
