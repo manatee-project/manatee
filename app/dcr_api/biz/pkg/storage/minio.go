@@ -22,15 +22,15 @@ type MinioStorage struct {
 func NewMinioStorage(ctx context.Context, bucket string) (*MinioStorage, error) {
 	accessKeyID := os.Getenv("AWS_ACCESS_KEY_ID")
 	if accessKeyID == "" {
-		panic("AWS_ACCESS_KEY_ID environment variable is not present")
+		return nil, fmt.Errorf("AWS_ACCESS_KEY_ID environment variable is not present")
 	}
 	secretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
 	if secretAccessKey == "" {
-		panic("AWS_SECRET_ACCESS_KEY environment variable is not present")
+		return nil, fmt.Errorf("AWS_SECRET_ACCESS_KEY environment variable is not present")
 	}
 	endpoint := os.Getenv("S3_ENDPOINT")
 	if endpoint == "" {
-		panic("S3_ENDPOINT environment variable is not present")
+		return nil, fmt.Errorf("S3_ENDPOINT environment variable is not present")
 	}
 	minioClient, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),

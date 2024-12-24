@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "gcs.go",
         "minio.go",
+        "mock.go",
         "storage.go",
     ],
     importpath = "github.com/manatee-project/manatee/app/dcr_api/biz/pkg/storage",
