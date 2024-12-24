@@ -18,6 +18,7 @@ import tarfile
 from http import HTTPStatus
 
 import aiohttp
+import aiofiles
 import base64
 import tornado
 from aiohttp import FormData
@@ -181,12 +182,12 @@ class DataCleanRoomOutputHandler(JupyterHandler):
         async with aiohttp.ClientSession() as session:
             async with session.get(signed_url) as response:
                 if response.status == 200:
-                    with open(filename, 'wb') as f:
+                    async with aiofiles.open(filename, 'wb') as f:
                         while True:
                             chunk = await response.content.read(4096)
                             if not chunk:
                                 break
-                            f.write(chunk)
+                            await f.write(chunk)
                     self.finish(json.dumps({
                         "code": 0,
                         "msg": "Success",
