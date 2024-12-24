@@ -39,17 +39,17 @@ func NewKanikoImageBuilder() (*KanikoImageBuilder, error) {
 	var err error
 	clusterConfig, err := rest.InClusterConfig()
 	if err != nil {
-		panic(err)
+		return nil, errors.Wrap(err, "failed to init cluster config")
 	}
 
 	clientSet, err := kubernetes.NewForConfig(clusterConfig)
 	if err != nil {
-		panic(err)
+		return nil, errors.Wrap(err, "failed to init client set")
 	}
 
 	RunningNameSpaceByte, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
 	if err != nil {
-		panic(err)
+		return nil, errors.Wrap(err, "failed to get namespace")
 	}
 	namespace := string(RunningNameSpaceByte)
 	ctx := context.Background()
