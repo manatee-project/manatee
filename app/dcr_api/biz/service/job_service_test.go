@@ -30,7 +30,7 @@ ENTRYPOINT jupyter nbconvert --execute --to notebook --inplace $JUPYTER_FILENAME
 `
 
 func TestGenerateDockerfile(t *testing.T) {
-	os.Setenv("STORAGE_TYPE", "GCP")
+	os.Setenv("STORAGE_TYPE", "MOCK")
 	os.Setenv("ENV", "minikube")
 	js := NewJobService(context.Background())
 
