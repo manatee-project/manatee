@@ -28,7 +28,7 @@ func getBucket() (string, error) {
 func GetStorage(ctx context.Context) (Storage, error) {
 	storageType := os.Getenv("STORAGE_TYPE")
 	if storageType == "" {
-		storageType = "GCP"
+		storageType = "MOCK"
 	}
 	var storage Storage
 	bucket, err := getBucket()
@@ -39,6 +39,8 @@ func GetStorage(ctx context.Context) (Storage, error) {
 		storage, err = NewGoogleCloudStorage(ctx, bucket)
 	} else if storageType == "MINIO" {
 		storage, err = NewMinioStorage(ctx, bucket)
+	} else if storageType == "MOCK" {
+		storage = NewMockStorage(ctx)
 	}
 	return storage, err
 }
