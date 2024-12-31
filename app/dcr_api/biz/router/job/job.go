@@ -32,10 +32,6 @@ func Register(r *server.Hertz) {
 			{
 				_output := _job.Group("/output", _outputMw()...)
 				{
-					_attrs := _output.Group("/attrs", _attrsMw()...)
-					_attrs.POST("/", append(_queryjoboutputattrMw(), job.QueryJobOutputAttr)...)
-				}
-				{
 					_download := _output.Group("/download", _downloadMw()...)
 					_download.POST("/", append(_downloadjoboutputMw(), job.DownloadJobOutput)...)
 				}

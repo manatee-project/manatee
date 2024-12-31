@@ -38,7 +38,7 @@ type CustomToken struct {
 	TokenType string   `json:"token_type"`
 }
 
-func generateCustomAttestationToken(nonce string) ([]byte, error) {
+func GcsCustomAttestationToken(nonce string) ([]byte, error) {
 	request := CustomToken{
 		Audience:  TikTokAudience,
 		Nonces:    []string{nonce},
@@ -67,6 +67,14 @@ func generateCustomAttestationToken(nonce string) ([]byte, error) {
 	}
 
 	return tokenbytes, nil
+}
+
+func generateCustomAttestationToken(nonce string) ([]byte, error) {
+	if os.Getenv("TEE_BACKEND") == "MOCK" {
+		return []byte(fmt.Sprintf("mock tee token with nonce %s", nonce)), nil
+	} else {
+		return GcsCustomAttestationToken(nonce)
+	}
 }
 
 func requireParameter(name string, para string) {

@@ -43,6 +43,7 @@ nav:
     - Build: getting-started/building.md
     - Deploy:
         - GCP: getting-started/deployment.md
+        - Minikube: getting-started/minikube.md
   - Tutorials: getting-started/tutorials.md
   - Developer:
     - developer/architecture.md

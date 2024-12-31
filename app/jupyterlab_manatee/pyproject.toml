@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.5.0", "jupyterlab>=4.0.0,<5", "hatch-nodejs-version>=0.3.2", "aiohttp"]
+requires = ["hatchling>=1.5.0", "jupyterlab>=4.0.0,<5", "hatch-nodejs-version>=0.3.2", "aiohttp", "aiofiles"]
 build-backend = "hatchling.build"
 
 [project]
@@ -24,6 +24,7 @@ classifiers = [
 ]
 dependencies = [
     "aiohttp",
+    "aiofiles",
     "tornado>=6.3",
 ]
 dynamic = ["version", "description", "authors", "urls", "keywords"]
