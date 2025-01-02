@@ -21,7 +21,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/gin-gonic/gin"
 
-	"github.com/manatee-project/manatee/pkg/errno"
+	"github.com/manatee-project/manatee/app/dcr_api/biz/pkg/errno"
 )
 
 type BaseResp struct {
