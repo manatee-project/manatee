@@ -1,8 +1,11 @@
 #!/bin/sh
-STAGE_1_BUCKET=dayeol-manatee-tutorial-stage-1
-STAGE_2_BUCKET=dayeol-manatee-tutorial-stage-2
-WORKLOAD_IDENTITY_POOL_NAME=manatee-cvm-pool
-TEE_SERVICE_ACCOUNT=dayeol-tee-sa
+
+#### Please fill the following variables before running ####
+STAGE_1_BUCKET=<your stage-1 bucket>
+STAGE_2_BUCKET=<your stage-2-bucket>
+WORKLOAD_IDENTITY_POOL_NAME=<your workload-identity-pool-name>
+TEE_SERVICE_ACCOUNT=<your service account name>
+############################################################
 
 VAR_FILE="../env.bzl"
 if [ ! -f "$VAR_FILE" ]; then
