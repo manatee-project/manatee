@@ -35,6 +35,9 @@ markdown_extensions:
 extra_css:
   - stylesheets/extra.css
 
+plugins:
+  - blog
+
 # Page tree
 nav:
   - Introduction: index.md
@@ -44,5 +47,5 @@ nav:
     - Deploy:
         - GCP: getting-started/deployment.md
   - Tutorials: getting-started/tutorials.md
-  - Developer:
-    - developer/architecture.md
+  - Blog:
+    - blog/index.md
