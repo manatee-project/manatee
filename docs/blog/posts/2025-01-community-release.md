@@ -1,5 +1,5 @@
 ---
-date: 2024-01-31
+date: 2025-01-07
 ---
 
 # First Community Release of ManaTEE
