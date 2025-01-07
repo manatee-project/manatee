@@ -1,3 +1,3 @@
-from .data import init
+from .data import *
 
-__all__ = ["init"]
+__all__ = ["DataRepo", "gcp"]
