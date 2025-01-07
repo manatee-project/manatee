@@ -11,7 +11,7 @@ theme:
     - content.code.annotate
   logo: assets/img/manatee.png
   palette:
-    scheme: manatee
+    primary: black
 repo_url: https://github.com/manatee-project/manatee
 repo_name: manatee-project/manatee
 
@@ -32,8 +32,6 @@ markdown_extensions:
   - pymdownx.snippets
   - pymdownx.superfences
 
-extra_css:
-  - stylesheets/extra.css
 
 plugins:
   - blog
