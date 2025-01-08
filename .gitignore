@@ -4,3 +4,5 @@ site/*
 .gitconfig
 bazel-*
 env.bzl
+.DS_Store
+
