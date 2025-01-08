@@ -1,12 +1,12 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "utils",
     srcs = ["resp.go"],
-    importpath = "github.com/manatee-project/manatee/pkg/utils",
+    importpath = "github.com/manatee-project/manatee/app/dcr_api/biz/pkg/utils",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/errno",
+        "//app/dcr_api/biz/pkg/errno",
         "@com_github_cloudwego_hertz//pkg/app",
         "@com_github_gin_gonic_gin//:gin",
     ],

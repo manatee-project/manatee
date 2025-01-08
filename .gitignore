@@ -1,3 +1,5 @@
+.terraform.lock.hcl
+site/*
 *.bazel.lock
 .gitconfig
 bazel-*
