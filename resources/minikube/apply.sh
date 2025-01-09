@@ -22,7 +22,7 @@ fi
 env="minikube"
 namespace="manatee"
 dbuser="manatee"
-dbpwd=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)
+dbpwd=$(LC_ALL=C tr -dc 'a-zA-Z0-9' </dev/urandom | head -c 12)
 
 rm -rf terraform.tfvars
 echo -e "env=\"$env\"" > terraform.tfvars

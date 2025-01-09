@@ -40,3 +40,11 @@ multirun(
     ],
     jobs = 0,
 )
+
+multirun(
+    name = "load_all_images",
+    commands = [
+        "//app/{}:load_image".format(k)
+        for k in REPOS.keys()
+    ],
+)
