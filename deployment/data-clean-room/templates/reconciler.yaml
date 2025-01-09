@@ -119,6 +119,7 @@ spec:
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+        {{- if not .Values.useMinikube }}
         - name: cloud-sql-proxy
           image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.0
           args:
@@ -132,6 +133,7 @@ spec:
             requests:
               memory: "2Gi"
               cpu: "0.5"
+        {{- end }}
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}

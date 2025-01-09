@@ -48,6 +48,7 @@ helm upgrade --cleanup-on-fail \
     --set config.minioEndpoint=minio-service:9000 \
     --set mysql.host=mysql-service \
     --set mysql.port=3306 \
+    --set useMinikube=true \
     --install $helm_name ../data-clean-room \
     --namespace $namespace
 
