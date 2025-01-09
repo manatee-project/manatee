@@ -9,7 +9,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/test/assert"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/model/job"
-	"github.com/manatee-project/manatee/app/dcr_monitor/imagebuilder"
+	"github.com/manatee-project/manatee/app/reconciler/imagebuilder"
 	"gorm.io/gorm"
 )
 

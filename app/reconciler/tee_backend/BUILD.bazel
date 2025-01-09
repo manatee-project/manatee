@@ -6,7 +6,7 @@ go_library(
         "confidential_space.go",
         "mock_teebackend.go",
     ],
-    importpath = "github.com/manatee-project/manatee/app/dcr_monitor/tee_backend",
+    importpath = "github.com/manatee-project/manatee/app/reconciler/tee_backend",
     visibility = ["//visibility:public"],
     deps = [
         "@com_github_cloudwego_hertz//pkg/common/hlog",

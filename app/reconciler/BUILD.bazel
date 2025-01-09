@@ -3,26 +3,26 @@ load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 go_library(
-    name = "dcr_monitor_lib",
+    name = "reconciler_lib",
     srcs = [
         "main.go",
         "reconciler.go",
     ],
-    importpath = "github.com/manatee-project/manatee/app/dcr_monitor",
+    importpath = "github.com/manatee-project/manatee/app/reconciler",
     visibility = ["//visibility:private"],
     deps = [
         "//app/dcr_api/biz/dal/db",
         "//app/dcr_api/biz/model/job",
-        "//app/dcr_monitor/imagebuilder",
-        "//app/dcr_monitor/registry",
-        "//app/dcr_monitor/tee_backend",
+        "//app/reconciler/imagebuilder",
+        "//app/reconciler/registry",
+        "//app/reconciler/tee_backend",
         "@com_github_cloudwego_hertz//pkg/common/hlog",
     ],
 )
 
 go_binary(
-    name = "dcr_monitor",
-    embed = [":dcr_monitor_lib"],
+    name = "reconciler",
+    embed = [":reconciler_lib"],
     goarch = "amd64",
     goos = "linux",
     visibility = ["//visibility:public"],
@@ -30,13 +30,13 @@ go_binary(
 
 pkg_tar(
     name = "tar",
-    srcs = [":dcr_monitor"],
+    srcs = [":reconciler"],
 )
 
 oci_image(
     name = "image",
     base = "@distroless_base_linux_amd64",
-    entrypoint = ["/dcr_monitor"],
+    entrypoint = ["/reconciler"],
     tars = [
         ":tar",
     ],
@@ -46,18 +46,18 @@ oci_image(
 oci_load(
     name = "load_image",
     image = ":image",
-    repo_tags = ["dcr_monitor:latest"],
+    repo_tags = ["reconciler:latest"],
     visibility = ["//visibility:public"],
 )
 
 go_test(
-    name = "dcr_monitor_test",
+    name = "reconciler_test",
     srcs = ["reconciler_test.go"],
-    embed = [":dcr_monitor_lib"],
+    embed = [":reconciler_lib"],
     deps = [
         "//app/dcr_api/biz/dal/db",
         "//app/dcr_api/biz/model/job",
-        "//app/dcr_monitor/imagebuilder",
+        "//app/reconciler/imagebuilder",
         "@com_github_cloudwego_hertz//pkg/common/test/assert",
         "@io_gorm_gorm//:gorm",
     ],

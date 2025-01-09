@@ -9,9 +9,9 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/model/job"
-	"github.com/manatee-project/manatee/app/dcr_monitor/imagebuilder"
-	"github.com/manatee-project/manatee/app/dcr_monitor/registry"
-	"github.com/manatee-project/manatee/app/dcr_monitor/tee_backend"
+	"github.com/manatee-project/manatee/app/reconciler/imagebuilder"
+	"github.com/manatee-project/manatee/app/reconciler/registry"
+	"github.com/manatee-project/manatee/app/reconciler/tee_backend"
 )
 
 type Reconciler interface {

@@ -3,7 +3,7 @@ load("@rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "imagebuilder",
     srcs = ["kaniko.go"],
-    importpath = "github.com/manatee-project/manatee/app/dcr_monitor/imagebuilder",
+    importpath = "github.com/manatee-project/manatee/app/reconciler/imagebuilder",
     visibility = ["//visibility:public"],
     deps = [
         "//app/dcr_api/biz/dal/db",

@@ -28,7 +28,7 @@ helm upgrade --cleanup-on-fail \
     --set apiImage.repository=docker.io/library/dcr_api \
     --set apiImage.tag=latest \
     --set apiImage.pullPolicy=Never \
-    --set monitorImage.repository=docker.io/library/dcr_monitor \
+    --set monitorImage.repository=docker.io/library/reconciler \
     --set monitorImage.tag=latest \
     --set monitorImage.pullPolicy=Never \
     --set serviceAccount.name=dcr-k8s-pod-sa \
