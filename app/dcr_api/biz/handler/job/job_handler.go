@@ -17,7 +17,6 @@ package job
 
 import (
 	"context"
-	"math"
 	"mime/multipart"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -53,27 +52,16 @@ func SubmitJob(ctx context.Context, c *app.RequestContext) {
 	}
 
 	cpuCounts := []int64{2, 4, 8, 16, 32, 48, 64, 80, 96, 128, 224}
+	rounded := cpuCounts[len(cpuCounts)-1]
 
-	inList := false
-	closest := int64(0)
-	minDistance := int64(math.MaxInt64)
-
-	for _, n := range cpuCounts {
-		if n == formReq.CPUCount {
-			inList = true
-			closest = n
+	for _, count := range cpuCounts {
+		if formReq.CPUCount <= count {
+			rounded = count
 			break
 		}
-		distance := int64(math.Abs(float64(formReq.CPUCount - n)))
-		if distance < minDistance {
-			minDistance = distance
-			closest = n
-		}
 	}
 
-	if !inList {
-		formReq.CPUCount = closest
-	}
+	formReq.CPUCount = rounded
 
 	req.JupyterFileName = formReq.JupyterFileName
 	req.AccessToken = formReq.AccessToken
