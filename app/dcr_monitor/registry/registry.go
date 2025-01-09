@@ -38,7 +38,7 @@ func (m *MinikubeDockerRegistry) Url() string {
 }
 
 func (m *MinikubeDockerRegistry) BaseImage() string {
-	return fmt.Sprintf("%s/dcr_tee:latest", m.Url())
+	return fmt.Sprintf("%s/executor:latest", m.Url())
 }
 
 func GetRegistry() Registry {
