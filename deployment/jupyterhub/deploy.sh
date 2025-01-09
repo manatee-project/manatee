@@ -45,6 +45,8 @@ helm upgrade --cleanup-on-fail \
     --set singleuser.image.tag=${tag} \
     --set singleuser.serviceAccountName=${service_account} \
     --set singleuser.extraEnv.DATA_CLEAN_ROOM_HOST=${api} \
+    --set singleuser.extraEnv.EXECUTION_STAGE='"1"' \
+    --set singleuser.extraEnv.MANATEE_EXTRA_ENV_EXECUTION_STAGE='"2"' \
     --set singleuser.extraEnv.DEPLOYMENT_ENV=${env} \
     --set singleuser.extraEnv.PROJECT_ID=${project_id} \
     --set singleuser.extraEnv.KEY_LOCALTION=${region} \
