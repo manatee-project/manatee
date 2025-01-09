@@ -10,7 +10,7 @@ We are thrilled to announce the first public community release of ManaTEE, an op
 
 In the community release, we are providing the following features:
 
-* Deployment in test environment (e.g., Minikube) without cloud accounts (e.g., GCP)
+* [Test deployment in minikube](../../getting-started/minikube.md) without cloud accounts (e.g., GCP)
 * Full [tutorial](../../getting-started/tutorials.md) to reproduce the demo
 
 We also worked hard to refactor the code, to make it much more extensible. It now leverages Bazel for hermetic and reproducible builds, and has a basic CI/CD pipeline setup. The project is now ready to get contribution from the community!
