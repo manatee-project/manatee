@@ -25,7 +25,7 @@ type ImageInfo struct {
 }
 
 type ImageBuilder interface {
-	BuildImage(*db.Job, string, string, string) error
+	BuildImage(*db.Job, string, string) error
 	CheckImageBuilderStatusAndGetInfo(string) (bool, *ImageInfo, error)
 }
 
@@ -39,22 +39,23 @@ func NewKanikoImageBuilder() (*KanikoImageBuilder, error) {
 	var err error
 	clusterConfig, err := rest.InClusterConfig()
 	if err != nil {
-		panic(err)
+		return nil, errors.Wrap(err, "failed to init cluster config")
 	}
 
 	clientSet, err := kubernetes.NewForConfig(clusterConfig)
 	if err != nil {
-		panic(err)
+		return nil, errors.Wrap(err, "failed to init client set")
 	}
 
 	RunningNameSpaceByte, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
 	if err != nil {
-		panic(err)
+		return nil, errors.Wrap(err, "failed to get namespace")
 	}
 	namespace := string(RunningNameSpaceByte)
+	ctx := context.Background()
 
 	return &KanikoImageBuilder{
-		ctx:       context.Background(),
+		ctx:       ctx,
 		clientSet: clientSet,
 		namespace: namespace,
 	}, nil
@@ -76,7 +77,7 @@ func (b *KanikoImageBuilder) CheckImageBuilderStatusAndGetInfo(uuid string) (boo
 
 	hlog.Infof("[KanikoJobMonitor]job name: %v, job status: %v", k8sJob.Name, k8sJob.Status.Conditions[0].Type)
 
-	if k8sJob.Status.Conditions[0].Type == batchv1.JobComplete {
+	if k8sJob.Status.Conditions[0].Type == batchv1.JobComplete || k8sJob.Status.Conditions[0].Type == batchv1.JobSuccessCriteriaMet {
 		image, digest, err := b.getImageDigest(k8sJob.Name)
 		if err != nil {
 			hlog.Errorf("[KanikoJobMonitor] failed to get image digest: %+v", err)
@@ -87,7 +88,7 @@ func (b *KanikoImageBuilder) CheckImageBuilderStatusAndGetInfo(uuid string) (boo
 		b.deleteJob(k8sJob.Name)
 
 		return true, &ImageInfo{Image: image, Digest: digest}, nil
-	} else if k8sJob.Status.Conditions[0].Type == batchv1.JobFailed {
+	} else if k8sJob.Status.Conditions[0].Type == batchv1.JobFailed || k8sJob.Status.Conditions[0].Type == batchv1.JobFailureTarget {
 		return true, nil, nil
 	}
 	return false, nil, nil
@@ -155,33 +156,57 @@ func (b *KanikoImageBuilder) deleteJob(name string) error {
 	return nil
 }
 
-func (b *KanikoImageBuilder) BuildImage(j *db.Job, bucket string, baseImage string, image string) error {
+func (b *KanikoImageBuilder) BuildImage(j *db.Job, baseImage string, image string) error {
 
 	buildArgs := []string{
 		fmt.Sprintf("--context=%s", j.BuildContextPath),
 		fmt.Sprintf("--destination=%s", image),
-		// TODO: this should be signed URL (See https://github.com/manatee-project/manatee/issues/23)
-		fmt.Sprintf("--build-arg=OUTPUTPATH=%s", fmt.Sprintf("gs://%s/%s/output/out-%s-%s", bucket, j.Creator, j.UUID, j.JupyterFileName)),
+		fmt.Sprintf("--build-arg=OUTPUT_SIGNED_URL=%s", j.OutputPutSignedUrl),
 		fmt.Sprintf("--build-arg=JUPYTER_FILENAME=%s", j.JupyterFileName),
 		fmt.Sprintf("--build-arg=USER_WORKSPACE=%s", fmt.Sprintf("%s-workspace", j.Creator)),
 		fmt.Sprintf("--build-arg=BASE_IMAGE=%s", baseImage),
-		// TODO: this should be signed URL (See https://github.com/manatee-project/manatee/issues/23)
-		fmt.Sprintf("--build-arg=CUSTOMTOKEN_CLOUDSTORAGE_PATH=%s", fmt.Sprintf("gs://%s/%s/output/%s-token", bucket, j.Creator, j.UUID)),
+		fmt.Sprintf("--build-arg=CUSTOMTOKEN_SIGNED_URL=%s", j.CustomTokenPutSignedUrl),
+	}
+	var envs []corev1.EnvVar
+
+	if os.Getenv("STORAGE_TYPE") == "MINIO" {
+		envs = append(envs, corev1.EnvVar{
+			Name:  "AWS_ACCESS_KEY_ID",
+			Value: os.Getenv("AWS_ACCESS_KEY_ID"),
+		},
+			corev1.EnvVar{
+				Name:  "AWS_SECRET_ACCESS_KEY",
+				Value: os.Getenv("AWS_SECRET_ACCESS_KEY"),
+			},
+			corev1.EnvVar{
+				Name:  "S3_ENDPOINT",
+				Value: fmt.Sprintf("http://%s", os.Getenv("S3_ENDPOINT")),
+			},
+			corev1.EnvVar{
+				Name:  "AWS_REGION",
+				Value: "us-east-1",
+			},
+			corev1.EnvVar{
+				Name:  "S3_FORCE_PATH_STYLE",
+				Value: "true",
+			},
+		)
 	}
 	kanikoJobName := fmt.Sprintf("kaniko-%s", j.UUID)
-	err := b.createBuildJob(kanikoJobName, buildArgs)
+	err := b.createBuildJob(kanikoJobName, buildArgs, envs)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (b *KanikoImageBuilder) createBuildJob(jobName string, buildArgs []string) error {
+func (b *KanikoImageBuilder) createBuildJob(jobName string, buildArgs []string, envs []corev1.EnvVar) error {
 	memQuantity, err := resource.ParseQuantity("6000M")
 	if err != nil {
 		return errors.Wrap(err, "failed to parse mem quantity")
 	}
 	ttlSecondsAfterFinished := int32(3600 * 24)
+
 	kanikoJob := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      jobName,
@@ -208,6 +233,7 @@ func (b *KanikoImageBuilder) createBuildJob(jobName string, buildArgs []string) 
 								"--cache=true",
 								"--cache-ttl=72h",
 							}, buildArgs...),
+							Env: envs,
 						},
 					},
 					RestartPolicy: "Never",

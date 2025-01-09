@@ -5,7 +5,14 @@ metadata:
   name: manatee-configmap
 data:
   env: {{ .Values.config.env | quote }}
-  project_id: {{ .Values.config.project_id | quote }}
+  projectId: {{ .Values.config.projectId | quote }}
   zone: {{ .Values.config.zone | quote }}
   region: {{ .Values.config.region | quote }}
   debug: {{ .Values.config.debug | quote }}
+  teeBackend: {{.Values.config.teeBackend | quote }}
+  registryType: {{.Values.config.registryType | quote }}
+  storageType: {{.Values.config.storageType | quote }}
+  minioEndpoint:  {{ .Values.config.minioEndpoint | quote }}
+  minioAccessKey: {{ .Values.config.minioAccessKey | quote }}
+  minioSecretKey: {{ .Values.config.minioSecretKey | quote }}
+  minioRegion: {{ .Values.config.minioRegion | quote }}

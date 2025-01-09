@@ -10,6 +10,7 @@ import (
 	"github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/model/job"
 	"github.com/manatee-project/manatee/app/dcr_monitor/imagebuilder"
+	"github.com/manatee-project/manatee/app/dcr_monitor/registry"
 	"github.com/manatee-project/manatee/app/dcr_monitor/tee_backend"
 )
 
@@ -25,10 +26,25 @@ type ReconcilerImpl struct {
 
 func NewReconciler(ctx context.Context) *ReconcilerImpl {
 	// FIXME: get config to determine which TEE provider to use.
-	// for now, we only support GCP confidential space.
-	tee, err := tee_backend.NewTEEProviderGCPConfidentialSpace(ctx)
-	if err != nil {
-		hlog.Errorf("failed to init TEE provider %+v", err)
+	// for now, we read the config from ens
+	var tee tee_backend.TEEProvider
+	var err error
+	teeType := os.Getenv("TEE_BACKEND")
+	if teeType == "MOCK" {
+		tee, err = tee_backend.NewMockTeeBackend(ctx)
+		if err != nil {
+			hlog.Errorf("failed to init TEE provider %+v", err)
+		}
+	} else if teeType == "GCP" {
+		tee, err = tee_backend.NewTEEProviderGCPConfidentialSpace(ctx)
+		if err != nil {
+			hlog.Errorf("failed to init TEE provider %+v", err)
+		}
+	} else {
+		tee, err = tee_backend.NewMockTeeBackend(ctx)
+		if err != nil {
+			hlog.Errorf("failed to init TEE provider %+v", err)
+		}
 	}
 
 	// FIXME: get config to determine which ImageBuilder to use.
@@ -59,7 +75,7 @@ func (r *ReconcilerImpl) Reconcile(ctx context.Context) {
 		hlog.Debugf("[Reconciler] job %s in status %d", j.UUID, j.JobStatus)
 		err := r.updateJobStatus(j)
 		if err != nil {
-			hlog.Errorf("[Reconciler] failed to reconcile job %s: %v", j.UUID, err)
+			hlog.Errorf("[Reconciler] failed to reconcile job %s: %+v", j.UUID, err)
 			continue
 		}
 		db.UpdateJob(j)
@@ -96,12 +112,10 @@ func (r *ReconcilerImpl) updateJobStatus(j *db.Job) error {
 
 func (r *ReconcilerImpl) handleCreatedJob(j *db.Job) error {
 	// TODO: make the base image configurable
-	projectId := os.Getenv("PROJECT_ID")
-	env := os.Getenv("ENV")
-	baseImage := fmt.Sprintf("us-docker.pkg.dev/%s/dcr-%s-user-images/%s:latest", projectId, env, "data-clean-room-base")
-	imageTag := fmt.Sprintf("us-docker.pkg.dev/%s/dcr-%s-user-images/%s-%s:latest", projectId, env, j.Creator, j.UUID)
-	bucket := fmt.Sprintf("dcr-%s-hub", env)
-	err := r.builder.BuildImage(j, bucket, baseImage, imageTag)
+	registry := registry.GetRegistry()
+	baseImage := registry.BaseImage()
+	imageTag := fmt.Sprintf("%s/%s-%s:latest", registry.Url(), j.Creator, j.UUID)
+	err := r.builder.BuildImage(j, baseImage, imageTag)
 	if err != nil {
 		hlog.Errorf("failed to build image: %w", err)
 		return err
@@ -124,8 +138,9 @@ func (r *ReconcilerImpl) handleImageBuildingJob(j *db.Job) error {
 		instanceName := fmt.Sprintf("%s-%s", j.Creator, j.UUID)
 		err := r.tee.LaunchInstance(instanceName, j.DockerImage, j.DockerImageDigest, j.ExtraEnvs)
 		if err != nil {
-			hlog.Errorf("failed to launch instance: %w", err)
-			return err
+			hlog.Errorf("failed to launch instance: %+v", err)
+			j.JobStatus = int(job.JobStatus_VMLaunchFailed)
+			return nil
 		}
 		j.InstanceName = instanceName
 		j.JobStatus = int(job.JobStatus_VMWaiting)

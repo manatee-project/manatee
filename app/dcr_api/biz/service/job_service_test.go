@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"os"
 	"strings"
 	"testing"
 )
@@ -18,7 +19,7 @@ ENV JUPYTER_FILENAME=$JUPYTER_FILENAME
 ENV CUSTOMTOKEN_CLOUDSTORAGE_PATH=$CUSTOMTOKEN_CLOUDSTORAGE_PATH
 
 WORKDIR /home/jovyan
-COPY $USER_WORKSAPCE/* ./
+COPY $USER_WORKSPACE/* ./
 
 
 ENTRYPOINT jupyter nbconvert --execute --to notebook --inplace $JUPYTER_FILENAME --ExecutePreprocessor.timeout=-1 --allow-errors \
@@ -29,6 +30,8 @@ ENTRYPOINT jupyter nbconvert --execute --to notebook --inplace $JUPYTER_FILENAME
 `
 
 func TestGenerateDockerfile(t *testing.T) {
+	os.Setenv("STORAGE_TYPE", "MOCK")
+	os.Setenv("ENV", "minikube")
 	js := NewJobService(context.Background())
 
 	content := js.generateDockerfile([]string{})

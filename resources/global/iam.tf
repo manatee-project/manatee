@@ -113,6 +113,12 @@ resource "google_project_iam_member" "dcr_pod_sa_repo_writer" {
   member  = "serviceAccount:${google_service_account.gcp_dcr_pod_sa.email}"
 }
 
+resource "google_project_iam_member" "dcr_pod_sa_storage_signblob" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountTokenCreator"
+  member  = "serviceAccount:${google_service_account.gcp_dcr_pod_sa.email}"
+}
+
 #################################################################################
 # IAM for jupyter-pod-sa
 #################################################################################

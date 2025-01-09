@@ -18,28 +18,39 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
-	"encoding/base64"
 	"fmt"
 	"io"
-	"os"
 	"strings"
+	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/google/uuid"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/model/job"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/pkg/errno"
+	"github.com/manatee-project/manatee/app/dcr_api/biz/pkg/storage"
 	"github.com/pkg/errors"
 )
 
 type JobService struct {
-	ctx context.Context
+	ctx     context.Context
+	storage storage.Storage
 }
 
 // NewJobService create job service
 func NewJobService(ctx context.Context) *JobService {
-	return &JobService{ctx: ctx}
+	storage, err := storage.GetStorage(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return &JobService{
+		ctx:     ctx,
+		storage: storage,
+	}
+}
+
+func (js *JobService) Drop() {
+	js.storage.Close()
 }
 
 func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Reader) (string, error) {
@@ -49,7 +60,7 @@ func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Read
 	if err != nil {
 		return "", err
 	} else if len(jobInList) > 2 {
-		return "", errors.Wrap(fmt.Errorf(errno.ReachJobLimitErrMsg), "")
+		return "", errors.Wrap(fmt.Errorf("%s", errno.ReachJobLimitErrMsg), "")
 	}
 
 	var keys []string
@@ -65,27 +76,39 @@ func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Read
 	if err != nil {
 		return "", err
 	}
-	err = js.uploadFile(buildctx, fmt.Sprintf("%s/%s-workspace.tar.gz", creator, creator), false)
+	remotePath := fmt.Sprintf("%s/%s-workspace.tar.gz", creator, creator)
+	err = js.storage.UploadFile(buildctx, remotePath, false)
 	if err != nil {
 		return "", err
 	}
-	buildctxpath := fmt.Sprintf("gs://%s/%s/%s-workspace.tar.gz", getBucket(), creator, creator)
+	buildctxpath := fmt.Sprintf("%s/%s/%s-workspace.tar.gz", js.storage.BucketPath(), creator, creator)
 
 	uuidStr, err := uuid.NewUUID()
 	if err != nil {
 		return "", errors.Wrap(err, "failed to generate uuid")
 	}
-	t := db.Job{
-		UUID:             uuidStr.String(),
-		Dockerfile:       dockerFileContent,
-		Creator:          req.Creator,
-		JupyterFileName:  req.JupyterFileName,
-		JobStatus:        int(job.JobStatus_Created),
-		BuildContextPath: buildctxpath,
-		ExtraEnvs:        extraEnvs,
-	}
+
+	// generate signed put url for the output and custom token
+	outputPath := fmt.Sprintf("%s/output/out-%s-%s", creator, uuidStr.String(), req.JupyterFileName)
+	outputPutSignedUrl, err := js.storage.IssueSignedUrl(outputPath, "PUT", time.Hour*6)
 	if err != nil {
 		return "", err
+	}
+	customTokenPath := fmt.Sprintf("%s/output/%s-token", creator, uuidStr.String())
+	customTokenPathPutSignedUrl, err := js.storage.IssueSignedUrl(customTokenPath, "PUT", time.Hour*6)
+	if err != nil {
+		return "", err
+	}
+	t := db.Job{
+		UUID:                    uuidStr.String(),
+		Dockerfile:              dockerFileContent,
+		Creator:                 req.Creator,
+		JupyterFileName:         req.JupyterFileName,
+		JobStatus:               int(job.JobStatus_Created),
+		BuildContextPath:        buildctxpath,
+		OutputPutSignedUrl:      outputPutSignedUrl,
+		CustomTokenPutSignedUrl: customTokenPathPutSignedUrl,
+		ExtraEnvs:               extraEnvs,
 	}
 	err = db.CreateJob(&t)
 
@@ -99,24 +122,23 @@ func (js *JobService) SubmitJob(req *job.SubmitJobRequest, userWorkspace io.Read
 var dockerFileTemplate string = `ARG BASE_IMAGE
 ARG BASE_IMAGE
 FROM $BASE_IMAGE
-ARG OUTPUTPATH
+ARG OUTPUT_SIGNED_URL
 ARG JUPYTER_FILENAME
-ARG USER_WORKSPACE
-ARG CUSTOMTOKEN_CLOUDSTORAGE_PATH 
+ARG CUSTOMTOKEN_SIGNED_URL 
 
-ENV OUTPUTPATH=$OUTPUTPATH
+ENV OUTPUT_SIGNED_URL=$OUTPUT_SIGNED_URL
 ENV JUPYTER_FILENAME=$JUPYTER_FILENAME
-ENV CUSTOMTOKEN_CLOUDSTORAGE_PATH=$CUSTOMTOKEN_CLOUDSTORAGE_PATH
+ENV CUSTOMTOKEN_SIGNED_URL=$CUSTOMTOKEN_SIGNED_URL
 
 WORKDIR /home/jovyan
-COPY $USER_WORKSAPCE/* ./
+COPY $USER_WORKSPACE/* ./
 %s
 
 ENTRYPOINT jupyter nbconvert --execute --to notebook --inplace $JUPYTER_FILENAME --ExecutePreprocessor.timeout=-1 --allow-errors \
     && hash=$(md5sum $JUPYTER_FILENAME | awk '{ print $1 }') \
-    && ./gscp $JUPYTER_FILENAME $OUTPUTPATH \
+    && curl -X PUT -T $JUPYTER_FILENAME $OUTPUT_SIGNED_URL \
     && ./gen_custom_token --nonce $hash \
-    && ./gscp custom_token $CUSTOMTOKEN_CLOUDSTORAGE_PATH
+    && curl -X PUT -T custom_token $CUSTOMTOKEN_SIGNED_URL
 `
 
 // TODO: this actually needs to support different TEE backends.
@@ -210,32 +232,19 @@ func (js *JobService) QueryUsersJobs(req *job.QueryJobRequest) ([]*job.Job, int6
 	return res, total, nil
 }
 
-func (js *JobService) GetJobOutputAttrs(req *job.QueryJobOutputRequest) (string, int64, error) {
+func (js *JobService) DownloadJobOutput(req *job.DownloadJobOutputRequest) (string, string, error) {
 	j, err := db.QueryJobByIdAndCreator(req.ID, req.Creator)
 	if err != nil {
-		return "", 0, err
+		return "", "", err
 	}
 	outputPath := js.getJobOutputPath(j.Creator, j.UUID, j.JupyterFileName)
+	filename := fmt.Sprintf("out-%v-%s", j.ID, j.JupyterFileName)
+	signedUrl, err := js.storage.IssueSignedUrl(outputPath, "GET", time.Hour)
+	if err != nil {
+		return "", "", err
+	}
 
-	size, err := js.getFileSize(outputPath)
-	if err != nil {
-		return "", 0, err
-	}
-	return js.getJobOutputFilename(fmt.Sprintf("%v", j.ID), j.JupyterFileName), size, nil
-}
-
-func (js *JobService) DownloadJobOutput(req *job.DownloadJobOutputRequest) (string, error) {
-	j, err := db.QueryJobByIdAndCreator(req.ID, req.Creator)
-	if err != nil {
-		return "", err
-	}
-	outputPath := js.getJobOutputPath(j.Creator, j.UUID, j.JupyterFileName)
-	datg, err := js.getFilebyChunk(outputPath, req.Offset, req.Chunk)
-	if err != nil {
-		return "", err
-	}
-	encoded := base64.StdEncoding.EncodeToString(datg)
-	return encoded, nil
+	return signedUrl, filename, nil
 }
 
 func (js *JobService) DeleteJob(req *job.DeleteJobRequest) {
@@ -247,10 +256,12 @@ func (js *JobService) GetJobAttestationReport(req *job.QueryJobAttestationReques
 	if err != nil {
 		return "", err
 	}
-	if j.AttestationReport == "" {
-		return "", errors.Wrap(fmt.Errorf("failed to query attestation for job %v", req.ID), "")
+	attestationReportPath := fmt.Sprintf("%s/output/%s-token", j.Creator, j.UUID)
+	signedUrl, err := js.storage.IssueSignedUrl(attestationReportPath, "GET", time.Hour)
+	if err != nil {
+		return "", nil
 	}
-	return j.AttestationReport, nil
+	return signedUrl, nil
 }
 
 func (js *JobService) getJobOutputFilename(UUID string, originName string) string {
@@ -259,71 +270,4 @@ func (js *JobService) getJobOutputFilename(UUID string, originName string) strin
 
 func (js *JobService) getJobOutputPath(creator string, UUID string, originName string) string {
 	return fmt.Sprintf("%s/output/%s", creator, js.getJobOutputFilename(UUID, originName))
-}
-
-func (g *JobService) getFileSize(remotePath string) (int64, error) {
-	client, err := storage.NewClient(g.ctx)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to create gcp storage client")
-	}
-	defer client.Close()
-	bucket := getBucket()
-	attr, err := client.Bucket(bucket).Object(remotePath).Attrs(g.ctx)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to get file attributes, or it doesn't exist")
-	}
-	return attr.Size, nil
-}
-
-func (g *JobService) getFilebyChunk(remotePath string, offset int64, chunkSize int64) ([]byte, error) {
-	client, err := storage.NewClient(g.ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create gcp storage client")
-	}
-	defer client.Close()
-	bucket := getBucket()
-	objectHandle := client.Bucket(bucket).Object(remotePath)
-	objectReader, err := objectHandle.NewRangeReader(g.ctx, offset, chunkSize)
-	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("failed to create reader on %s", remotePath))
-	}
-	defer objectReader.Close()
-	data := make([]byte, chunkSize)
-	n, err := objectReader.Read(data)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to read cloud storage object")
-	}
-	data = data[:n]
-	return data, nil
-}
-
-func (g *JobService) uploadFile(reader io.Reader, remotePath string, compress bool) error {
-	client, err := storage.NewClient(g.ctx)
-	if err != nil {
-		return errors.Wrap(err, "failed to create storage client")
-	}
-	defer client.Close()
-	bucket := getBucket()
-	writer := client.Bucket(bucket).Object(remotePath).NewWriter(g.ctx)
-	defer writer.Close()
-	if compress {
-		gzipWriter := gzip.NewWriter(writer)
-		if _, err = io.Copy(gzipWriter, reader); err != nil {
-			return errors.Wrap(err, "failed to copy content to gzip writer")
-		}
-		defer gzipWriter.Close()
-	} else {
-		if _, err = io.Copy(writer, reader); err != nil {
-			return errors.Wrap(err, "failed to copy content to writer")
-		}
-	}
-	return nil
-}
-
-func getBucket() string {
-	env := os.Getenv("ENV")
-	if env == "" {
-		hlog.Errorf("ENV environment variable is not present")
-	}
-	return fmt.Sprintf("dcr-%s-hub", env)
 }

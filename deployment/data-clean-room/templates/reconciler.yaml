@@ -69,7 +69,7 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   name: manatee-configmap
-                  key: project_id
+                  key: projectId
             - name: REGION
               valueFrom:
                 configMapKeyRef:
@@ -85,10 +85,41 @@ spec:
                 configMapKeyRef:
                   name: manatee-configmap
                   key: debug
+            - name: STORAGE_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: storageType
+            - name: S3_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: minioEndpoint
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: minioAccessKey
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: minioSecretKey
+            - name: REGISTRY_TYPE
+              valueFrom:
+                  configMapKeyRef:
+                    name: manatee-configmap
+                    key: registryType
+            - name: TEE_BACKEND
+              valueFrom:
+                  configMapKeyRef:
+                    name: manatee-configmap
+                    key: teeBackend
           {{- with .Values.volumeMounts }}
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+        {{- if not .Values.useMinikube }}
         - name: cloud-sql-proxy
           image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.0
           args:
@@ -102,6 +133,7 @@ spec:
             requests:
               memory: "2Gi"
               cpu: "0.5"
+        {{- end }}
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}

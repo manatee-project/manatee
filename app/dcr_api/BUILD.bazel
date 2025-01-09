@@ -46,4 +46,5 @@ oci_load(
     name = "load_image",
     image = ":image",
     repo_tags = ["dcr_api:latest"],
+    visibility = ["//visibility:public"],
 )

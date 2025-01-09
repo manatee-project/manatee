@@ -9,20 +9,11 @@ pkg_tar(
     package_dir = "/home/jovyan",
 )
 
-pkg_tar(
-    name = "gscp_tar",
-    srcs = [
-        "//app/dcr_tee/util/gscp",
-    ],
-    package_dir = "/home/jovyan",
-)
-
 oci_image(
     name = "image",
     base = "@scipy-notebook_linux_amd64",
     tars = [
         ":gen_custom_token_tar",
-        ":gscp_tar",
     ],
     # FIXME: for some reason, pkg_tar changes the owner of /home/jovyan.
     # run it as root for now, but it will go away once we fully switch to distroless image
@@ -35,4 +26,5 @@ oci_load(
     name = "load_image",
     image = ":image",
     repo_tags = ["dcr_tee:latest"],
+    visibility = ["//visibility:public"],
 )
