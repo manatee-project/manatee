@@ -161,8 +161,8 @@ func QueryJobAttestationReport(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 	c.JSON(consts.StatusOK, job.QueryJobAttestationResponse{
-		Code:  errno.SuccessCode,
-		Msg:   errno.SuccessMsg,
+		Code:      errno.SuccessCode,
+		Msg:       errno.SuccessMsg,
 		SignedURL: signedUrl,
 	})
 }
