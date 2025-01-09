@@ -24,9 +24,9 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	"github.com/manatee-project/manatee/app/dcr_api/biz/model/job"
+	"github.com/manatee-project/manatee/app/dcr_api/biz/pkg/errno"
+	"github.com/manatee-project/manatee/app/dcr_api/biz/pkg/utils"
 	"github.com/manatee-project/manatee/app/dcr_api/biz/service"
-	"github.com/manatee-project/manatee/pkg/errno"
-	"github.com/manatee-project/manatee/pkg/utils"
 )
 
 type FileParas struct {
