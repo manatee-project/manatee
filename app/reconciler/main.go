@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
-	"github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
+	"github.com/manatee-project/manatee/app/api/biz/dal/db"
 )
 
 func main() {

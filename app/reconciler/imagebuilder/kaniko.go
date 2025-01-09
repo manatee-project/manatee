@@ -9,7 +9,7 @@ import (
 	"regexp"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
-	"github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
+	"github.com/manatee-project/manatee/app/api/biz/dal/db"
 	"github.com/pkg/errors"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"

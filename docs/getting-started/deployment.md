@@ -53,7 +53,7 @@ bazel run //:push_all_images --action_env=namespace=<namespace-to-deploy>
 > [!IMPORTANT]
 > the `--action_env=namespace=<namespace-to-deploy>` flag is required.
 
-You can also push images separately by this command. Replace `<app>` by the directory name under `/app` (e.g., dcr_api)
+You can also push images separately by this command. Replace `<app>` by the directory name under `/app` (e.g., api)
 
 ```
 bazel run //:push_<app>_image --action_env=namespace=<namespace-to-deploy>

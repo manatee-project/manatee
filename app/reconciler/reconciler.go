@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
-	"github.com/manatee-project/manatee/app/dcr_api/biz/dal/db"
-	"github.com/manatee-project/manatee/app/dcr_api/biz/model/job"
+	"github.com/manatee-project/manatee/app/api/biz/dal/db"
+	"github.com/manatee-project/manatee/app/api/biz/model/job"
 	"github.com/manatee-project/manatee/app/reconciler/imagebuilder"
 	"github.com/manatee-project/manatee/app/reconciler/registry"
 	"github.com/manatee-project/manatee/app/reconciler/tee_backend"

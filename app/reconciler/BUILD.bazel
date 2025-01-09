@@ -11,8 +11,8 @@ go_library(
     importpath = "github.com/manatee-project/manatee/app/reconciler",
     visibility = ["//visibility:private"],
     deps = [
-        "//app/dcr_api/biz/dal/db",
-        "//app/dcr_api/biz/model/job",
+        "//app/api/biz/dal/db",
+        "//app/api/biz/model/job",
         "//app/reconciler/imagebuilder",
         "//app/reconciler/registry",
         "//app/reconciler/tee_backend",
@@ -55,8 +55,8 @@ go_test(
     srcs = ["reconciler_test.go"],
     embed = [":reconciler_lib"],
     deps = [
-        "//app/dcr_api/biz/dal/db",
-        "//app/dcr_api/biz/model/job",
+        "//app/api/biz/dal/db",
+        "//app/api/biz/model/job",
         "//app/reconciler/imagebuilder",
         "@com_github_cloudwego_hertz//pkg/common/test/assert",
         "@io_gorm_gorm//:gorm",

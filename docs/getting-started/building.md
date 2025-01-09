@@ -14,7 +14,7 @@ Find individual rules from corresponding `BUILD.bazel` files.
 `app` directory contains the source codes of the data clean room which has three components:
 
 * `executor` contains tools that are used in the base image of stage2 such as a tool generates custom attestation report within GCP confidential space.
-* `dcr_api` is the backend service of the data clean room that processes the request from jupyterlab. 
+* `api` is the backend service of the data clean room that processes the request from jupyterlab. 
 * `reconciler` is a reconciler that monitors in-progress jobs and take actions.
 * `jupyterlab_manatee` is an JupyterLab extension for data clean room that submits a job on the fronted and queries the status of the jobs.
 

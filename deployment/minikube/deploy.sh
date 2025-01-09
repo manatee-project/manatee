@@ -25,7 +25,7 @@ kubectl apply -f mysql-service.yaml -n $namespace
 kubectl apply -f minio-dev.yaml
 # deploy dcr api
 helm upgrade --cleanup-on-fail \
-    --set apiImage.repository=docker.io/library/dcr_api \
+    --set apiImage.repository=docker.io/library/api \
     --set apiImage.tag=latest \
     --set apiImage.pullPolicy=Never \
     --set monitorImage.repository=docker.io/library/reconciler \
