@@ -166,35 +166,29 @@ class DataCleanRoomOutputHandler(JupyterHandler):
         await self.download_file("v1/job/output/download", request_body, headers)
 
     async def download_file(self, endpoint, request_body, headers):
-        url = url_path_join(get_data_clean_room_url(), endpoint)
-        offset = 0
-        chunk = 1024 * 1024 * 3 # 3 MB
-        request_body['chunk'] = chunk
-
         download_resp_str = await make_proxied_post_request(self.log, endpoint, request_body, headers)
         download_resp = json.loads(download_resp_str)
-        filename = download_resp['filename']
+        
         if download_resp['code'] != 0:
             self.finish(download_resp)
-            return 
+            return
+        
         signed_url = download_resp['signed_url']
         filename = download_resp['filename']
         async with aiohttp.ClientSession() as session:
             async with session.get(signed_url) as response:
-                if response.status == 200:
-                    async with aiofiles.open(filename, 'wb') as f:
-                        while True:
-                            chunk = await response.content.read(4096)
-                            if not chunk:
-                                break
-                            await f.write(chunk)
-                    self.finish(json.dumps({
-                        "code": 0,
-                        "msg": "Success",
-                        "filename": filename
-                    }).encode('utf-8'))
-                else:
-                    raise tornado.web.HTTPError(500, reason="Failed to get download output file  through signed url")
+                if response.status != 200:
+                    raise tornado.web.HTTPError(500, reason="Failed to get download output file through signed url")
+
+                async with aiofiles.open(filename, 'wb') as f:
+                    async for data, _ in response.content.iter_chunks():
+                        await f.write(data)
+                
+                self.finish(json.dumps({
+                    "code": 0,
+                    "msg": "Success",
+                    "filename": filename
+                }).encode('utf-8'))
 
 
 class DataCleanRoomAttestationHandler(JupyterHandler):
