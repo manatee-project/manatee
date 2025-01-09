@@ -135,8 +135,7 @@ func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequ
 		logRedirectFlag = "true"
 	}
 
-	cpuCountStr := strconv.Itoa(int(j.CPUCount))
-	machineType := fmt.Sprintf("zones/%s/machineTypes/n2d-standard-%s", c.zone, cpuCountStr)
+	machineType := fmt.Sprintf("zones/%s/machineTypes/n2d-standard-%d", c.zone, int(j.CPUCount))
 
 	metadataItems := []*computepb.Items{&computepb.Items{
 		Key:   proto.String("tee-container-log-redirect"),
