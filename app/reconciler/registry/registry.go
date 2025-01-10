@@ -27,7 +27,7 @@ func (g *GoogleDockerRegistry) Url() string {
 }
 
 func (g *GoogleDockerRegistry) BaseImage() string {
-	return fmt.Sprintf("%s/data-clean-room-base:latest", g.Url())
+	return fmt.Sprintf("%s/manatee-executor-base:latest", g.Url())
 }
 
 type MinikubeDockerRegistry struct {

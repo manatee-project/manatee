@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "data-clean-room-chart.fullname" . }}
+  name: {{ include "manatee-chart.fullname" . }}
   labels:
-    {{- include "data-clean-room-chart.labels" . | nindent 4 }}
+    {{- include "manatee-chart.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -11,4 +11,4 @@ spec:
       targetPort: http
       protocol: TCP
   selector:
-    {{- include "data-clean-room-chart.selectorLabels" . | nindent 4 }}
+    {{- include "manatee-chart.selectorLabels" . | nindent 4 }}

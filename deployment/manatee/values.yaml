@@ -1,4 +1,4 @@
-# Default values for data-clean-room-chart.
+# Default values for manatee-chart.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -18,8 +18,8 @@ monitorImage:
 
 
 imagePullSecrets: []
-nameOverride: "data-clean-room"
-fullnameOverride: "data-clean-room"
+nameOverride: "manatee"
+fullnameOverride: "manatee"
 
 serviceAccount:
   # Specifies whether a service account should be created

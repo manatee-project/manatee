@@ -30,13 +30,13 @@ fi
 namespace=$1
 debug=$2
 tag="latest"
-helm_name="data-clean-room-helm"
+helm_name="manatee-helm"
 
 connection_name="${project_id}:${region}:dcr-${env}-db-instance"
 service_account="dcr-k8s-pod-sa"
 docker_repo="dcr-${env}-${namespace}-images"
-api_docker_reference="us-docker.pkg.dev/${project_id}/${docker_repo}/data-clean-room-api"
-monitor_docker_reference="us-docker.pkg.dev/${project_id}/${docker_repo}/data-clean-room-monitor"
+api_docker_reference="us-docker.pkg.dev/${project_id}/${docker_repo}/manatee-api"
+monitor_docker_reference="us-docker.pkg.dev/${project_id}/${docker_repo}/manatee-reconciler"
 
 helm upgrade --cleanup-on-fail \
     --set apiImage.repository=${api_docker_reference} \

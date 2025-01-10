@@ -1,15 +1,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ printf "%s-monitor" (include "data-clean-room-chart.fullname" .) | quote }}
+  name: {{ printf "%s-monitor" (include "manatee-chart.fullname" .) | quote }}
   labels:
-    {{- include "data-clean-room-chart.labels" . | nindent 4 }}
+    {{- include "manatee-chart.labels" . | nindent 4 }}
   namespace: {{ .Values.namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "data-clean-room-chart.selectorLabels" . | nindent 6 }}
+      {{- include "manatee-chart.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -17,7 +17,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "data-clean-room-chart.labels" . | nindent 8 }}
+        {{- include "manatee-chart.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -26,7 +26,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "data-clean-room-chart.serviceAccountName" . }}
+      serviceAccountName: {{ include "manatee-chart.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       restartPolicy: "Always"
@@ -40,7 +40,7 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
             - name: DATA_CLEAN_ROOM_HOST
-              value: {{ printf "http://%s.%s.svc.cluster.local" (include "data-clean-room-chart.fullname" .) .Values.namespace | quote }}
+              value: {{ printf "http://%s.%s.svc.cluster.local" (include "manatee-chart.fullname" .) .Values.namespace | quote }}
             - name: MYSQL_USERNAME
               valueFrom:
                 secretKeyRef:
