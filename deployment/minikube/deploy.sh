@@ -18,17 +18,17 @@ namespace="manatee"
 project_id="mock-gcp-project-id"
 region="us-west2"
 zone="us-west2-a"
-helm_name="data-clean-room-helm"
+helm_name="manatee-helm"
 eval $(minikube docker-env)
 kubectl apply -f mysql-deployment.yaml -n $namespace
 kubectl apply -f mysql-service.yaml -n $namespace
 kubectl apply -f minio-dev.yaml
 # deploy dcr api
 helm upgrade --cleanup-on-fail \
-    --set apiImage.repository=docker.io/library/dcr_api \
+    --set apiImage.repository=docker.io/library/api \
     --set apiImage.tag=latest \
     --set apiImage.pullPolicy=Never \
-    --set monitorImage.repository=docker.io/library/dcr_monitor \
+    --set monitorImage.repository=docker.io/library/reconciler \
     --set monitorImage.tag=latest \
     --set monitorImage.pullPolicy=Never \
     --set serviceAccount.name=dcr-k8s-pod-sa \
@@ -49,7 +49,7 @@ helm upgrade --cleanup-on-fail \
     --set mysql.host=mysql-service \
     --set mysql.port=3306 \
     --set useMinikube=true \
-    --install $helm_name ../data-clean-room \
+    --install $helm_name ../manatee \
     --namespace $namespace
 
 helm repo add jupyterhub https://hub.jupyter.org/helm-chart/
@@ -57,7 +57,7 @@ helm repo update
 
 service_account="jupyter-k8s-pod-sa"
 helm_name="jupyterhub-helm"
-api="http://data-clean-room.$namespace.svc.cluster.local"
+api="http://manatee.$namespace.svc.cluster.local"
 
 helm upgrade --cleanup-on-fail \
     --set singleuser.image.name=docker.io/library/jupyterlab_manatee \

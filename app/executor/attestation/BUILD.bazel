@@ -1,0 +1,17 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "attestation_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/manatee-project/manatee/app/executor/attestation",
+    visibility = ["//visibility:private"],
+    deps = ["@com_github_pkg_errors//:errors"],
+)
+
+go_binary(
+    name = "gen_custom_token",
+    embed = [":attestation_lib"],
+    goarch = "amd64",
+    goos = "linux",
+    visibility = ["//visibility:public"],
+)

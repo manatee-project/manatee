@@ -7,10 +7,10 @@ load("//:env.bzl", "env", "project_id", "region", "zone")
 gazelle(name = "gazelle")
 
 REPOS = {
-    "dcr_api": "us-docker.pkg.dev/{}/dcr-{}-$$namespace-images/data-clean-room-api".format(project_id, env),
-    "dcr_monitor": "us-docker.pkg.dev/{}/dcr-{}-$$namespace-images/data-clean-room-monitor".format(project_id, env),
-    "jupyterlab_manatee": "us-docker.pkg.dev/{}/dcr-{}-$$namespace-images/scipy-notebook-with-dcr".format(project_id, env),
-    "dcr_tee": "us-docker.pkg.dev/{}/dcr-{}-user-images/data-clean-room-base".format(project_id, env),
+    "api": "us-docker.pkg.dev/{}/dcr-{}-$$namespace-images/manatee-api".format(project_id, env),
+    "reconciler": "us-docker.pkg.dev/{}/dcr-{}-$$namespace-images/manatee-reconciler".format(project_id, env),
+    "jupyterlab_manatee": "us-docker.pkg.dev/{}/dcr-{}-$$namespace-images/manatee-jupyterlab-singleuser".format(project_id, env),
+    "executor": "us-docker.pkg.dev/{}/dcr-{}-user-images/manatee-executor-base".format(project_id, env),
 }
 
 [

@@ -50,7 +50,7 @@ Enable the registry
 minikube addons enable registry
 ```
 
-RUN a proxy to connect to minikube registry and push dcr_tee image to minikube registry.
+RUN a proxy to connect to minikube registry and push executor image to minikube registry.
 ```
 docker run --rm -it --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$(minikube ip):5000"
 ```
@@ -59,7 +59,7 @@ Open another terminal, and run
 
 ```
 eval $(minikube docker-env)
-docker tag dcr_tee localhost:5000/dcr_tee && docker push localhost:5000/dcr_tee
+docker tag executor localhost:5000/executor && docker push localhost:5000/executor
 ```
 
 You can close the proxy after the docker push.

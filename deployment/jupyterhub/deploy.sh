@@ -31,11 +31,11 @@ namespace=$1
 
 tag="latest"
 helm_name="jupyterhub-helm-$namespace"
-api="http://data-clean-room.$namespace.svc.cluster.local"
+api="http://manatee.$namespace.svc.cluster.local"
 
 service_account="jupyter-k8s-pod-sa"
 docker_repo="dcr-${env}-${namespace}-images"
-docker_reference="us-docker.pkg.dev/${project_id}/${docker_repo}/scipy-notebook-with-dcr"
+docker_reference="us-docker.pkg.dev/${project_id}/${docker_repo}/manatee-jupyterlab-singleuser"
 
 helm repo add jupyterhub https://hub.jupyter.org/helm-chart/
 helm repo update
