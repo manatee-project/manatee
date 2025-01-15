@@ -1,0 +1,18 @@
+# configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: manatee-configmap
+data:
+  env: {{ .Values.config.env | quote }}
+  projectId: {{ .Values.config.projectId | quote }}
+  zone: {{ .Values.config.zone | quote }}
+  region: {{ .Values.config.region | quote }}
+  debug: {{ .Values.config.debug | quote }}
+  teeBackend: {{.Values.config.teeBackend | quote }}
+  registryType: {{.Values.config.registryType | quote }}
+  storageType: {{.Values.config.storageType | quote }}
+  minioEndpoint:  {{ .Values.config.minioEndpoint | quote }}
+  minioAccessKey: {{ .Values.config.minioAccessKey | quote }}
+  minioSecretKey: {{ .Values.config.minioSecretKey | quote }}
+  minioRegion: {{ .Values.config.minioRegion | quote }}

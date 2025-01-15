@@ -31,11 +31,11 @@ namespace=$1
 
 tag="latest"
 helm_name="jupyterhub-helm-$namespace"
-api="http://data-clean-room.$namespace.svc.cluster.local"
+api="http://manatee.$namespace.svc.cluster.local"
 
 service_account="jupyter-k8s-pod-sa"
 docker_repo="dcr-${env}-${namespace}-images"
-docker_reference="us-docker.pkg.dev/${project_id}/${docker_repo}/scipy-notebook-with-dcr"
+docker_reference="us-docker.pkg.dev/${project_id}/${docker_repo}/manatee-jupyterlab-singleuser"
 
 helm repo add jupyterhub https://hub.jupyter.org/helm-chart/
 helm repo update
@@ -45,6 +45,8 @@ helm upgrade --cleanup-on-fail \
     --set singleuser.image.tag=${tag} \
     --set singleuser.serviceAccountName=${service_account} \
     --set singleuser.extraEnv.DATA_CLEAN_ROOM_HOST=${api} \
+    --set singleuser.extraEnv.EXECUTION_STAGE='"1"' \
+    --set singleuser.extraEnv.MANATEE_EXTRA_ENV_EXECUTION_STAGE='"2"' \
     --set singleuser.extraEnv.DEPLOYMENT_ENV=${env} \
     --set singleuser.extraEnv.PROJECT_ID=${project_id} \
     --set singleuser.extraEnv.KEY_LOCALTION=${region} \
