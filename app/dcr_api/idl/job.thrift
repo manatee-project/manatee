@@ -31,7 +31,7 @@ struct SubmitJobRequest{
     1: string jupyter_file_name (api.body="filename", api.vd="len($) > 0 && len($) < 128 && regexp('^.*\\.ipynb$') && !regexp('.*\\.\\..*')")
     2: string creator (api.body="creator", api.vd="len($) > 0 && len($) < 32 && !regexp('.*\\.\\..*')") 
     3: list<Env> envs (api.body="envs", api.json="envs")
-    4: i64 cpu_count = 2 (api.body="cpu_count", api.vd="len($) > 0", vt.gt = "1", vt.lt = "256", vt.mod = "2")
+    4: i64 cpu_count = 2 (api.body="cpu_count", api.vd="len($) > 0", vt.gt = "1", vt.lt = "256")
     5: i64 disk_size = 50 (api.body="disk_size", api.vd="len($) > 0", vt.gt = "20", vt.lt = "1024")
     255: required string access_token     (api.header="Authorization")
 }
