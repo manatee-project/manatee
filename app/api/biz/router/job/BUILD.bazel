@@ -1,0 +1,16 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "job",
+    srcs = [
+        "job.go",
+        "middleware.go",
+    ],
+    importpath = "github.com/manatee-project/manatee/app/api/biz/router/job",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//app/api/biz/handler/job",
+        "@com_github_cloudwego_hertz//pkg/app",
+        "@com_github_cloudwego_hertz//pkg/app/server",
+    ],
+)

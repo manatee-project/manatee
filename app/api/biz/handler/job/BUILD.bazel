@@ -1,0 +1,17 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "job",
+    srcs = ["job_handler.go"],
+    importpath = "github.com/manatee-project/manatee/app/api/biz/handler/job",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//app/api/biz/model/job",
+        "//app/api/biz/pkg/errno",
+        "//app/api/biz/pkg/utils",
+        "//app/api/biz/service",
+        "@com_github_cloudwego_hertz//pkg/app",
+        "@com_github_cloudwego_hertz//pkg/common/hlog",
+        "@com_github_cloudwego_hertz//pkg/protocol/consts",
+    ],
+)

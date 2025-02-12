@@ -1,0 +1,50 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+
+go_binary(
+    name = "api",
+    embed = [":api_lib"],
+    goarch = "amd64",
+    goos = "linux",
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "api_lib",
+    srcs = [
+        "main.go",
+        "router.go",
+        "router_gen.go",
+    ],
+    importpath = "github.com/manatee-project/manatee/app/api",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//app/api/biz/dal",
+        "//app/api/biz/handler",
+        "//app/api/biz/router",
+        "@com_github_cloudwego_hertz//pkg/app/server",
+    ],
+)
+
+pkg_tar(
+    name = "tar",
+    srcs = [":api"],
+)
+
+oci_image(
+    name = "image",
+    base = "@distroless_base_linux_amd64",
+    entrypoint = ["/api"],
+    tars = [
+        ":tar",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+oci_load(
+    name = "load_image",
+    image = ":image",
+    repo_tags = ["api:latest"],
+    visibility = ["//visibility:public"],
+)

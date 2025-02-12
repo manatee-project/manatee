@@ -4,13 +4,16 @@ date: 2025-01-07
 
 # First Community Release of ManaTEE
 
-We are thrilled to announce the first public community release of ManaTEE, an open-source framework for private data analytics. After months of development, testing, and refinement, we’re excited to share this project with the broader community.
+We are thrilled to announce the first public community release of ManaTEE, an open-source framework for private data analytics.
+ManaTEE was introduced as a [key privacy solution](https://developers.tiktok.com/blog/privacygo-data-clean-room-open-source)  for private data collaboration at TikTok, which built [one of its products](https://developers.tiktok.com/doc/vce-getting-started) on top of this solution. The team decided to improve and consolidate the solution by open-sourcing it.
+To further its momentum as an open-source private data analytics framework, TikTok has [donated the project](https://developers.tiktok.com/blog/tiktok-open-source-project-donation-manatee) to the Confidential Computing Consortium under the Linux Foundation.
+After months of development, testing, and refinement, we’re excited to share this project with the broader community.
 
 ## What is New?
 
 In the community release, we are providing the following features:
 
-* Deployment in test environment (e.g., Minikube) without cloud accounts (e.g., GCP)
+* [Test deployment in minikube](../../getting-started/minikube.md) without cloud accounts (e.g., GCP)
 * Full [tutorial](../../getting-started/tutorials.md) to reproduce the demo
 
 We also worked hard to refactor the code, to make it much more extensible. It now leverages Bazel for hermetic and reproducible builds, and has a basic CI/CD pipeline setup. The project is now ready to get contribution from the community!

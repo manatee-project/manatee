@@ -18,6 +18,7 @@ import tarfile
 from http import HTTPStatus
 
 import aiohttp
+import aiofiles
 import base64
 import tornado
 from aiohttp import FormData
@@ -161,42 +162,34 @@ class DataCleanRoomOutputHandler(JupyterHandler):
         headers = {
             "Authorization" : get_user_token()
         }
-        attr_resp_str = await make_proxied_post_request(self.log, "v1/job/output/attrs", request_body, headers)
-        attr_resp = json.loads(attr_resp_str)
-        if attr_resp['code'] != 0:
-            self.finish(attr_resp_str)
-            return 
-        filename = attr_resp["filename"]
-        filesize = attr_resp["size"]
-    
-        await self.download_file("v1/job/output/download", request_body, headers, filename, filesize)
 
-    async def download_file(self, endpoint, request_body, headers, filename, filesize):
-        url = url_path_join(get_data_clean_room_url(), endpoint)
-        offset = 0
-        chunk = 1024 * 1024 * 3 # 3 MB
-        request_body['chunk'] = chunk
-        try:
-            async with aiohttp.ClientSession() as session:
-                with open(filename, 'wb') as f:
-                    while offset < filesize:
-                        request_body['offset'] = offset
-                        download_resp_str = await make_proxied_post_request(self.log, endpoint, request_body, headers)
-                        download_resp = json.loads(download_resp_str)
-                        if download_resp['code'] != 0:
-                            self.finish(download_resp)
-                            return 
-                        decoded_content = base64.b64decode(download_resp['content'])
-                        offset += len(decoded_content)
-                        f.write(decoded_content)
+        await self.download_file("v1/job/output/download", request_body, headers)
+
+    async def download_file(self, endpoint, request_body, headers):
+        download_resp_str = await make_proxied_post_request(self.log, endpoint, request_body, headers)
+        download_resp = json.loads(download_resp_str)
+        
+        if download_resp['code'] != 0:
+            self.finish(download_resp)
+            return
+        
+        signed_url = download_resp['signed_url']
+        filename = download_resp['filename']
+        async with aiohttp.ClientSession() as session:
+            async with session.get(signed_url) as response:
+                if response.status != 200:
+                    raise tornado.web.HTTPError(500, reason="Failed to get download output file through signed url")
+
+                async with aiofiles.open(filename, 'wb') as f:
+                    async for data, _ in response.content.iter_chunks():
+                        await f.write(data)
+                
                 self.finish(json.dumps({
                     "code": 0,
                     "msg": "Success",
                     "filename": filename
                 }).encode('utf-8'))
-        except Exception as e:
-            self.log.error(e)
-            raise tornado.web.HTTPError(500, reason="Failed to make a request to Data Clean Room API")  
+
 
 class DataCleanRoomAttestationHandler(JupyterHandler):
     @tornado.web.authenticated
@@ -214,5 +207,17 @@ class DataCleanRoomAttestationHandler(JupyterHandler):
         headers = {
             "Authorization" : get_user_token()
         }
-
-        self.finish(await make_proxied_post_request(self, "v1/job/attestation/", request_body, headers))
+        attestation_resp_str = await make_proxied_post_request(self, "v1/job/attestation/", request_body, headers)
+        attestation_resp = json.loads(attestation_resp_str)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(attestation_resp['signed_url']) as response:
+                if response.status == 200:
+                    content = await response.read()
+                    content_str = content.decode('utf-8')
+                    self.finish(json.dumps({
+                        "code": 0,
+                        "msg": "Success",
+                        "token": content_str
+                    }).encode('utf-8'))
+                else:
+                    raise tornado.web.HTTPError(500, reason="Failed to get attestation report through signed url")

@@ -1,0 +1,64 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+
+go_library(
+    name = "reconciler_lib",
+    srcs = [
+        "main.go",
+        "reconciler.go",
+    ],
+    importpath = "github.com/manatee-project/manatee/app/reconciler",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//app/api/biz/dal/db",
+        "//app/api/biz/model/job",
+        "//app/reconciler/imagebuilder",
+        "//app/reconciler/registry",
+        "//app/reconciler/tee_backend",
+        "@com_github_cloudwego_hertz//pkg/common/hlog",
+    ],
+)
+
+go_binary(
+    name = "reconciler",
+    embed = [":reconciler_lib"],
+    goarch = "amd64",
+    goos = "linux",
+    visibility = ["//visibility:public"],
+)
+
+pkg_tar(
+    name = "tar",
+    srcs = [":reconciler"],
+)
+
+oci_image(
+    name = "image",
+    base = "@distroless_base_linux_amd64",
+    entrypoint = ["/reconciler"],
+    tars = [
+        ":tar",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+oci_load(
+    name = "load_image",
+    image = ":image",
+    repo_tags = ["reconciler:latest"],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "reconciler_test",
+    srcs = ["reconciler_test.go"],
+    embed = [":reconciler_lib"],
+    deps = [
+        "//app/api/biz/dal/db",
+        "//app/api/biz/model/job",
+        "//app/reconciler/imagebuilder",
+        "@com_github_cloudwego_hertz//pkg/common/test/assert",
+        "@io_gorm_gorm//:gorm",
+    ],
+)

@@ -32,7 +32,8 @@ const statusMap: Map<number, {color: string, text: string}> = new Map([
     [5, {color: '#86909c', text: 'VM Finished'}],
     [6, {color: 'red', text: 'VM Killed'}],
     [7, {color: 'red', text: 'VM Failed'}],
-    [8, {color: 'gray', text: 'VM Other'}]
+    [8, {color: 'gray', text: 'VM Other'}],
+    [9, {color: 'red', text: 'VM Launch Failed'}]
 ]);
 
 const columns: TableColumnProps[] = [

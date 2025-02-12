@@ -45,5 +45,5 @@ deploy_service() {
     popd
 }
 
-deploy_service data-clean-room $namespace $debug
+deploy_service manatee $namespace $debug
 deploy_service jupyterhub $namespace

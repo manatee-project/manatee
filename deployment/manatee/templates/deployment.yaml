@@ -1,0 +1,155 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "%s-api" (include "manatee-chart.fullname" .) | quote }}
+  labels:
+    {{- include "manatee-chart.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "manatee-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "manatee-chart.labels" . | nindent 8 }}
+	{{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "manatee-chart.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.apiImage.repository }}:{{ .Values.apiImage.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.apiImage.pullPolicy }}
+          env:
+            - name: MYSQL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql-username
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql-password
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql-database
+            - name: UNUSED_TIMESTAMP
+              value: {{ now | quote }}
+            - name: MYSQL_HOST
+              value: {{ .Values.mysql.host }}
+            - name: MYSQL_PORT
+              value:  {{ .Values.mysql.port | quote }}
+            - name: ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: env
+            - name: PROJECT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: projectId
+            - name: REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: region
+            - name: ZONE
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: zone
+            - name: DEBUG
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: debug
+            - name: STORAGE_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: storageType
+            - name: S3_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: minioEndpoint
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: minioAccessKey
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: manatee-configmap
+                  key: minioSecretKey
+          ports:
+            - name: http
+              containerPort: {{ .Values.api.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- if not .Values.useMinikube }}
+        - name: cloud-sql-proxy
+          image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.0
+          args:
+            - "--structured-logs"
+            - "--private-ip"
+            - {{ print "--port=" .Values.mysql.port }}
+            - {{ .Values.cloudSql.connection_name }}
+          securityContext:
+            runAsNonRoot: true
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "0.5"
+        {{- end }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

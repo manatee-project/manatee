@@ -1,0 +1,23 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "service",
+    srcs = ["job_service.go"],
+    importpath = "github.com/manatee-project/manatee/app/api/biz/service",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//app/api/biz/dal/db",
+        "//app/api/biz/model/job",
+        "//app/api/biz/pkg/errno",
+        "//app/api/biz/pkg/storage",
+        "@com_github_cloudwego_hertz//pkg/common/hlog",
+        "@com_github_google_uuid//:uuid",
+        "@com_github_pkg_errors//:errors",
+    ],
+)
+
+go_test(
+    name = "service_test",
+    srcs = ["job_service_test.go"],
+    embed = [":service"],
+)
