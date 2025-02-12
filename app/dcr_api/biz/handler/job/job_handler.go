@@ -43,10 +43,23 @@ type FileParas struct {
 // @router /v1/job/submit/ [POST]
 func SubmitJob(ctx context.Context, c *app.RequestContext) {
 	var req job.SubmitJobRequest
+
 	var formReq FileParas
 	err := c.BindAndValidate(&formReq)
 	if err != nil {
 		hlog.Errorf("[Job Handler]failed to parse parameters: %+v", err)
+		utils.ReturnsJSONError(c, err)
+		return
+	}
+
+	req.JupyterFileName = formReq.JupyterFileName
+	req.AccessToken = formReq.AccessToken
+	req.Creator = formReq.Creator
+	req.Envs = formReq.Envs
+	req.CPUCount = formReq.CPUCount
+	req.DiskSize = formReq.DiskSize
+	if err := req.IsValid(); err != nil {
+		hlog.Errorf("[Job Handler]Invalid formReq: %v", err)
 		utils.ReturnsJSONError(c, err)
 		return
 	}
@@ -61,14 +74,7 @@ func SubmitJob(ctx context.Context, c *app.RequestContext) {
 		}
 	}
 
-	formReq.CPUCount = rounded
-
-	req.JupyterFileName = formReq.JupyterFileName
-	req.AccessToken = formReq.AccessToken
-	req.Creator = formReq.Creator
-	req.Envs = formReq.Envs
-	req.CPUCount = formReq.CPUCount
-	req.DiskSize = formReq.DiskSize
+	req.CPUCount = rounded
 	file, err := formReq.FileHeader.Open()
 	if err != nil {
 		hlog.Errorf("[Job Handler]failed to open file %+v", err)
