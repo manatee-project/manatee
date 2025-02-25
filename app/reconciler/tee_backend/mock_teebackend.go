@@ -58,18 +58,6 @@ func (m *MockTeeBackend) LaunchInstance(instanceName string, image string, diges
 		Name:  "TEE_BACKEND",
 		Value: os.Getenv("TEE_BACKEND"),
 	},
-		corev1.EnvVar{
-			Name:  "AWS_ACCESS_KEY_ID",
-			Value: os.Getenv("AWS_ACCESS_KEY_ID"),
-		},
-		corev1.EnvVar{
-			Name:  "AWS_SECRET_ACCESS_KEY",
-			Value: os.Getenv("AWS_SECRET_ACCESS_KEY"),
-		},
-		corev1.EnvVar{
-			Name:  "S3_ENDPOINT",
-			Value: os.Getenv("S3_ENDPOINT"),
-		},
 	)
 	mockTeeJob := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
