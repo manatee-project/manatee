@@ -34,6 +34,8 @@ type FileParas struct {
 	Creator         string                `form:"creator"`
 	Envs            []*job.Env            `form:"envs"`
 	JupyterFileName string                `form:"filename"`
+	CPUCount        int64                 `form:"cpu_count"`
+	DiskSize        int64                 `form:"disk_size"`
 	AccessToken     string                `header:"Authorization,required"`
 }
 
@@ -53,6 +55,25 @@ func SubmitJob(ctx context.Context, c *app.RequestContext) {
 	req.AccessToken = formReq.AccessToken
 	req.Creator = formReq.Creator
 	req.Envs = formReq.Envs
+	req.CPUCount = formReq.CPUCount
+	req.DiskSize = formReq.DiskSize
+	if err := req.IsValid(); err != nil {
+		hlog.Errorf("[Job Handler]Invalid formReq: %v", err)
+		utils.ReturnsJSONError(c, err)
+		return
+	}
+
+	cpuCounts := []int64{2, 4, 8, 16, 32, 48, 64, 80, 96, 128, 224}
+	rounded := cpuCounts[len(cpuCounts)-1]
+
+	for _, count := range cpuCounts {
+		if formReq.CPUCount <= count {
+			rounded = count
+			break
+		}
+	}
+
+	req.CPUCount = rounded
 	file, err := formReq.FileHeader.Open()
 	if err != nil {
 		hlog.Errorf("[Job Handler]failed to open file %+v", err)
