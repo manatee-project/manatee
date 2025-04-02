@@ -29,7 +29,7 @@ async function activate(app: JupyterFrontEnd, docManager: IDocumentManager, tran
 
   const sidebar = new DataCleanRoomSidebar({manager: docManager});
 
-  app.shell.add(sidebar, 'right',  {rank: 850});
+  app.shell.add(sidebar, 'right',  {rank: 0});
 
   if (restorer) {
     restorer.add(sidebar, "data-clean-room-side-bar");

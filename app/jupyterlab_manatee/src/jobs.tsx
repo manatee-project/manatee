@@ -60,8 +60,7 @@ const columns: TableColumnProps[] = [
     {
         title: '', // this will be later overwritten by a refresh icon.
         dataIndex: 'job_status',
-        ellipsis: false,
-        width:  20,
+        width:  40,
         render: (col, item: any, index) => {
             let status = statusMap.get(col)
             
