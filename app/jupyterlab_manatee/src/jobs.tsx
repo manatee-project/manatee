@@ -23,7 +23,7 @@ import { showDialog, Dialog } from '@jupyterlab/apputils';
 import { ConfigProvider, Table, TableColumnProps, Descriptions, Button, Tag} from '@arco-design/web-react';
 import enUS from '@arco-design/web-react/es/locale/en-US';
 import "@arco-design/web-react/dist/css/arco.css";
-import {IconCheckCircle, IconSync, IconExclamationCircle, IconCloseCircle, IconCheckSquare, IconDownload, IconRefresh} from '@arco-design/web-react/icon';
+import {IconCheckCircle, IconSync, IconExclamationCircle, IconCloseCircle, IconCheckSquare, IconDownload, IconRefresh, IconLoading} from '@arco-design/web-react/icon';
 
 const statusMap: Map<number, {icon: React.JSX.Element, color: string, text: string}> = new Map([
     [1, {icon: <IconSync spin style={{ fontSize: 20 }}/>,                          color: 'green', text: 'Image Building'}],
@@ -65,7 +65,7 @@ const columns: TableColumnProps[] = [
             let status = statusMap.get(col)
             
             if (status == undefined) {
-                return (<IconExclamationCircle spin style={{color: '#ffcd00', fontSize: 20}} />)
+                return (<IconLoading style={{fontSize: 20}} />)
             }
 
             return (
