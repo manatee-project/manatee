@@ -130,52 +130,51 @@ const handleDownloadOutput = async (record: Job) => {
 };
 
 const handleGetAttestation = async (record: Job) => {
-    const id = record.id;
+    const id = record.id
     const settings = ServerConnection.makeSettings();
     const result = await showDialog({
         title: "Get Attestation Report of the Job?",
-        body: `Job ID: ${id}`,
+        body: 'Job id: ' + id,
         buttons: [Dialog.okButton(), Dialog.cancelButton()]
     });
-
-    if (!result.button.accept) return;
-
-    try {
-        const response = await ServerConnection.makeRequest(
-            settings.baseUrl + `manatee/attestation?id=${id}`,
-            { method: "GET" },
-            settings
-        );
-
-        if (response.status !== 200) {
-            await showDialog({
-                title: "Get Attestation Report Failed",
-                buttons: [Dialog.okButton()]
-            });
-            return;
-        }
-
-        const { done, value } = await response.body!.getReader().read();
-        if (done || !value) return;
-
-        const decoder = new TextDecoder('utf-8');
-        const result = JSON.parse(decoder.decode(value));
-
-        if (result.code === 0) {
-            await showDialog({
-                title: "Attestation Report Retrieved",
-                body: `OIDC Token: ${result.token}`,
-                buttons: [Dialog.okButton()]
-            });
-        } else {
-            await showDialog({
-                title: "Failed to Retrieve Attestation",
-                body: `Error: ${result.msg}`,
-                buttons: [Dialog.okButton()]
-            });
-        }
-    } catch (err) {
-        console.error("Attestation error:", err);
+    let requestUrlWithParams = settings.baseUrl + "manatee/attestation" + "?id=" + id;
+    if (result.button.accept) {
+        ServerConnection.makeRequest(requestUrlWithParams, {
+            method: "GET"
+        }, settings).then(async response => {
+            if (response.status !== 200) {
+                showDialog({
+                    title: "Get Attestation Report Failed",
+                    buttons: [Dialog.okButton(), Dialog.cancelButton()]
+                });
+                console.error(response)
+                return;
+            }
+            try {
+                const result = await response.json();
+                if (result.code === 0) {
+                    await showDialog({
+                        title: "Get Attestation Report Successful",
+                        body: 'OIDC Token: ' + result.token,
+                        buttons: [Dialog.okButton(), Dialog.cancelButton()]
+                    });
+                } else {
+                    await showDialog({
+                        title: "Get Attestation Report Failed",
+                        body: 'Error: ' + result.msg,
+                        buttons: [Dialog.okButton(), Dialog.cancelButton()]
+                    });
+                }
+            } catch (e) {
+                console.error("Failed to parse response JSON", e);
+                await showDialog({
+                    title: "Invalid Response",
+                    body: 'Could not parse JSON: ' + String(e),
+                    buttons: [Dialog.okButton()]
+                });
+            }
+        
+        });
     }
 };
 
