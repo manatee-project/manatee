@@ -27,13 +27,14 @@ export class DataCleanRoomSidebar extends SidePanel {
         const translator = options.translator || nullTranslator;
         super({ translator });
 
-        const sourcesPanel = new DataCleanRoomSources({ manager, translator });
         const jobsPanel = new DataCleanRoomJobs({ translator });
+        const sourcesPanel = new DataCleanRoomSources({ manager, translator });
+        this.addClass("jp-manatee-sidebar-view")
 
         this.title.icon = trustedIcon;
         this.id = "jp-DCRSource-sidebar"
-        this.addWidget(sourcesPanel);
         this.addWidget(jobsPanel);
+        this.addWidget(sourcesPanel);
     }
 }
 

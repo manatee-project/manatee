@@ -3,3 +3,7 @@
 
     https://jupyterlab.readthedocs.io/en/stable/developer/css.html
 */
+
+.jp-manatee-sidebar-view .lm-SplitPanel-child {
+    overflow-y: auto;
+}
