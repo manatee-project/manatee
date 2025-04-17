@@ -73,7 +73,7 @@ bazel_dep(name = "gazelle", version = "0.40.0")
 go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
 go_sdk.download(
     name = "go_sdk",
-    version = "1.22.0",
+    version = "1.23.0",
 )
 use_repo(go_sdk, "go_sdk")
 
@@ -91,6 +91,13 @@ go_deps.gazelle_default_attributes(
         "gazelle:proto disable",
     ],
 )
+go_deps.gazelle_override(
+    build_file_generation = "clean",
+    directives = [
+        "gazelle:build_file_name BUILD.bazel",
+    ],
+    path = "github.com/envoyproxy/protoc-gen-validate",
+)
 use_repo(
     go_deps,
     "com_github_apache_thrift",
@@ -107,7 +114,6 @@ use_repo(
     "io_k8s_api",
     "io_k8s_apimachinery",
     "io_k8s_client_go",
-    "org_golang_google_genproto",
     "org_golang_google_protobuf",
 )
 

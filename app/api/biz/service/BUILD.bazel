@@ -8,8 +8,8 @@ go_library(
     deps = [
         "//app/api/biz/dal/db",
         "//app/api/biz/model/job",
-        "//app/api/biz/pkg/storage",
         "//app/api/biz/pkg/errno",
+        "//app/api/biz/pkg/storage",
         "@com_github_cloudwego_hertz//pkg/common/hlog",
         "@com_github_google_uuid//:uuid",
         "@com_github_pkg_errors//:errors",

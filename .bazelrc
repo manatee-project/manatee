@@ -1,1 +1,4 @@
 common --enable_bzlmod
+build --host_macos_minimum_os=13.3
+build --macos_minimum_os=13.3
+build --apple_platform_type=macos
