@@ -36,6 +36,8 @@ type Job struct {
 	JobStatus               int               `gorm:"job_status" json:"job_status"`
 	InstanceName            string            `gorm:"instance_name" json:"instance_name"`
 	ExtraEnvs               map[string]string `gorm:"serializer:json"`
+	CPUCount                int64             `gorm:"cpu_count" json:"cpu_count"`
+	DiskSize                int64             `gorm:"disk_size" json:"disk_size"`
 }
 
 func (Job) TableName() string {

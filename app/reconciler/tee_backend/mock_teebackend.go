@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/manatee-project/manatee/app/api/biz/dal/db"
 	"github.com/pkg/errors"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -45,10 +46,10 @@ func NewMockTeeBackend(ctx context.Context) (*MockTeeBackend, error) {
 	}, nil
 }
 
-func (m *MockTeeBackend) LaunchInstance(instanceName string, image string, digest string, extraEnvs map[string]string) error {
+func (m *MockTeeBackend) LaunchInstance(instanceName string, j *db.Job) error {
 	ttlSecondsAfterFinished := int32(3600 * 3)
 	var envs []corev1.EnvVar
-	for key, value := range extraEnvs {
+	for key, value := range j.ExtraEnvs {
 		envs = append(envs, corev1.EnvVar{
 			Name:  key,
 			Value: value,
@@ -72,7 +73,7 @@ func (m *MockTeeBackend) LaunchInstance(instanceName string, image string, diges
 					Containers: []corev1.Container{
 						{
 							Name:  "mock-tee",
-							Image: convertImageToLocal(image),
+							Image: convertImageToLocal(j.DockerImage),
 							Env:   envs,
 						},
 					},
