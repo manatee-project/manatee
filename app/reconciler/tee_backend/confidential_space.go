@@ -127,15 +127,15 @@ func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequ
 	network := fmt.Sprintf("https://compute.googleapis.com/compute/v1/projects/%s/global/networks/dcr-%s-network", c.projectId, c.env)
 	subNetwork := fmt.Sprintf("https://compute.googleapis.com/compute/v1/projects/%s/regions/%s/subnetworks/dcr-%s-subnetwork", c.projectId, c.region, c.env)
 
-	imageSource := "projects/confidential-space-images/global/images/confidential-space-240200"
+	imageSource := "https://compute.googleapis.com/compute/v1/projects/confidential-space-images/global/images/family/confidential-space"
 	logRedirectFlag := "false"
 	if c.debug {
-		imageSource = "projects/confidential-space-images/global/images/confidential-space-debug-240200"
+		imageSource = "https://compute.googleapis.com/compute/v1/projects/confidential-space-images/global/images/family/confidential-space-debug"
 		logRedirectFlag = "true"
 	}
 
 	// TODO: make machine type configurable
-	machineType := fmt.Sprintf("zones/%s/machineTypes/n2d-standard-2", c.zone)
+	machineType := fmt.Sprintf("zones/%s/machineTypes/c3-standard-8", c.zone)
 	// TODO: make disksize configurable
 	diskSize := int64(50)
 
@@ -157,7 +157,7 @@ func (c *TEEProviderGCPConfidentialSpace) getConfidentialSpaceInsertInstanceRequ
 
 	instanceResource := computepb.Instance{
 		ConfidentialInstanceConfig: &computepb.ConfidentialInstanceConfig{
-			EnableConfidentialCompute: proto.Bool(true),
+			ConfidentialInstanceType: proto.String("TDX"),
 		},
 		ShieldedInstanceConfig: &computepb.ShieldedInstanceConfig{
 			EnableSecureBoot: proto.Bool(true),
