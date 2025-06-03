@@ -37,11 +37,11 @@ variable "project_id" {
 variable "type" {
   type        = string
   description = "Instance type for the GKE instances"
-  default     = "n2-standard-4"
+  default     = "c3-highcpu-22"
 }
 
 variable "num_nodes" {
   type        = number
   description = "Number of nodes to create in the GKE cluster"
-  default     = 2
+  default     = 1
 }

@@ -51,6 +51,7 @@ helm upgrade --cleanup-on-fail \
     --set singleuser.extraEnv.PROJECT_ID=${project_id} \
     --set singleuser.extraEnv.KEY_LOCALTION=${region} \
     --set singleuser.networkPolicy.enabled=false \
+    --set singleuser.storage.capacity=20Gi \
     --install $helm_name jupyterhub/jupyterhub \
     --namespace ${namespace} \
     --version=3.0.3 \

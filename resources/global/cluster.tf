@@ -54,7 +54,7 @@ resource "google_container_node_pool" "dcr_node_pool" {
 
   node_config {
     service_account = google_service_account.gcp_dcr_cluster_sa.email
-    preemptible     = true
+    preemptible     = false
     machine_type    = var.type
   }
 
@@ -62,6 +62,6 @@ resource "google_container_node_pool" "dcr_node_pool" {
     google_service_account.gcp_dcr_cluster_sa,
   ]
   autoscaling {
-    max_node_count = 8
+    max_node_count = 3
   }
 }

@@ -154,7 +154,7 @@ const handleGetAttestation = async (record: Job) => {
                 const result = await response.json();
                 if (result.code === 0) {
                     await showDialog({
-                        title: "Get Attestation Report Successful",
+                        title: "Get Attestation Report Successfully",
                         body: 'OIDC Token: ' + result.token,
                         buttons: [Dialog.okButton(), Dialog.cancelButton()]
                     });

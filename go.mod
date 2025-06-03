@@ -1,6 +1,6 @@
 module github.com/manatee-project/manatee
 
-go 1.23.0
+go 1.23.8
 
 require (
 	cloud.google.com/go/compute v1.36.1

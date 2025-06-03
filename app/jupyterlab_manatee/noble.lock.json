@@ -1,0 +1,150 @@
+{
+	"packages": [
+		{
+			"arch": "amd64",
+			"dependencies": [
+				{
+					"key": "libblas3_3.12.0-3_amd64",
+					"name": "libblas3",
+					"version": "3.12.0-3"
+				},
+				{
+					"key": "libgcc-s1_14-20240221-2.1ubuntu1_amd64",
+					"name": "libgcc-s1",
+					"version": "14-20240221-2.1ubuntu1"
+				},
+				{
+					"key": "libc6_2.39-0ubuntu2_amd64",
+					"name": "libc6",
+					"version": "2.39-0ubuntu2"
+				},
+				{
+					"key": "gcc-14-base_14-20240221-2.1ubuntu1_amd64",
+					"name": "gcc-14-base",
+					"version": "14-20240221-2.1ubuntu1"
+				}
+			],
+			"key": "libblas-dev_3.12.0-3_amd64",
+			"name": "libblas-dev",
+			"sha256": "12c492a0d1ee2c2e765b394c51de330b3c9f1a8579cde81e0d14b35e8df75a15",
+			"urls": [
+				"https://snapshot.ubuntu.com/ubuntu/20240301T030400Z/pool/main/l/lapack/libblas-dev_3.12.0-3_amd64.deb"
+			],
+			"version": "3.12.0-3"
+		},
+		{
+			"arch": "amd64",
+			"dependencies": [],
+			"key": "libblas3_3.12.0-3_amd64",
+			"name": "libblas3",
+			"sha256": "2db61728fe84dad1c86a55e92959333136a1cdc3286d437e5f3456777147a75c",
+			"urls": [
+				"https://snapshot.ubuntu.com/ubuntu/20240301T030400Z/pool/main/l/lapack/libblas3_3.12.0-3_amd64.deb"
+			],
+			"version": "3.12.0-3"
+		},
+		{
+			"arch": "amd64",
+			"dependencies": [],
+			"key": "libgcc-s1_14-20240221-2.1ubuntu1_amd64",
+			"name": "libgcc-s1",
+			"sha256": "ffc195df7e897aaec468e8f62b08660cc711c7449113102491fdd6baa6901f6d",
+			"urls": [
+				"https://snapshot.ubuntu.com/ubuntu/20240301T030400Z/pool/main/g/gcc-14/libgcc-s1_14-20240221-2.1ubuntu1_amd64.deb"
+			],
+			"version": "14-20240221-2.1ubuntu1"
+		},
+		{
+			"arch": "amd64",
+			"dependencies": [],
+			"key": "libc6_2.39-0ubuntu2_amd64",
+			"name": "libc6",
+			"sha256": "4bd128b75db38b7e9147c0333908e2c7fbc41631f284360f95118fe1c6c162f3",
+			"urls": [
+				"https://snapshot.ubuntu.com/ubuntu/20240301T030400Z/pool/main/g/glibc/libc6_2.39-0ubuntu2_amd64.deb"
+			],
+			"version": "2.39-0ubuntu2"
+		},
+		{
+			"arch": "amd64",
+			"dependencies": [],
+			"key": "gcc-14-base_14-20240221-2.1ubuntu1_amd64",
+			"name": "gcc-14-base",
+			"sha256": "2e1ae2c2ccf2d1b6d09c657af1492a8b7a348e899f9ad25d4925b170571a0887",
+			"urls": [
+				"https://snapshot.ubuntu.com/ubuntu/20240301T030400Z/pool/main/g/gcc-14/gcc-14-base_14-20240221-2.1ubuntu1_amd64.deb"
+			],
+			"version": "14-20240221-2.1ubuntu1"
+		},
+		{
+			"arch": "amd64",
+			"dependencies": [
+				{
+					"key": "libblas-dev_3.12.0-3_amd64",
+					"name": "libblas-dev",
+					"version": "3.12.0-3"
+				},
+				{
+					"key": "libblas3_3.12.0-3_amd64",
+					"name": "libblas3",
+					"version": "3.12.0-3"
+				},
+				{
+					"key": "libgcc-s1_14-20240221-2.1ubuntu1_amd64",
+					"name": "libgcc-s1",
+					"version": "14-20240221-2.1ubuntu1"
+				},
+				{
+					"key": "libc6_2.39-0ubuntu2_amd64",
+					"name": "libc6",
+					"version": "2.39-0ubuntu2"
+				},
+				{
+					"key": "gcc-14-base_14-20240221-2.1ubuntu1_amd64",
+					"name": "gcc-14-base",
+					"version": "14-20240221-2.1ubuntu1"
+				},
+				{
+					"key": "liblapack3_3.12.0-3_amd64",
+					"name": "liblapack3",
+					"version": "3.12.0-3"
+				},
+				{
+					"key": "libgfortran5_14-20240221-2.1ubuntu1_amd64",
+					"name": "libgfortran5",
+					"version": "14-20240221-2.1ubuntu1"
+				}
+			],
+			"key": "liblapack-dev_3.12.0-3_amd64",
+			"name": "liblapack-dev",
+			"sha256": "35010504e796d0ba2136a47fe6a49a0c21f7e02276b22efd7f87b402815e98ca",
+			"urls": [
+				"https://snapshot.ubuntu.com/ubuntu/20240301T030400Z/pool/main/l/lapack/liblapack-dev_3.12.0-3_amd64.deb"
+			],
+			"version": "3.12.0-3"
+		},
+		{
+			"arch": "amd64",
+			"dependencies": [],
+			"key": "liblapack3_3.12.0-3_amd64",
+			"name": "liblapack3",
+			"sha256": "b990a000d150d2a2ae6fc3dcdb2f03ee5e0284babb08bd1fa1e573e0b0d041a2",
+			"urls": [
+				"https://snapshot.ubuntu.com/ubuntu/20240301T030400Z/pool/main/l/lapack/liblapack3_3.12.0-3_amd64.deb"
+			],
+			"version": "3.12.0-3"
+		},
+		{
+			"arch": "amd64",
+			"dependencies": [],
+			"key": "libgfortran5_14-20240221-2.1ubuntu1_amd64",
+			"name": "libgfortran5",
+			"sha256": "8c1c6e05318a027d27a808ee6d24b2fa171dc702f593ff35f3b06c341ad1762e",
+			"urls": [
+				"https://snapshot.ubuntu.com/ubuntu/20240301T030400Z/pool/main/g/gcc-14/libgfortran5_14-20240221-2.1ubuntu1_amd64.deb"
+			],
+			"version": "14-20240221-2.1ubuntu1"
+		}
+	],
+	"version": 1
+}
