@@ -6,7 +6,7 @@
 ###############################################################################
 
 # rules_proto
-bazel_dep(name = "rules_proto", version = "7.0.2")
+bazel_dep(name = "rules_proto", version = "7.1.0")
 
 # rules_python
 bazel_dep(name = "rules_python", version = "0.40.0")
@@ -68,12 +68,12 @@ use_repo(
 # rules_pkg
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_go", version = "0.50.1")
-bazel_dep(name = "gazelle", version = "0.40.0")
+bazel_dep(name = "gazelle", version = "0.43.0")
 
 go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
 go_sdk.download(
     name = "go_sdk",
-    version = "1.23.0",
+    version = "1.23.8",
 )
 use_repo(go_sdk, "go_sdk")
 
@@ -118,3 +118,16 @@ use_repo(
 )
 
 bazel_dep(name = "rules_multirun", version = "0.10.0")
+bazel_dep(name = "rules_distroless", version = "0.5.1")
+
+apt = use_extension(
+    "@rules_distroless//apt:extensions.bzl",
+    "apt",
+    dev_dependency = True,
+)
+apt.install(
+    name = "noble",
+    lock = "//app/jupyterlab_manatee:noble.lock.json",
+    manifest = "//app/jupyterlab_manatee:noble.yaml",
+)
+use_repo(apt, "noble")

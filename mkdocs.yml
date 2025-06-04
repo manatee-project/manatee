@@ -45,6 +45,8 @@ nav:
     - Deploy:
         - GCP: getting-started/deployment.md
         - Minikube: getting-started/minikube.md
-  - Tutorials: getting-started/tutorials.md
+  - Tutorials: 
+    - Tutorials: getting-started/tutorials.md
+    - LLM Model Evaluation: getting-started/llm-model-evaluation.md
   - Blog:
     - blog/index.md

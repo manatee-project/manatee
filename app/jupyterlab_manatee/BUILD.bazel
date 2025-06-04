@@ -129,6 +129,7 @@ oci_image(
     name = "image",
     base = "@scipy-notebook_linux_amd64",
     tars = [
+        "@noble//:flat",
         ":dev_wheel_tar",
         ":hooks_tar",
     ],
