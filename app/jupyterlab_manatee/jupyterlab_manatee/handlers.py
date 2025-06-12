@@ -73,7 +73,7 @@ class DataCleanRoomJobHandler(JupyterHandler):
     def _build_form_data(self, workspace_file, creator, jupyter_filename, envs) -> FormData:
         data = FormData()
         data.add_field('file',
-                        value=open(workspace_file, 'rb'),
+                        value=workspace_file,
                         filename='workspace.tar.gz',
                         content_type='application/gzip')
         data.add_field("envs", json.dumps(envs), content_type="application/json")
@@ -87,17 +87,20 @@ class DataCleanRoomJobHandler(JupyterHandler):
         """
         url = url_path_join(get_data_clean_room_url(), endpoint)
         try:
-            async with aiohttp.ClientSession() as session:
-                data = self._build_form_data(workspace_filename, body['creator'], body['filename'], envs)
-                async with session.post(url, data=data, headers=headers, allow_redirects=False) as response:
-                    if response.status == HTTPStatus.TEMPORARY_REDIRECT:
-                        # when redirect, post manually again
-                        data = self._build_form_data(workspace_filename, body['creator'], body['filename'], envs)
-                        redirect_url = url_path_join(get_data_clean_room_url(), response.headers['Location']) 
-                        async with session.post(redirect_url, data=data, headers=headers) as redirect_resp:
-                            return await redirect_resp.text()
-                    if response.status == HTTPStatus.OK:
-                        return await response.text()
+            timeout = aiohttp.ClientTimeout(total=400)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                with open(workspace_filename, 'rb') as f:
+                    data = self._build_form_data(f, body['creator'], body['filename'], envs)
+                    async with session.post(url, data=data, headers=headers, allow_redirects=False) as response:
+                        if response.status == HTTPStatus.TEMPORARY_REDIRECT:
+                            # when redirect, post manually again
+                            with open(workspace_filename, 'rb') as f2:
+                                data = self._build_form_data(f2, body['creator'], body['filename'], envs)
+                                redirect_url = url_path_join(get_data_clean_room_url(), response.headers['Location']) 
+                                async with session.post(redirect_url, data=data, headers=headers) as redirect_resp:
+                                    return await redirect_resp.text()
+                        if response.status == HTTPStatus.OK:
+                            return await response.text()
         except Exception as e:
             self.log.error(e)
             raise tornado.web.HTTPError(500, reason="Failed to make a request to Data Clean Room API")
