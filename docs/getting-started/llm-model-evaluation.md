@@ -13,7 +13,9 @@ The attestation process cryptographically binds the evaluation results to a TEE 
 `lm-evaluation-harness` provides a unified framework to test generative language models on a large number of different evaluation tasks.
 
 ```python
-!git clone --depth 1 https://github.com/EleutherAI/lm-evaluation-harness
+!rm -rf lm-evaluation-harness
+!git clone https://github.com/EleutherAI/lm-evaluation-harness
+!pushd lm-evaluation-harness && git checkout 3102a8e4a8f3a3163a52e943f14068680753356f
 %pip install -e ./lm-evaluation-harness[wandb]
 ```
 
@@ -21,6 +23,7 @@ The attestation process cryptographically binds the evaluation results to a TEE 
 
 ```
 HG_MODEL="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+import lm_eval
 from lm_eval.utils import setup_logging
 from lm_eval.models import huggingface
 from lm_eval.tasks import TaskManager
@@ -51,7 +54,7 @@ import datasets
 datasets.config.HF_DATASETS_TRUST_REMOTE_CODE = True
 tee_llm_evaluation_result = lm_eval.simple_evaluate( # call simple_evaluate
     model=lm_obj,
-    tasks=["winogender","simple_cooccurrence_bias", "crows_pairs_english"],
+    tasks=["winogender","simple_cooccurrence_bias"],
     num_fewshot=0,
     task_manager=task_manager,
     log_samples=True,

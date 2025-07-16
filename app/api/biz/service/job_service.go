@@ -135,7 +135,10 @@ COPY $USER_WORKSPACE/* ./
 %s
 
 ENTRYPOINT rm -rf lm-evaluation-harness \
-	&& git clone --depth 1 https://github.com/EleutherAI/lm-evaluation-harness \
+	&& git clone https://github.com/EleutherAI/lm-evaluation-harness \
+	&& pushd lm-evaluation-harness \
+	&& git checkout 3102a8e4a8f3a3163a52e943f14068680753356f \
+	&& popd \
 	&& pip install -e ./lm-evaluation-harness[wandb] \
 	&& jupyter nbconvert --execute --to notebook --inplace $JUPYTER_FILENAME --ExecutePreprocessor.timeout=-1 --allow-errors \
     && hash=$(md5sum $JUPYTER_FILENAME | awk '{ print $1 }') \
