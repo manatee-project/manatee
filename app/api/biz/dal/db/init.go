@@ -17,6 +17,7 @@ package db
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -36,6 +37,16 @@ func Init() {
 	if err != nil {
 		panic(err)
 	}
+
+	sqlDB, err := DB.DB()
+	if err != nil {
+		panic(err)
+	}
+
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxIdleTime(5 * time.Minute)
+	sqlDB.SetConnMaxLifetime(1 * time.Hour)
 
 	// Auto database schema migration
 	// This has caveat: see https://gorm.io/docs/migration.html
