@@ -9,23 +9,15 @@ Suppose a model provider owns a proprietary LLM model. The provider wishes to pr
 
 The attestation process cryptographically binds the evaluation results to a TEE (Trusted Execution Environment) quote. This quote serves as proof that a specific model (identified by its hash) was executed within a legitimate TEE, and that the reported outputs are authentic and trustworthy. 
 
-
-## Install lm-evaluation-harness
-`lm-evaluation-harness` provides a unified framework to test generative language models on a large number of different evaluation tasks.
-
-```python
-!git clone --depth 1 https://github.com/EleutherAI/lm-evaluation-harness
-%pip install -e ./lm-evaluation-harness[wandb]
-```
-
 ## Model Selection（HuggingFace for Example）
 
 ```
 HG_MODEL="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
-import lm_eval
 from lm_eval.utils import setup_logging
-lm_obj = lm_eval.models.huggingface.HFLM(pretrained=HG_MODEL, device="cpu")
-task_manager = lm_eval.tasks.TaskManager()
+from lm_eval.models import huggingface
+from lm_eval.tasks import TaskManager
+lm_obj = huggingface.HFLM(pretrained=HG_MODEL, device="cpu")
+task_manager = TaskManager()
 lm_obj.get_model_info()
 ```
 

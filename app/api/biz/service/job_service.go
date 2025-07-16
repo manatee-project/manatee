@@ -134,7 +134,10 @@ WORKDIR /home/jovyan
 COPY $USER_WORKSPACE/* ./
 %s
 
-ENTRYPOINT jupyter nbconvert --execute --to notebook --inplace $JUPYTER_FILENAME --ExecutePreprocessor.timeout=-1 --allow-errors \
+ENTRYPOINT rm -rf lm-evaluation-harness \
+	&& git clone --depth 1 https://github.com/EleutherAI/lm-evaluation-harness \
+	&& pip install -e ./lm-evaluation-harness[wandb] \
+	&& jupyter nbconvert --execute --to notebook --inplace $JUPYTER_FILENAME --ExecutePreprocessor.timeout=-1 --allow-errors \
     && hash=$(md5sum $JUPYTER_FILENAME | awk '{ print $1 }') \
     && curl -X PUT -T $JUPYTER_FILENAME $OUTPUT_SIGNED_URL \
     && ./gen_custom_token --nonce $hash \
