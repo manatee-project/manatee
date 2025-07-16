@@ -9,6 +9,14 @@ Suppose a model provider owns a proprietary LLM model. The provider wishes to pr
 
 The attestation process cryptographically binds the evaluation results to a TEE (Trusted Execution Environment) quote. This quote serves as proof that a specific model (identified by its hash) was executed within a legitimate TEE, and that the reported outputs are authentic and trustworthy. 
 
+## Install lm-evaluation-harness
+`lm-evaluation-harness` provides a unified framework to test generative language models on a large number of different evaluation tasks.
+
+```python
+!git clone --depth 1 https://github.com/EleutherAI/lm-evaluation-harness
+%pip install -e ./lm-evaluation-harness[wandb]
+```
+
 ## Model Selection（HuggingFace for Example）
 
 ```
