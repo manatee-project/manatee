@@ -17,6 +17,7 @@
 locals {
   cluster_name   = "dcr-${var.env}-cluster"
   node_pool_name = "dcr-${var.env}-node-pool"
+  node_pool_name_cpu = "dcr-${var.env}-node-pool-cpu"
 }
 
 # GKE Cluster
@@ -50,12 +51,56 @@ resource "google_container_node_pool" "dcr_node_pool" {
   name       = local.node_pool_name
   location   = var.zone
   cluster    = google_container_cluster.dcr_cluster.name
+  # node_count = var.num_nodes
+  management {
+    auto_repair = false
+  }
+  node_config {
+    machine_type = var.machine_type
+    confidential_nodes {
+      enabled = true
+      confidential_instance_type = "TDX"
+    }
+    # Add the GPU configuration.
+    guest_accelerator {
+      type  = var.gpu_type
+      count = var.gpu_count
+      gpu_driver_installation_config {
+        gpu_driver_version = "INSTALLATION_DISABLED"
+      }
+    }
+    reservation_affinity {
+      consume_reservation_type = "NO_RESERVATION"
+    }
+    flex_start = true
+    # GKE nodes with GPUs need this scope to install drivers.
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform",
+    ]
+    service_account = google_service_account.gcp_dcr_cluster_sa.email
+    max_run_duration = "14400s"
+  }
+
+  depends_on = [
+    google_service_account.gcp_dcr_cluster_sa,
+  ]
+  autoscaling {
+    max_node_count = 3
+    min_node_count = 0
+  }
+}
+
+resource "google_container_node_pool" "dcr_node_pool2" {
+  project    = var.project_id
+  name       = local.node_pool_name_cpu
+  location   = var.zone
+  cluster    = google_container_cluster.dcr_cluster.name
   node_count = var.num_nodes
 
   node_config {
     service_account = google_service_account.gcp_dcr_cluster_sa.email
     preemptible     = false
-    machine_type    = var.type
+    machine_type    = "c3-highmem-8"
   }
 
   depends_on = [

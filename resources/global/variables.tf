@@ -34,10 +34,22 @@ variable "project_id" {
   description = "The GCP project ID"
 }
 
-variable "type" {
+variable "machine_type" {
+  description = "The machine type to use for GKE nodes."
   type        = string
-  description = "Instance type for the GKE instances"
-  default     = "c3-highcpu-22"
+  default     = "a3-highgpu-1g"
+}
+
+variable "gpu_type" {
+  description = "The type of GPU to attach to the nodes."
+  type        = string
+  default     = "nvidia-h100-80gb"
+}
+
+variable "gpu_count" {
+  description = "The number of GPUs to attach to each node."
+  type        = number
+  default     = 1
 }
 
 variable "num_nodes" {

@@ -19,8 +19,10 @@ resource "google_sql_database_instance" "dcr_database_instance" {
   database_version = "MYSQL_8_0"
   project          = var.project_id
   region           = var.region
+  deletion_protection = false
   settings {
     tier = "db-f1-micro"
+    
     ip_configuration {
       ipv4_enabled                                  = false
       private_network                               = google_compute_network.data_clean_room_network.id
