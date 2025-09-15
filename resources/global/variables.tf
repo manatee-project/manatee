@@ -34,7 +34,7 @@ variable "project_id" {
   description = "The GCP project ID"
 }
 
-variable "machine_type" {
+variable "gpu_machine_type" {
   description = "The machine type to use for GPU GKE nodes."
   type        = string
   default     = "a3-highgpu-1g"

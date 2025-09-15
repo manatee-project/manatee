@@ -15,8 +15,8 @@
  */
 
 locals {
-  cluster_name   = "dcr-${var.env}-cluster"
-  node_pool_name = "dcr-${var.env}-node-pool"
+  cluster_name       = "dcr-${var.env}-cluster"
+  node_pool_name     = "dcr-${var.env}-node-pool"
   node_pool_name_cpu = "dcr-${var.env}-node-pool-cpu"
 }
 
@@ -47,17 +47,17 @@ resource "google_container_cluster" "dcr_cluster" {
 
 # Note pool for GKE cluster
 resource "google_container_node_pool" "dcr_node_pool" {
-  project    = var.project_id
-  name       = local.node_pool_name
-  location   = var.zone
-  cluster    = google_container_cluster.dcr_cluster.name
+  project  = var.project_id
+  name     = local.node_pool_name
+  location = var.zone
+  cluster  = google_container_cluster.dcr_cluster.name
   management {
     auto_repair = false
   }
   node_config {
-    machine_type = var.machine_type
+    machine_type = var.gpu_machine_type
     confidential_nodes {
-      enabled = true
+      enabled                    = true
       confidential_instance_type = "TDX"
     }
     # Add the GPU configuration.
@@ -76,7 +76,7 @@ resource "google_container_node_pool" "dcr_node_pool" {
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform",
     ]
-    service_account = google_service_account.gcp_dcr_cluster_sa.email
+    service_account  = google_service_account.gcp_dcr_cluster_sa.email
     max_run_duration = "14400s"
   }
 
