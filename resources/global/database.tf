@@ -15,14 +15,14 @@
  */
 
 resource "google_sql_database_instance" "dcr_database_instance" {
-  name             = "dcr-${var.env}-db-instance"
-  database_version = "MYSQL_8_0"
-  project          = var.project_id
-  region           = var.region
+  name                = "dcr-${var.env}-db-instance"
+  database_version    = "MYSQL_8_0"
+  project             = var.project_id
+  region              = var.region
   deletion_protection = false
   settings {
     tier = "db-f1-micro"
-    
+
     ip_configuration {
       ipv4_enabled                                  = false
       private_network                               = google_compute_network.data_clean_room_network.id
@@ -32,5 +32,5 @@ resource "google_sql_database_instance" "dcr_database_instance" {
   lifecycle {
     prevent_destroy = false
   }
-  depends_on = [ google_compute_subnetwork.data_clean_room_subnetwork, google_compute_global_address.dcr_private_address, google_service_networking_connection.private_vpc_connection ]
+  depends_on = [google_compute_subnetwork.data_clean_room_subnetwork, google_compute_global_address.dcr_private_address, google_service_networking_connection.private_vpc_connection]
 }

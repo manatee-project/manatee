@@ -51,7 +51,6 @@ resource "google_container_node_pool" "dcr_node_pool" {
   name       = local.node_pool_name
   location   = var.zone
   cluster    = google_container_cluster.dcr_cluster.name
-  # node_count = var.num_nodes
   management {
     auto_repair = false
   }
@@ -100,7 +99,7 @@ resource "google_container_node_pool" "dcr_node_pool2" {
   node_config {
     service_account = google_service_account.gcp_dcr_cluster_sa.email
     preemptible     = false
-    machine_type    = "c3-highmem-8"
+    machine_type    = var.cpu_machine_type
   }
 
   depends_on = [

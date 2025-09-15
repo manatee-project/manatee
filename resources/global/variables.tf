@@ -35,9 +35,15 @@ variable "project_id" {
 }
 
 variable "machine_type" {
-  description = "The machine type to use for GKE nodes."
+  description = "The machine type to use for GPU GKE nodes."
   type        = string
   default     = "a3-highgpu-1g"
+}
+
+variable "cpu_machine_type" {
+  description = "The machine type to use for CPU GKE nodes."
+  type        = string
+  default     = "c3-highmen-8"
 }
 
 variable "gpu_type" {
