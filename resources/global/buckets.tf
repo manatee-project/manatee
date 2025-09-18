@@ -20,4 +20,5 @@ resource "google_storage_bucket" "data_clean_room_hub" {
   project                     = var.project_id
   public_access_prevention    = "enforced"
   uniform_bucket_level_access = true
+  force_destroy               = true
 }
